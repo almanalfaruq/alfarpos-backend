@@ -1,0 +1,8 @@
+env: test
+database:
+  host: localhost
+  port: 5432
+  username: postgres
+  password: ""
+  dbname: alfarpos
+  dbname-test: alfarpos_test
