@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"../model"
 	"../util"
 )
@@ -38,7 +40,7 @@ func (repo *ProductRepository) FindById(id int) model.Product {
 func (repo *ProductRepository) FindByName(name string) []model.Product {
 	var products []model.Product
 	db := repo.GetDb()
-	db.Where("name = ?", name).Find(&products)
+	db.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&products)
 	return products
 }
 
@@ -87,6 +89,6 @@ func (repo *ProductRepository) DeleteAll() int {
 	var productCount int
 	db := repo.GetDb()
 	db.Model(&product).Count(&productCount)
-	db.Delete(&product)
+	db.Unscoped().Delete(&product)
 	return productCount
 }

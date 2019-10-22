@@ -23,7 +23,7 @@ type ProductService struct {
 type IProductService interface {
 	GetAllProduct() []model.Product
 	GetOneProduct(id int) (model.Product, error)
-	GetProductsByName(name string) ([]model.Product, error)
+	GetProductsByName(productName string) ([]model.Product, error)
 	GetProductsByCategoryName(categoryName string) ([]model.Product, error)
 	GetProductsByUnitName(unitName string) ([]model.Product, error)
 	NewProduct(productData string) (model.Product, error)
@@ -40,34 +40,16 @@ func (service *ProductService) GetOneProduct(id int) (model.Product, error) {
 	return service.product.FindById(id), nil
 }
 
-func (service *ProductService) GetProductsByName(productData string) ([]model.Product, error) {
-	var product model.Product
-	productDataByte := []byte(productData)
-	err := json.Unmarshal(productDataByte, &product)
-	if err != nil {
-		return []model.Product{}, err
-	}
-	return service.product.FindByName(product.Name), nil
+func (service *ProductService) GetProductsByName(productName string) ([]model.Product, error) {
+	return service.product.FindByName(productName), nil
 }
 
-func (service *ProductService) GetProductsByCategoryName(productData string) ([]model.Product, error) {
-	var product model.Product
-	productDataByte := []byte(productData)
-	err := json.Unmarshal(productDataByte, &product)
-	if err != nil {
-		return []model.Product{}, err
-	}
-	return service.product.FindByCategoryName(product.Category.Name), nil
+func (service *ProductService) GetProductsByCategoryName(categoryName string) ([]model.Product, error) {
+	return service.product.FindByCategoryName(categoryName), nil
 }
 
-func (service *ProductService) GetProductsByUnitName(productData string) ([]model.Product, error) {
-	var product model.Product
-	productDataByte := []byte(productData)
-	err := json.Unmarshal(productDataByte, &product)
-	if err != nil {
-		return []model.Product{}, err
-	}
-	return service.product.FindByUnitName(product.Unit.Name), nil
+func (service *ProductService) GetProductsByUnitName(unitName string) ([]model.Product, error) {
+	return service.product.FindByUnitName(unitName), nil
 }
 
 func (service *ProductService) NewProduct(productData string) (model.Product, error) {

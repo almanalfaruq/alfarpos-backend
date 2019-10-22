@@ -10,7 +10,7 @@ const (
 
 type User struct {
 	Template
-	Username string `json:"name"`
+	Username string `gorm:"unique_index" json:"name"`
 	Password string `json:"-"`
 	FullName string `json:"full_name"`
 	Address  string `json:"address"`

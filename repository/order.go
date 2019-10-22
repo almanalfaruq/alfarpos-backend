@@ -22,28 +22,28 @@ type IOrderRepository interface {
 func (repo *OrderRepository) FindAll() []model.Order {
 	var orders []model.Order
 	db := repo.GetDb()
-	db.Find(&orders)
+	db.Preload("OrderDetails").Find(&orders)
 	return orders
 }
 
 func (repo *OrderRepository) FindById(id int) model.Order {
 	var order model.Order
 	db := repo.GetDb()
-	db.Where("id = ?", id).First(&order)
+	db.Where("id = ?", id).Preload("OrderDetails").First(&order)
 	return order
 }
 
 func (repo *OrderRepository) FindByInvoice(invoice string) model.Order {
 	var order model.Order
 	db := repo.GetDb()
-	db.Where("invoice = ?", invoice).First(&order)
+	db.Where("invoice = ?", invoice).Preload("OrderDetails").First(&order)
 	return order
 }
 
 func (repo *OrderRepository) FindByUserId(userId int) []model.Order {
 	var orders []model.Order
 	db := repo.GetDb()
-	db.Where("user_id = ?", userId).Find(&orders)
+	db.Where("user_id = ?", userId).Preload("OrderDetails").Find(&orders)
 	return orders
 }
 

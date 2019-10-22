@@ -14,6 +14,7 @@ type IOrderDetailRepository interface {
 	New(orderDetail model.OrderDetail) model.OrderDetail
 	Update(orderDetail model.OrderDetail) model.OrderDetail
 	Delete(id int) model.OrderDetail
+	DeleteByOrderId(id int) int
 }
 
 func (repo *OrderDetailRepository) FindByOrder(order model.Order) []model.OrderDetail {
@@ -47,4 +48,12 @@ func (repo *OrderDetailRepository) Delete(id int) model.OrderDetail {
 	db.Where("id = ?", id).First(&orderDetail)
 	db.Delete(&orderDetail)
 	return orderDetail
+}
+
+func (repo *OrderDetailRepository) DeleteByOrderId(id int) int {
+	var orderDetailCount int
+	db := repo.GetDb()
+	db.Model(&model.OrderDetail{}).Where("product_id = ?", id).Count(&orderDetailCount)
+	db.Where("product_id = ?", id).Delete(&model.OrderDetail{})
+	return orderDetailCount
 }

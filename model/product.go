@@ -2,7 +2,7 @@ package model
 
 type Product struct {
 	Template
-	Code       string   `json:"code"`
+	Code       string   `gorm:"unique_index" json:"code"`
 	Name       string   `json:"name"`
 	BuyPrice   int      `json:"buy_price"`
 	SellPrice  int      `json:"sell_price"`
