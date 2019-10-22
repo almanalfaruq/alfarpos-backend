@@ -10,18 +10,11 @@ type CustomerRepository struct {
 }
 
 type ICustomerRepository interface {
-	FindById(id int) model.Customer
 	FindAll() []model.Customer
+	FindById(id int) model.Customer
 	New(customer model.Customer) model.Customer
 	Update(customer model.Customer) model.Customer
 	Delete(id int) model.Customer
-}
-
-func (repo *CustomerRepository) FindById(id int) model.Customer {
-	var customer model.Customer
-	db := repo.GetDb()
-	db.Where("id = ?", id).First(&customer)
-	return customer
 }
 
 func (repo *CustomerRepository) FindAll() []model.Customer {
@@ -29,6 +22,13 @@ func (repo *CustomerRepository) FindAll() []model.Customer {
 	db := repo.GetDb()
 	db.Find(&customers)
 	return customers
+}
+
+func (repo *CustomerRepository) FindById(id int) model.Customer {
+	var customer model.Customer
+	db := repo.GetDb()
+	db.Where("id = ?", id).First(&customer)
+	return customer
 }
 
 func (repo *CustomerRepository) New(customer model.Customer) model.Customer {

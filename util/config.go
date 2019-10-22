@@ -21,13 +21,13 @@ type Database struct {
 }
 
 type IConfig interface {
-	Read(c *Config) error
+	Read(filePath string, c *Config) error
 }
 
-func (config *Config) Read(c *Config) error {
-	file, err := ioutil.ReadFile("../config.yaml")
+func (config *Config) Read(filePath string, c *Config) error {
+	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	err = yaml.Unmarshal(file, &c)

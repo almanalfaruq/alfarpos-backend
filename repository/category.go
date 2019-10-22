@@ -10,11 +10,19 @@ type CategoryRepository struct {
 }
 
 type ICategoryRepository interface {
-	FindById(id int) model.Category
 	FindAll() []model.Category
+	FindById(id int) model.Category
+	FindByName(name string) model.Category
 	New(category model.Category) model.Category
 	Update(category model.Category) model.Category
 	Delete(id int) model.Category
+}
+
+func (repo *CategoryRepository) FindAll() []model.Category {
+	var categories []model.Category
+	db := repo.GetDb()
+	db.Find(&categories)
+	return categories
 }
 
 func (repo *CategoryRepository) FindById(id int) model.Category {
@@ -24,11 +32,11 @@ func (repo *CategoryRepository) FindById(id int) model.Category {
 	return category
 }
 
-func (repo *CategoryRepository) FindAll() []model.Category {
-	var categories []model.Category
+func (repo *CategoryRepository) FindByName(name string) model.Category {
+	var category model.Category
 	db := repo.GetDb()
-	db.Find(&categories)
-	return categories
+	db.Where("name = ?", name).First(&category)
+	return category
 }
 
 func (repo *CategoryRepository) New(category model.Category) model.Category {
