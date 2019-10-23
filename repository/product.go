@@ -26,7 +26,7 @@ type IProductRepository interface {
 func (repo *ProductRepository) FindAll() []model.Product {
 	var categories []model.Product
 	db := repo.GetDb()
-	db.Find(&categories)
+	db.Preload("Category").Preload("Unit").Find(&categories)
 	return categories
 }
 
@@ -40,21 +40,21 @@ func (repo *ProductRepository) FindById(id int) model.Product {
 func (repo *ProductRepository) FindByName(name string) []model.Product {
 	var products []model.Product
 	db := repo.GetDb()
-	db.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&products)
+	db.Preload("Category").Preload("Unit").Where("LOWER(name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&products)
 	return products
 }
 
 func (repo *ProductRepository) FindByCategoryName(name string) []model.Product {
 	var products []model.Product
 	db := repo.GetDb()
-	db.Joins("JOIN categories ON categories.ID = products.category_id").Where("categories.name = ?", name).Find(&products)
+	db.Joins("JOIN categories ON categories.id = products.category_id").Where("categories.name = ?", name).Find(&products)
 	return products
 }
 
 func (repo *ProductRepository) FindByUnitName(name string) []model.Product {
 	var products []model.Product
 	db := repo.GetDb()
-	db.Joins("JOIN units ON units.ID = products.unit_id").Where("units.name = ?", name).Find(&products)
+	db.Joins("JOIN units ON units.id = products.unit_id").Where("units.name = ?", name).Find(&products)
 	return products
 }
 

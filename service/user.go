@@ -3,46 +3,63 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"time"
+
+	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
 
 	"../model"
 	"../repository"
+	"../util"
 )
 
 type UserService struct {
-	repository.UserRepository
+	User   repository.IUserRepository
+	Config util.Config
 }
 
 type IUserService interface {
 	GetOneUser(id int) (model.User, error)
 	GetAllUser() []model.User
-	LoginUser(userData string) (model.User, error)
+	LoginUser(userData string) (string, error)
 	NewUser(userData string) (model.User, error)
 	UpdateUser(userData string) (model.User, error)
 	DeleteUser(id int) (model.User, error)
 }
 
 func (service *UserService) GetOneUser(id int) (model.User, error) {
-	return service.FindById(id), nil
+	return service.User.FindById(id), nil
 }
 
 func (service *UserService) GetAllUser() []model.User {
-	return service.FindAll()
+	return service.User.FindAll()
 }
 
-func (service *UserService) LoginUser(userData string) (model.User, error) {
+func (service *UserService) LoginUser(userData string) (string, error) {
 	var user model.User
+	secretKey := []byte(service.Config.SecretKey)
 	userDataByte := []byte(userData)
 	err := json.Unmarshal(userDataByte, &user)
 	if err != nil {
-		user = model.User{}
-		return user, err
+		return "", err
 	}
-	isLoggedIn := service.Login(user.Username, user.Password)
-	if isLoggedIn {
-		return service.FindByUsername(user.Username), nil
+	userFromDb := service.User.FindByUsername(user.Username)
+	err = bcrypt.CompareHashAndPassword([]byte(userFromDb.Password), []byte(user.Password))
+	if err != nil {
+		return "", errors.New("Username or Password mismatch")
 	}
-	user = model.User{}
-	return user, errors.New("Username or Password mismatch")
+	user = userFromDb
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":         user.ID,
+		"username":   user.Username,
+		"full_name":  user.FullName,
+		"address":    user.Address,
+		"phone":      user.Phone,
+		"role_id":    user.RoleID,
+		"login_time": time.Now().Format("2006-01-02 15:04:05"),
+	})
+	tokenString, _ := token.SignedString(secretKey)
+	return tokenString, nil
 }
 
 func (service *UserService) NewUser(userData string) (model.User, error) {
@@ -52,7 +69,14 @@ func (service *UserService) NewUser(userData string) (model.User, error) {
 	if err != nil {
 		return user, err
 	}
-	return service.New(user), nil
+	encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return model.User{}, err
+	}
+	user.Password = string(encryptedPassword)
+	user = service.User.New(user)
+	user.Password = ""
+	return user, nil
 }
 
 func (service *UserService) UpdateUser(userData string) (model.User, error) {
@@ -62,10 +86,10 @@ func (service *UserService) UpdateUser(userData string) (model.User, error) {
 	if err != nil {
 		return user, err
 	}
-	user = service.Update(user)
+	user = service.User.Update(user)
 	return user, nil
 }
 
 func (service *UserService) DeleteUser(id int) (model.User, error) {
-	return service.Delete(id), nil
+	return service.User.Delete(id), nil
 }

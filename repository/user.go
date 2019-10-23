@@ -3,17 +3,17 @@ package repository
 import (
 	"../model"
 	"../util"
+	"github.com/kataras/golog"
 )
 
 type UserRepository struct {
-	util.DatabaseConnection
+	util.IDatabaseConnection
 }
 
 type IUserRepository interface {
 	FindAll() []model.User
 	FindById(id int) model.User
 	FindByUsername(username string) model.User
-	Login(username string, password string) bool
 	New(user model.User) model.User
 	Update(user model.User) model.User
 	Delete(id int) model.User
@@ -40,18 +40,14 @@ func (repo *UserRepository) FindByUsername(username string) model.User {
 	return user
 }
 
-func (repo *UserRepository) Login(username string, password string) bool {
-	var user model.User
-	db := repo.GetDb()
-	db.Where("username = ? AND password = ?", username, password).First(&user)
-	return user.Username == username && user.Password == password
-}
-
 func (repo *UserRepository) New(user model.User) model.User {
 	db := repo.GetDb()
 	isNotExist := db.NewRecord(user)
 	if isNotExist {
-		db.Create(&user)
+		err := db.Create(&user).Error
+		if err != nil {
+			golog.Error(err)
+		}
 	}
 	return user
 }

@@ -1,4 +1,5 @@
-env: test
+env: dev
+secret-key: secret
 database:
   host: localhost
   port: 5432
@@ -6,3 +7,9 @@ database:
   password: ""
   dbname: alfarpos
   dbname-test: alfarpos_test
+shop-profile:
+  name: "Toko Alfar"
+  description: "Toko Serba Ada"
+  address: "Ketaon RT 7 RW 1, Banyudono, Boyolali 57373"
+  phone: "(0276) 3283720"
+  npwp: "192810982901809"

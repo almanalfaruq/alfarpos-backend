@@ -4,11 +4,12 @@ type Product struct {
 	Template
 	Code       string   `gorm:"unique_index" json:"code"`
 	Name       string   `json:"name"`
-	BuyPrice   int      `json:"buy_price"`
-	SellPrice  int      `json:"sell_price"`
-	Quantity   int      `json:"quantity"`
+	BuyPrice   int64    `json:"buy_price"`
+	SellPrice  int64    `json:"sell_price"`
+	Quantity   int64    `json:"quantity"`
 	CategoryID int      `json:"category_id"`
-	Category   Category `json:"category"`
+	Category   Category `gorm:"foreignkey:CategoryID,auto_preload" json:"category"`
 	UnitID     int      `json:"unit_id"`
-	Unit       Unit     `json:"unit"`
+	Unit       Unit     `gorm:"foreignkey:UnitID,auto_preload" json:"unit"`
+	ImageUrl   string   `json:"image_url"`
 }

@@ -9,14 +9,19 @@ type UnitRepository struct {
 	mock.Mock
 }
 
+func (mock *UnitRepository) FindAll() []model.Unit {
+	args := mock.Called()
+	return args.Get(0).([]model.Unit)
+}
+
 func (mock *UnitRepository) FindById(id int) model.Unit {
 	args := mock.Called(id)
 	return args.Get(0).(model.Unit)
 }
 
-func (mock *UnitRepository) FindAll() []model.Unit {
-	args := mock.Called()
-	return args.Get(0).([]model.Unit)
+func (mock *UnitRepository) FindByName(name string) model.Unit {
+	args := mock.Called(name)
+	return args.Get(0).(model.Unit)
 }
 
 func (mock *UnitRepository) New(unit model.Unit) model.Unit {

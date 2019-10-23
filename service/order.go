@@ -8,16 +8,17 @@ import (
 )
 
 type OrderService struct {
-	order    repository.IOrderRepository
-	payment  repository.IPaymentRepository
-	customer repository.ICustomerRepository
+	order       repository.IOrderRepository
+	orderDetail repository.IOrderDetailRepository
+	payment     repository.IPaymentRepository
+	customer    repository.ICustomerRepository
 }
 
 type IOrderService interface {
 	GetAllOrder() []model.Order
 	GetOneOrder(id int) (model.Order, error)
-	GetOrderByInvoice(orderData string) (model.Order, error)
-	GetOrderByUserId(orderData string) ([]model.Order, error)
+	GetOrderByInvoice(invoice string) (model.Order, error)
+	GetOrderByUserId(userId int) ([]model.Order, error)
 	NewOrder(orderData string) (model.Order, error)
 	UpdateOrder(orderData string) (model.Order, error)
 	DeleteOrder(id int) int
@@ -31,24 +32,12 @@ func (service *OrderService) GetOneOrder(id int) (model.Order, error) {
 	return service.order.FindById(id), nil
 }
 
-func (service *OrderService) GetOrderByInvoice(orderData string) (model.Order, error) {
-	var order model.Order
-	orderDataByte := []byte(orderData)
-	err := json.Unmarshal(orderDataByte, &order)
-	if err != nil {
-		return model.Order{}, err
-	}
-	return service.order.FindByInvoice(order.Invoice), nil
+func (service *OrderService) GetOrderByInvoice(invoice string) (model.Order, error) {
+	return service.order.FindByInvoice(invoice), nil
 }
 
-func (service *OrderService) GetOrderByUserId(orderData string) ([]model.Order, error) {
-	var order model.Order
-	orderDataByte := []byte(orderData)
-	err := json.Unmarshal(orderDataByte, &order)
-	if err != nil {
-		return []model.Order{}, err
-	}
-	return service.order.FindByUserId(order.UserID), nil
+func (service *OrderService) GetOrderByUserId(userId int) ([]model.Order, error) {
+	return service.order.FindByUserId(userId), nil
 }
 
 func (service *OrderService) NewOrder(orderData string) (model.Order, error) {
@@ -58,7 +47,17 @@ func (service *OrderService) NewOrder(orderData string) (model.Order, error) {
 	if err != nil {
 		return order, err
 	}
-	return service.order.New(order), nil
+	customer := service.customer.FindById(order.CustomerID)
+	order.Customer = customer
+	payment := service.payment.FindById(order.PaymentID)
+	order.Payment = payment
+	order = service.order.New(order)
+	for _, orderDetail := range order.OrderDetails {
+		orderDetail.OrderID = int(order.ID)
+		orderDetail.Order = order
+		service.orderDetail.New(orderDetail)
+	}
+	return order, nil
 }
 
 func (service *OrderService) UpdateOrder(orderData string) (model.Order, error) {
