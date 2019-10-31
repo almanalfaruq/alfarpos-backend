@@ -16,34 +16,34 @@ type IOrderRepository interface {
 	FindByUserId(userId int) []model.Order
 	New(order model.Order) model.Order
 	Update(order model.Order) model.Order
-	Delete(id int) model.Order
+	Delete(id int) (model.Order, error)
 }
 
 func (repo *OrderRepository) FindAll() []model.Order {
 	var orders []model.Order
 	db := repo.GetDb()
-	db.Preload("OrderDetails").Find(&orders)
+	db.Set("gorm:auto_preload", true).Find(&orders)
 	return orders
 }
 
 func (repo *OrderRepository) FindById(id int) model.Order {
 	var order model.Order
 	db := repo.GetDb()
-	db.Where("id = ?", id).Preload("OrderDetails").First(&order)
+	db.Set("gorm:auto_preload", true).Where("id = ?", id).First(&order)
 	return order
 }
 
 func (repo *OrderRepository) FindByInvoice(invoice string) model.Order {
 	var order model.Order
 	db := repo.GetDb()
-	db.Where("invoice = ?", invoice).Preload("OrderDetails").First(&order)
+	db.Set("gorm:auto_preload", true).Where("invoice = ?", invoice).First(&order)
 	return order
 }
 
 func (repo *OrderRepository) FindByUserId(userId int) []model.Order {
 	var orders []model.Order
 	db := repo.GetDb()
-	db.Where("user_id = ?", userId).Preload("OrderDetails").Find(&orders)
+	db.Set("gorm:auto_preload", true).Where("user_id = ?", userId).Find(&orders)
 	return orders
 }
 
@@ -53,6 +53,7 @@ func (repo *OrderRepository) New(order model.Order) model.Order {
 	if isNotExist {
 		db.Create(&order)
 	}
+	db.Set("gorm:auto_preload", true).Where("id = ?", order.ID).First(&order)
 	return order
 }
 
@@ -65,10 +66,10 @@ func (repo *OrderRepository) Update(order model.Order) model.Order {
 	return order
 }
 
-func (repo *OrderRepository) Delete(id int) model.Order {
+func (repo *OrderRepository) Delete(id int) (model.Order, error) {
 	var order model.Order
 	db := repo.GetDb()
 	db.Where("id = ?", id).First(&order)
-	db.Delete(&order)
-	return order
+	err := db.Delete(&order).Error
+	return order, err
 }

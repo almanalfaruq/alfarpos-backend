@@ -13,9 +13,12 @@ func GetAllRoutes(database *util.DatabaseConnection, config util.Config) *mux.Ro
 	routes.HandleFunc("/users/register", userController.RegisterHandler).Methods("POST")
 	routes.HandleFunc("/users/login", userController.LoginHandler).Methods("POST")
 
-	productController := InjectProductController(database)
-	routes.HandleFunc("/products", productController.GetAllProductHandler).Methods("GET")
-	routes.HandleFunc("/products/search", productController.GetProductsByNameHandler).Methods("GET")
+	productController := InjectProductController(database, config)
+	routes.HandleFunc("/products", productController.GetProductsHandler).Methods("GET")
+	routes.HandleFunc("/products/id/{id}/", productController.GetProductByIdHandler).Methods("GET")
+	routes.HandleFunc("/products/code/{code}/", productController.GetProductByCodeHandler).Methods("GET")
+	routes.HandleFunc("/products", productController.NewProductHandler).Methods("POST")
 	routes.HandleFunc("/products/upload_excel/{sheetName}", productController.UploadExcelProductHandler).Methods("POST")
+	routes.HandleFunc("/products/{id}", productController.UpdateProductHandler).Methods("PUT")
 	return routes
 }

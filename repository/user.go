@@ -14,7 +14,7 @@ type IUserRepository interface {
 	FindAll() []model.User
 	FindById(id int) model.User
 	FindByUsername(username string) model.User
-	New(user model.User) model.User
+	New(user model.User) (model.User, error)
 	Update(user model.User) model.User
 	Delete(id int) model.User
 }
@@ -40,16 +40,17 @@ func (repo *UserRepository) FindByUsername(username string) model.User {
 	return user
 }
 
-func (repo *UserRepository) New(user model.User) model.User {
+func (repo *UserRepository) New(user model.User) (model.User, error) {
 	db := repo.GetDb()
 	isNotExist := db.NewRecord(user)
 	if isNotExist {
 		err := db.Create(&user).Error
 		if err != nil {
 			golog.Error(err)
+			return user, err
 		}
 	}
-	return user
+	return user, nil
 }
 
 func (repo *UserRepository) Update(user model.User) model.User {

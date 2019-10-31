@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"../model"
+	"../model/response"
 	"../repository"
 	"../util"
 )
@@ -49,14 +50,12 @@ func (service *UserService) LoginUser(userData string) (string, error) {
 		return "", errors.New("Username or Password mismatch")
 	}
 	user = userFromDb
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":         user.ID,
-		"username":   user.Username,
-		"full_name":  user.FullName,
-		"address":    user.Address,
-		"phone":      user.Phone,
-		"role_id":    user.RoleID,
-		"login_time": time.Now().Format("2006-01-02 15:04:05"),
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, response.TokenResponse{
+		User: user,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Duration(24) * time.Hour).Unix(),
+			Issuer:    "AlfarPOS",
+		},
 	})
 	tokenString, _ := token.SignedString(secretKey)
 	return tokenString, nil
@@ -74,7 +73,10 @@ func (service *UserService) NewUser(userData string) (model.User, error) {
 		return model.User{}, err
 	}
 	user.Password = string(encryptedPassword)
-	user = service.User.New(user)
+	user, err = service.User.New(user)
+	if err != nil {
+		return model.User{}, err
+	}
 	user.Password = ""
 	return user, nil
 }

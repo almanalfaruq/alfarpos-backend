@@ -62,8 +62,9 @@ func TestGetAllCategory(t *testing.T) {
 
 	expectedResult := resources.Categories
 
-	actualResult := categoryService.GetAllCategory()
+	actualResult, err := categoryService.GetAllCategory()
 
+	assert.Nil(t, err)
 	assert.NotNil(t, actualResult)
 	assert.NotEmpty(t, actualResult)
 	assert.Equal(t, expectedResult[0].ID, actualResult[0].ID)

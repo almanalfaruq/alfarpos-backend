@@ -19,9 +19,9 @@ func (mock *UnitRepository) FindById(id int) model.Unit {
 	return args.Get(0).(model.Unit)
 }
 
-func (mock *UnitRepository) FindByName(name string) model.Unit {
+func (mock *UnitRepository) FindByName(name string) []model.Unit {
 	args := mock.Called(name)
-	return args.Get(0).(model.Unit)
+	return args.Get(0).([]model.Unit)
 }
 
 func (mock *UnitRepository) New(unit model.Unit) model.Unit {
@@ -34,7 +34,7 @@ func (mock *UnitRepository) Update(unit model.Unit) model.Unit {
 	return args.Get(0).(model.Unit)
 }
 
-func (mock *UnitRepository) Delete(id int) model.Unit {
+func (mock *UnitRepository) Delete(id int) (model.Unit, error) {
 	args := mock.Called(id)
-	return args.Get(0).(model.Unit)
+	return args.Get(0).(model.Unit), args.Get(1).(error)
 }

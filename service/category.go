@@ -2,6 +2,8 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
+	"strings"
 
 	"../model"
 	"../repository"
@@ -12,19 +14,33 @@ type CategoryService struct {
 }
 
 type ICategoryService interface {
-	GetAllCategory() []model.Category
+	GetAllCategory() ([]model.Category, error)
 	GetOneCategory(id int) (model.Category, error)
+	GetCategoriesByName(name string) ([]model.Category, error)
 	NewCategory(categoryData string) (model.Category, error)
 	UpdateCategory(categoryData string) (model.Category, error)
-	DeleteCategory(id int) int
+	DeleteCategory(id int) (model.Category, error)
 }
 
-func (service *CategoryService) GetAllCategory() []model.Category {
-	return service.FindAll()
+func (service *CategoryService) GetAllCategory() ([]model.Category, error) {
+	return service.FindAll(), nil
 }
 
 func (service *CategoryService) GetOneCategory(id int) (model.Category, error) {
-	return service.FindById(id), nil
+	category := service.FindById(id)
+	if category.ID == 0 {
+		return category, errors.New("Category not found")
+	}
+	return category, nil
+}
+
+func (service *CategoryService) GetCategoriesByName(name string) ([]model.Category, error) {
+	name = strings.ToLower(name)
+	categories := service.FindByName(name)
+	if len(categories) == 0 {
+		return categories, errors.New("Categories not found")
+	}
+	return categories, nil
 }
 
 func (service *CategoryService) NewCategory(categoryData string) (model.Category, error) {
@@ -49,5 +65,5 @@ func (service *CategoryService) UpdateCategory(categoryData string) (model.Categ
 }
 
 func (service *CategoryService) DeleteCategory(id int) (model.Category, error) {
-	return service.Delete(id), nil
+	return service.Delete(id)
 }
