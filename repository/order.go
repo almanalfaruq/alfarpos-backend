@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"../model"
-	"../util"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
 type OrderRepository struct {

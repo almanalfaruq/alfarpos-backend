@@ -3,8 +3,8 @@ package repository
 import (
 	"fmt"
 
-	"../model"
-	"../util"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
 type ProductRepository struct {
@@ -14,7 +14,7 @@ type ProductRepository struct {
 type IProductRepository interface {
 	FindAll() []model.Product
 	FindById(id int) model.Product
-	FindByCode(code string) model.Product
+	FindByCode(code string) []model.Product
 	FindByName(name string) []model.Product
 	FindByCategoryName(name string) []model.Product
 	FindByUnitName(name string) []model.Product
@@ -38,11 +38,11 @@ func (repo *ProductRepository) FindById(id int) model.Product {
 	return product
 }
 
-func (repo *ProductRepository) FindByCode(code string) model.Product {
-	var product model.Product
+func (repo *ProductRepository) FindByCode(code string) []model.Product {
+	var products []model.Product
 	db := repo.GetDb()
-	db.Set("gorm:auto_preload", true).Where("code = ?", code).First(&product)
-	return product
+	db.Set("gorm:auto_preload", true).Where("code LIKE ?", fmt.Sprintf("%%%s%%", code)).Find(&products)
+	return products
 }
 
 func (repo *ProductRepository) FindByName(name string) []model.Product {

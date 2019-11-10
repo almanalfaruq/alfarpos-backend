@@ -3,10 +3,10 @@ package service_test
 import (
 	"testing"
 
-	"../model"
-	. "../service"
-	"../test/mocks"
-	"../test/resources"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	. "github.com/almanalfaruq/alfarpos-backend/service"
+	"github.com/almanalfaruq/alfarpos-backend/test/mocks"
+	"github.com/almanalfaruq/alfarpos-backend/test/resources"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -62,8 +62,9 @@ func TestGetAllPayment(t *testing.T) {
 
 	expectedResult := resources.Payments
 
-	actualResult := paymentService.GetAllPayment()
+	actualResult, err := paymentService.GetAllPayment()
 
+	assert.Nil(t, err)
 	assert.NotNil(t, actualResult)
 	assert.NotEmpty(t, actualResult)
 	assert.Equal(t, expectedResult[0].ID, actualResult[0].ID)

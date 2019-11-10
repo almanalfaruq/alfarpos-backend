@@ -1,10 +1,10 @@
 package dependency_injection
 
 import (
-	"../controller"
-	"../repository"
-	"../service"
-	"../util"
+	"github.com/almanalfaruq/alfarpos-backend/controller"
+	"github.com/almanalfaruq/alfarpos-backend/repository"
+	"github.com/almanalfaruq/alfarpos-backend/service"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
 func InjectUserController(databaseConnection *util.DatabaseConnection, config util.Config) controller.UserController {
@@ -47,6 +47,36 @@ func InjectProductController(databaseConnection *util.DatabaseConnection, config
 	return productController
 }
 
+func InjectOrderController(databaseConnection *util.DatabaseConnection, config util.Config) controller.OrderController {
+	orderRepository := &repository.OrderRepository{
+		IDatabaseConnection: databaseConnection,
+	}
+	orderDetailRepository := &repository.OrderDetailRepository{
+		IDatabaseConnection: databaseConnection,
+	}
+	paymentRepository := &repository.PaymentRepository{
+		IDatabaseConnection: databaseConnection,
+	}
+	customerRepository := &repository.CustomerRepository{
+		IDatabaseConnection: databaseConnection,
+	}
+	productRepository := &repository.ProductRepository{
+		IDatabaseConnection: databaseConnection,
+	}
+	orderService := &service.OrderService{
+		Order:       orderRepository,
+		OrderDetail: orderDetailRepository,
+		Payment:     paymentRepository,
+		Customer:    customerRepository,
+		Product:     productRepository,
+	}
+	orderController := controller.OrderController{
+		IOrderService: orderService,
+		Config:        config,
+	}
+	return orderController
+}
+
 func InjectCategoryController(databaseConnection *util.DatabaseConnection, config util.Config) controller.CategoryController {
 	categoryRepository := &repository.CategoryRepository{
 		IDatabaseConnection: databaseConnection,
@@ -87,4 +117,18 @@ func InjectPaymentController(databaseConnection *util.DatabaseConnection, config
 		Config:          config,
 	}
 	return paymentController
+}
+
+func InjectPrintController(databaseConnection *util.DatabaseConnection, config util.Config) controller.PrintController {
+	orderRepository := &repository.OrderRepository{
+		IDatabaseConnection: databaseConnection,
+	}
+	printService := &service.PrintService{
+		Order:  orderRepository,
+		Config: config,
+	}
+	printController := controller.PrintController{
+		IPrintService: printService,
+	}
+	return printController
 }

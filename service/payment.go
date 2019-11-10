@@ -5,8 +5,8 @@ import (
 	"errors"
 	"strings"
 
-	"../model"
-	"../repository"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/repository"
 )
 
 type PaymentService struct {

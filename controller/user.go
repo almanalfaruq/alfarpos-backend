@@ -7,8 +7,8 @@ import (
 
 	"github.com/kataras/golog"
 
-	"../model/response"
-	"../service"
+	"github.com/almanalfaruq/alfarpos-backend/model/response"
+	"github.com/almanalfaruq/alfarpos-backend/service"
 )
 
 type UserController struct {

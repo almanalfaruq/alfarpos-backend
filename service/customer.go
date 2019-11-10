@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"../model"
-	"../repository"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/repository"
 )
 
 type CustomerService struct {

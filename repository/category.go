@@ -3,8 +3,8 @@ package repository
 import (
 	"fmt"
 
-	"../model"
-	"../util"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
 type CategoryRepository struct {

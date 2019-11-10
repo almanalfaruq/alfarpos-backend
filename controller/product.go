@@ -9,10 +9,10 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"../model"
-	"../model/response"
-	"../service"
-	"../util"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/model/response"
+	"github.com/almanalfaruq/alfarpos-backend/service"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/kataras/golog"
 )
 
@@ -93,6 +93,23 @@ func (controller *ProductController) GetProductsHandler(w http.ResponseWriter, r
 					Code:    http.StatusNotFound,
 					Data:    err.Error(),
 					Message: "Cannot get products by category",
+				}
+				w.WriteHeader(http.StatusNotFound)
+				err = json.NewEncoder(w).Encode(responseMapper)
+				if err != nil {
+					golog.Error("Cannot encode json")
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+				return
+			}
+		} else if searchBy == "code" {
+			products, err = controller.GetProductsByCode(query)
+			if err != nil {
+				golog.Error(err)
+				responseMapper = response.ResponseMapper{
+					Code:    http.StatusNotFound,
+					Data:    err.Error(),
+					Message: "Cannot get products by code",
 				}
 				w.WriteHeader(http.StatusNotFound)
 				err = json.NewEncoder(w).Encode(responseMapper)
@@ -271,6 +288,9 @@ func (controller *ProductController) NewProductHandler(w http.ResponseWriter, r 
 }
 
 func (controller *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	vars := mux.Vars(r)
 	sheetName := vars["sheetName"]
 	golog.Infof("POST - Product: UploadExcelProductHandler (/products/upload_excel/%v)", sheetName)

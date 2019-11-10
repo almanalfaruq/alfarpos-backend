@@ -3,13 +3,13 @@ package service
 import (
 	"encoding/json"
 
-	"../model"
-	"../repository"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/repository"
 )
 
 type StockService struct {
-	product repository.IProductRepository
-	stock   repository.IStockRepository
+	Product repository.IProductRepository
+	Stock   repository.IStockRepository
 }
 
 type IStockService interface {
@@ -24,8 +24,8 @@ func (service *StockService) GetByProduct(stockData string) (model.Stock, error)
 	if err != nil {
 		return stock, err
 	}
-	product := service.product.FindById(stock.ProductID)
-	stock = service.stock.FindByProduct(product)
+	product := service.Product.FindById(stock.ProductID)
+	stock = service.Stock.FindByProduct(product)
 	return stock, nil
 }
 
@@ -36,6 +36,6 @@ func (service *StockService) UpdateStock(stockData string) (model.Stock, error) 
 	if err != nil {
 		return stock, err
 	}
-	stock = service.stock.Update(stock)
+	stock = service.Stock.Update(stock)
 	return stock, nil
 }

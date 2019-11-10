@@ -3,7 +3,7 @@ package model_test
 import (
 	"testing"
 
-	. "../model"
+	. "github.com/almanalfaruq/alfarpos-backend/model"
 	"golang.org/x/crypto/bcrypt"
 )
 

@@ -1,8 +1,8 @@
 package routes
 
 import (
-	. "../dependency_injection"
-	"../util"
+	. "github.com/almanalfaruq/alfarpos-backend/dependency_injection"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/gorilla/mux"
 )
 
@@ -41,5 +41,12 @@ func GetAllRoutes(database *util.DatabaseConnection, config util.Config) *mux.Ro
 	routes.HandleFunc("/payments", paymentController.NewPaymentHandler).Methods("POST")
 	routes.HandleFunc("/payments/{id}", paymentController.UpdatePaymentHandler).Methods("PUT")
 	routes.HandleFunc("/payments/{id}", paymentController.DeletePaymentHandler).Methods("DELETE")
+
+	orderController := InjectOrderController(database, config)
+	routes.HandleFunc("/orders", orderController.GetAllOrderHandler).Methods("GET")
+	routes.HandleFunc("/orders", orderController.NewOrderHandler).Methods("POST")
+
+	printController := InjectPrintController(database, config)
+	routes.HandleFunc("/print/order/{invoice}", printController.OrderByInvoiceToPdfHandler).Methods("GET")
 	return routes
 }

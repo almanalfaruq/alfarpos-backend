@@ -12,4 +12,5 @@ type Product struct {
 	UnitID     int      `json:"unit_id"`
 	Unit       Unit     `gorm:"foreignkey:UnitID" json:"unit"`
 	ImageUrl   string   `json:"image_url"`
+	Discount   float32  `gorm:"default:0.00" json:"discount"`
 }

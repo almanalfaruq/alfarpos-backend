@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"../model"
-	"../util"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
 type OrderDetailRepository struct {
@@ -20,7 +20,7 @@ type IOrderDetailRepository interface {
 func (repo *OrderDetailRepository) FindByOrder(order model.Order) []model.OrderDetail {
 	var orderDetails []model.OrderDetail
 	db := repo.GetDb()
-	db.Model(&order).Related(&orderDetails)
+	db.Set("gorm:auto_preload", true).Model(&order).Related(&orderDetails)
 	return orderDetails
 }
 
@@ -36,7 +36,7 @@ func (repo *OrderDetailRepository) New(orderDetail model.OrderDetail) model.Orde
 func (repo *OrderDetailRepository) Update(orderDetail model.OrderDetail) model.OrderDetail {
 	var oldOrderDetail model.OrderDetail
 	db := repo.GetDb()
-	db.Where("id = ?", orderDetail.ID).First(&oldOrderDetail)
+	db.Set("gorm:auto_preload", true).Where("id = ?", orderDetail.ID).First(&oldOrderDetail)
 	oldOrderDetail = orderDetail
 	db.Save(&oldOrderDetail)
 	return orderDetail
@@ -45,7 +45,7 @@ func (repo *OrderDetailRepository) Update(orderDetail model.OrderDetail) model.O
 func (repo *OrderDetailRepository) Delete(id int) model.OrderDetail {
 	var orderDetail model.OrderDetail
 	db := repo.GetDb()
-	db.Where("id = ?", id).First(&orderDetail)
+	db.Set("gorm:auto_preload", true).Where("id = ?", id).First(&orderDetail)
 	db.Delete(&orderDetail)
 	return orderDetail
 }

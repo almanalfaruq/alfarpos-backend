@@ -3,7 +3,7 @@ package util
 import (
 	"fmt"
 
-	"../model"
+	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/jinzhu/gorm"
 	"github.com/kataras/golog"
 )

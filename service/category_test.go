@@ -3,10 +3,10 @@ package service_test
 import (
 	"testing"
 
-	"../model"
-	. "../service"
-	"../test/mocks"
-	"../test/resources"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	. "github.com/almanalfaruq/alfarpos-backend/service"
+	"github.com/almanalfaruq/alfarpos-backend/test/mocks"
+	"github.com/almanalfaruq/alfarpos-backend/test/resources"
 	"github.com/stretchr/testify/assert"
 )
 

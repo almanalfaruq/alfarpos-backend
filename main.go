@@ -3,8 +3,10 @@ package main
 import (
 	"net/http"
 
-	"./routes"
-	"./util"
+	"github.com/rs/cors"
+
+	"github.com/almanalfaruq/alfarpos-backend/routes"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/kataras/golog"
@@ -42,8 +44,9 @@ func initMigration() {
 func initRouter() {
 	routes := routes.GetAllRoutes(&databaseConnection, config)
 	http.Handle("/", routes)
+	handler := cors.Default().Handler(routes)
 	golog.Info("Server listening at http://localhost:8080")
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8080", handler)
 	if err != nil {
 		golog.Fatal(err)
 		panic(err)

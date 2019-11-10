@@ -1,7 +1,7 @@
 package response
 
 import (
-	"../../model"
+	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/dgrijalva/jwt-go"
 )
 

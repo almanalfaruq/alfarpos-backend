@@ -8,10 +8,10 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 
-	"../model"
-	"../model/response"
-	"../repository"
-	"../util"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/model/response"
+	"github.com/almanalfaruq/alfarpos-backend/repository"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
 type UserService struct {

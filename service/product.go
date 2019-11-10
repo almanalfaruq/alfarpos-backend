@@ -12,8 +12,8 @@ import (
 
 	"github.com/360EntSecGroup-Skylar/excelize"
 
-	"../model"
-	"../repository"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/repository"
 )
 
 type ProductService struct {
@@ -27,6 +27,7 @@ type IProductService interface {
 	GetAllProduct() ([]model.Product, error)
 	GetOneProduct(id int) (model.Product, error)
 	GetOneProductByCode(code string) (model.Product, error)
+	GetProductsByCode(productCode string) ([]model.Product, error)
 	GetProductsByName(productName string) ([]model.Product, error)
 	GetProductsByCategoryName(categoryName string) ([]model.Product, error)
 	GetProductsByUnitName(unitName string) ([]model.Product, error)
@@ -49,11 +50,19 @@ func (service *ProductService) GetOneProduct(id int) (model.Product, error) {
 }
 
 func (service *ProductService) GetOneProductByCode(code string) (model.Product, error) {
-	product := service.Product.FindByCode(code)
+	product := service.Product.FindByCode(code)[0]
 	if product.ID == 0 {
 		return product, errors.New("Product not found")
 	}
 	return product, nil
+}
+
+func (service *ProductService) GetProductsByCode(productCode string) ([]model.Product, error) {
+	products := service.Product.FindByCode(productCode)
+	if len(products) == 0 {
+		return products, errors.New("Products not found")
+	}
+	return products, nil
 }
 
 func (service *ProductService) GetProductsByName(productName string) ([]model.Product, error) {
@@ -142,19 +151,25 @@ func (service *ProductService) NewProductUsingExcel(sheetName string, excelFile 
 				Name: unitName,
 			},
 		}
-		category := service.Category.FindByName(product.Category.Name)[0]
-		if category.ID == 0 {
+		categories := service.Category.FindByName(product.Category.Name)
+		var category model.Category
+		if len(categories) == 0 {
 			category = model.Category{Name: product.Category.Name}
 			category = service.Category.New(category)
+		} else {
+			category = categories[0]
 		}
 		product.Category.ID = category.ID
-		unit := service.Unit.FindByName(product.Unit.Name)[0]
-		if unit.ID == 0 {
+		units := service.Unit.FindByName(product.Unit.Name)
+		var unit model.Unit
+		if len(units) == 0 {
 			unit = model.Unit{Name: product.Unit.Name}
 			unit = service.Unit.New(unit)
+		} else {
+			unit = units[0]
 		}
 		product.Unit.ID = unit.ID
-		oldProduct := service.Product.FindByCode(product.Code)
+		oldProduct := service.Product.FindByCode(product.Code)[0]
 		if oldProduct.ID == 0 {
 			product = service.Product.New(product)
 			golog.Infof("%#v created!", product)

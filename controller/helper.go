@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"../model"
-	"../model/response"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/model/response"
 	jwt "github.com/dgrijalva/jwt-go"
 )
 

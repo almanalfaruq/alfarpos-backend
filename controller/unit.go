@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"../model"
-	"../model/response"
-	"../service"
-	"../util"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/model/response"
+	"github.com/almanalfaruq/alfarpos-backend/service"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 )
