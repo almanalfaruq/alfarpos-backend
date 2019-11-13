@@ -41,7 +41,7 @@ func (repo *ProductRepository) FindById(id int) model.Product {
 func (repo *ProductRepository) FindByCode(code string) []model.Product {
 	var products []model.Product
 	db := repo.GetDb()
-	db.Set("gorm:auto_preload", true).Where("code LIKE ?", fmt.Sprintf("%%%s%%", code)).Find(&products)
+	db.Set("gorm:auto_preload", true).Where("LOWER(code) LIKE ?", fmt.Sprintf("%%%s%%", code)).Find(&products)
 	return products
 }
 

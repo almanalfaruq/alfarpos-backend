@@ -36,5 +36,5 @@ func (mock *CategoryRepository) Update(category model.Category) model.Category {
 
 func (mock *CategoryRepository) Delete(id int) (model.Category, error) {
 	args := mock.Called(id)
-	return args.Get(0).(model.Category), args.Get(1).(error)
+	return args.Get(0).(model.Category), args.Error(1)
 }

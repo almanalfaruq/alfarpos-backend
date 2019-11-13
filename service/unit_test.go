@@ -45,8 +45,9 @@ func TestGetUnitById(t *testing.T) {
 
 		actualResult, err := unitService.GetOneUnit(5)
 
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
+		assert.NotNil(t, err)
+		assert.Equal(t, err.Error(), "Unit not found")
+		assert.Empty(t, actualResult)
 		assert.Equal(t, expectedResult, actualResult)
 	})
 }
@@ -169,7 +170,7 @@ func TestUpdateUnit(t *testing.T) {
 func TestDeleteUnit(t *testing.T) {
 	unitRepository := new(mocks.UnitRepository)
 
-	unitRepository.On("Delete", 4).Return(resources.Unit4)
+	unitRepository.On("Delete", 4).Return(resources.Unit4, nil)
 
 	unitService := UnitService{
 		IUnitRepository: unitRepository,

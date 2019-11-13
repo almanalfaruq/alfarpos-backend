@@ -45,8 +45,9 @@ func TestGetCategoryById(t *testing.T) {
 
 		actualResult, err := categoryService.GetOneCategory(5)
 
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
+		assert.NotNil(t, err)
+		assert.Equal(t, err.Error(), "Category not found")
+		assert.Empty(t, actualResult)
 		assert.Equal(t, expectedResult, actualResult)
 	})
 }
@@ -169,7 +170,7 @@ func TestUpdateCategory(t *testing.T) {
 func TestDeleteCategory(t *testing.T) {
 	categoryRepository := new(mocks.CategoryRepository)
 
-	categoryRepository.On("Delete", 4).Return(resources.Category4)
+	categoryRepository.On("Delete", 4).Return(resources.Category4, nil)
 
 	categoryService := CategoryService{
 		ICategoryRepository: categoryRepository,

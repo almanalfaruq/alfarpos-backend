@@ -36,5 +36,5 @@ func (mock *PaymentRepository) Update(payment model.Payment) model.Payment {
 
 func (mock *PaymentRepository) Delete(id int) (model.Payment, error) {
 	args := mock.Called(id)
-	return args.Get(0).(model.Payment), args.Get(1).(error)
+	return args.Get(0).(model.Payment), args.Error(1)
 }

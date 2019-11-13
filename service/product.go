@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"mime/multipart"
 	"strconv"
 	"strings"
@@ -50,10 +51,12 @@ func (service *ProductService) GetOneProduct(id int) (model.Product, error) {
 }
 
 func (service *ProductService) GetOneProductByCode(code string) (model.Product, error) {
-	product := service.Product.FindByCode(code)[0]
-	if product.ID == 0 {
+	var product model.Product
+	products := service.Product.FindByCode(code)
+	if len(products) == 0 {
 		return product, errors.New("Product not found")
 	}
+	product = products[0]
 	return product, nil
 }
 
@@ -109,7 +112,7 @@ func (service *ProductService) NewProduct(productData string) (model.Product, er
 	return product, nil
 }
 
-func (service *ProductService) NewProductUsingExcel(sheetName string, excelFile multipart.File) error {
+func (service *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Reader) error {
 	golog.Info("Starting excel import...")
 	excel, err := excelize.OpenReader(excelFile)
 	if err != nil {
@@ -169,12 +172,12 @@ func (service *ProductService) NewProductUsingExcel(sheetName string, excelFile 
 			unit = units[0]
 		}
 		product.Unit.ID = unit.ID
-		oldProduct := service.Product.FindByCode(product.Code)[0]
-		if oldProduct.ID == 0 {
+		products := service.Product.FindByCode(product.Code)
+		if len(products) == 0 {
 			product = service.Product.New(product)
 			golog.Infof("%#v created!", product)
 		} else {
-			product.ID = oldProduct.ID
+			product.ID = products[0].ID
 			product = service.Product.Update(product)
 			golog.Infof("%#v updated!", product)
 		}

@@ -45,8 +45,9 @@ func TestGetPaymentById(t *testing.T) {
 
 		actualResult, err := paymentService.GetOnePayment(5)
 
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
+		assert.NotNil(t, err)
+		assert.Equal(t, err.Error(), "Payment not found")
+		assert.Empty(t, actualResult)
 		assert.Equal(t, expectedResult, actualResult)
 	})
 }
@@ -169,7 +170,7 @@ func TestUpdatePayment(t *testing.T) {
 func TestDeletePayment(t *testing.T) {
 	paymentRepository := new(mocks.PaymentRepository)
 
-	paymentRepository.On("Delete", 4).Return(resources.Payment4)
+	paymentRepository.On("Delete", 4).Return(resources.Payment4, nil)
 
 	paymentService := PaymentService{
 		IPaymentRepository: paymentRepository,
