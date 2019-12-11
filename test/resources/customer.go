@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"../../model"
+	"github.com/almanalfaruq/alfarpos-backend/model"
 )
 
 var Customer1 = model.Customer{

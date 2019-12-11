@@ -3,10 +3,10 @@ package service_test
 import (
 	"testing"
 
-	"../model"
-	. "../service"
-	"../test/mocks"
-	"../test/resources"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	. "github.com/almanalfaruq/alfarpos-backend/service"
+	"github.com/almanalfaruq/alfarpos-backend/test/mocks"
+	"github.com/almanalfaruq/alfarpos-backend/test/resources"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,8 +45,9 @@ func TestGetCategoryById(t *testing.T) {
 
 		actualResult, err := categoryService.GetOneCategory(5)
 
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
+		assert.NotNil(t, err)
+		assert.Equal(t, err.Error(), "Category not found")
+		assert.Empty(t, actualResult)
 		assert.Equal(t, expectedResult, actualResult)
 	})
 }
@@ -62,8 +63,9 @@ func TestGetAllCategory(t *testing.T) {
 
 	expectedResult := resources.Categories
 
-	actualResult := categoryService.GetAllCategory()
+	actualResult, err := categoryService.GetAllCategory()
 
+	assert.Nil(t, err)
 	assert.NotNil(t, actualResult)
 	assert.NotEmpty(t, actualResult)
 	assert.Equal(t, expectedResult[0].ID, actualResult[0].ID)
@@ -168,7 +170,7 @@ func TestUpdateCategory(t *testing.T) {
 func TestDeleteCategory(t *testing.T) {
 	categoryRepository := new(mocks.CategoryRepository)
 
-	categoryRepository.On("Delete", 4).Return(resources.Category4)
+	categoryRepository.On("Delete", 4).Return(resources.Category4, nil)
 
 	categoryService := CategoryService{
 		ICategoryRepository: categoryRepository,

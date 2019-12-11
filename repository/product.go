@@ -3,8 +3,8 @@ package repository
 import (
 	"fmt"
 
-	"../model"
-	"../util"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
 type ProductRepository struct {
@@ -14,47 +14,55 @@ type ProductRepository struct {
 type IProductRepository interface {
 	FindAll() []model.Product
 	FindById(id int) model.Product
+	FindByCode(code string) []model.Product
 	FindByName(name string) []model.Product
 	FindByCategoryName(name string) []model.Product
 	FindByUnitName(name string) []model.Product
 	New(product model.Product) model.Product
 	Update(product model.Product) model.Product
-	Delete(id int) model.Product
+	Delete(id int) (model.Product, error)
 	DeleteAll() int
 }
 
 func (repo *ProductRepository) FindAll() []model.Product {
 	var categories []model.Product
 	db := repo.GetDb()
-	db.Find(&categories)
+	db.Set("gorm:auto_preload", true).Find(&categories)
 	return categories
 }
 
 func (repo *ProductRepository) FindById(id int) model.Product {
 	var product model.Product
 	db := repo.GetDb()
-	db.Where("id = ?", id).First(&product)
+	db.Set("gorm:auto_preload", true).Where("id = ?", id).First(&product)
 	return product
+}
+
+func (repo *ProductRepository) FindByCode(code string) []model.Product {
+	var products []model.Product
+	db := repo.GetDb()
+	db.Set("gorm:auto_preload", true).Where("LOWER(code) LIKE ?", fmt.Sprintf("%%%s%%", code)).Find(&products)
+	return products
 }
 
 func (repo *ProductRepository) FindByName(name string) []model.Product {
 	var products []model.Product
 	db := repo.GetDb()
-	db.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&products)
+	db.Set("gorm:auto_preload", true).Where("LOWER(name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&products)
 	return products
 }
 
 func (repo *ProductRepository) FindByCategoryName(name string) []model.Product {
 	var products []model.Product
 	db := repo.GetDb()
-	db.Joins("JOIN categories ON categories.ID = products.category_id").Where("categories.name = ?", name).Find(&products)
+	db.Set("gorm:auto_preload", true).Joins("JOIN categories ON categories.id = products.category_id").Where("LOWER(categories.name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&products)
 	return products
 }
 
 func (repo *ProductRepository) FindByUnitName(name string) []model.Product {
 	var products []model.Product
 	db := repo.GetDb()
-	db.Joins("JOIN units ON units.ID = products.unit_id").Where("units.name = ?", name).Find(&products)
+	db.Set("gorm:auto_preload", true).Joins("JOIN units ON units.id = products.unit_id").Where("LOWER(units.name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&products)
 	return products
 }
 
@@ -64,6 +72,7 @@ func (repo *ProductRepository) New(product model.Product) model.Product {
 	if isNotExist {
 		db.Create(&product)
 	}
+	db.Set("gorm:auto_preload", true).Where("id = ?", product.ID).First(&product)
 	return product
 }
 
@@ -73,15 +82,16 @@ func (repo *ProductRepository) Update(product model.Product) model.Product {
 	db.Where("id = ?", product.ID).First(&oldProduct)
 	oldProduct = product
 	db.Save(&oldProduct)
+	db.Set("gorm:auto_preload", true).Where("id = ?", product.ID).First(&product)
 	return product
 }
 
-func (repo *ProductRepository) Delete(id int) model.Product {
+func (repo *ProductRepository) Delete(id int) (model.Product, error) {
 	var product model.Product
 	db := repo.GetDb()
 	db.Where("id = ?", id).First(&product)
-	db.Delete(&product)
-	return product
+	err := db.Delete(&product).Error
+	return product, err
 }
 
 func (repo *ProductRepository) DeleteAll() int {

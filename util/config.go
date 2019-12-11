@@ -7,8 +7,10 @@ import (
 )
 
 type Config struct {
-	Env      string   `yaml:"env"`
-	Database Database `yaml:"database"`
+	Env         string      `yaml:"env"`
+	SecretKey   string      `yaml:"secret-key"`
+	Database    Database    `yaml:"database"`
+	ShopProfile ShopProfile `yaml:"shop-profile"`
 }
 
 type Database struct {
@@ -18,6 +20,14 @@ type Database struct {
 	Password   string `yaml:"password"`
 	DBName     string `yaml:"dbname"`
 	DBTestName string `yaml:"dbname-test"`
+}
+
+type ShopProfile struct {
+	Name        string `yaml:"name"`
+	Description string `yaml:"description"`
+	Address     string `yaml:"address"`
+	Phone       string `yaml:"phone"`
+	NPWP        string `yaml:"npwp"`
 }
 
 type IConfig interface {

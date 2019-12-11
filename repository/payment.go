@@ -1,8 +1,10 @@
 package repository
 
 import (
-	"../model"
-	"../util"
+	"fmt"
+
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
 type PaymentRepository struct {
@@ -12,9 +14,10 @@ type PaymentRepository struct {
 type IPaymentRepository interface {
 	FindAll() []model.Payment
 	FindById(id int) model.Payment
+	FindByName(name string) []model.Payment
 	New(payment model.Payment) model.Payment
 	Update(payment model.Payment) model.Payment
-	Delete(id int) model.Payment
+	Delete(id int) (model.Payment, error)
 }
 
 func (repo *PaymentRepository) FindAll() []model.Payment {
@@ -29,6 +32,13 @@ func (repo *PaymentRepository) FindById(id int) model.Payment {
 	db := repo.GetDb()
 	db.Where("id = ?", id).First(&payment)
 	return payment
+}
+
+func (repo *PaymentRepository) FindByName(name string) []model.Payment {
+	var payments []model.Payment
+	db := repo.GetDb()
+	db.Where("LOWER(name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&payments)
+	return payments
 }
 
 func (repo *PaymentRepository) New(payment model.Payment) model.Payment {
@@ -49,10 +59,10 @@ func (repo *PaymentRepository) Update(payment model.Payment) model.Payment {
 	return payment
 }
 
-func (repo *PaymentRepository) Delete(id int) model.Payment {
+func (repo *PaymentRepository) Delete(id int) (model.Payment, error) {
 	var payment model.Payment
 	db := repo.GetDb()
 	db.Where("id = ?", id).First(&payment)
-	db.Delete(&payment)
-	return payment
+	err := db.Delete(&payment).Error
+	return payment, err
 }

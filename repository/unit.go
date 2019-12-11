@@ -1,8 +1,10 @@
 package repository
 
 import (
-	"../model"
-	"../util"
+	"fmt"
+
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
 type UnitRepository struct {
@@ -12,10 +14,10 @@ type UnitRepository struct {
 type IUnitRepository interface {
 	FindAll() []model.Unit
 	FindById(id int) model.Unit
-	FindByName(name string) model.Unit
+	FindByName(name string) []model.Unit
 	New(unit model.Unit) model.Unit
 	Update(unit model.Unit) model.Unit
-	Delete(id int) model.Unit
+	Delete(id int) (model.Unit, error)
 }
 
 func (repo *UnitRepository) FindAll() []model.Unit {
@@ -32,11 +34,11 @@ func (repo *UnitRepository) FindById(id int) model.Unit {
 	return unit
 }
 
-func (repo *UnitRepository) FindByName(name string) model.Unit {
-	var unit model.Unit
+func (repo *UnitRepository) FindByName(name string) []model.Unit {
+	var units []model.Unit
 	db := repo.GetDb()
-	db.Where("name = ?", name).First(&unit)
-	return unit
+	db.Where("LOWER(name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&units)
+	return units
 }
 
 func (repo *UnitRepository) New(unit model.Unit) model.Unit {
@@ -57,10 +59,10 @@ func (repo *UnitRepository) Update(unit model.Unit) model.Unit {
 	return unit
 }
 
-func (repo *UnitRepository) Delete(id int) model.Unit {
+func (repo *UnitRepository) Delete(id int) (model.Unit, error) {
 	var unit model.Unit
 	db := repo.GetDb()
 	db.Where("id = ?", id).First(&unit)
-	db.Delete(&unit)
-	return unit
+	err := db.Delete(&unit).Error
+	return unit, err
 }

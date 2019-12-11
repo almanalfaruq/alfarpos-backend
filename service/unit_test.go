@@ -3,10 +3,10 @@ package service_test
 import (
 	"testing"
 
-	"../model"
-	. "../service"
-	"../test/mocks"
-	"../test/resources"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	. "github.com/almanalfaruq/alfarpos-backend/service"
+	"github.com/almanalfaruq/alfarpos-backend/test/mocks"
+	"github.com/almanalfaruq/alfarpos-backend/test/resources"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,8 +45,9 @@ func TestGetUnitById(t *testing.T) {
 
 		actualResult, err := unitService.GetOneUnit(5)
 
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
+		assert.NotNil(t, err)
+		assert.Equal(t, err.Error(), "Unit not found")
+		assert.Empty(t, actualResult)
 		assert.Equal(t, expectedResult, actualResult)
 	})
 }
@@ -62,8 +63,9 @@ func TestGetAllUnit(t *testing.T) {
 
 	expectedResult := resources.Units
 
-	actualResult := unitService.GetAllUnit()
+	actualResult, err := unitService.GetAllUnit()
 
+	assert.Nil(t, err)
 	assert.NotNil(t, actualResult)
 	assert.NotEmpty(t, actualResult)
 	assert.Equal(t, expectedResult[0].ID, actualResult[0].ID)
@@ -168,7 +170,7 @@ func TestUpdateUnit(t *testing.T) {
 func TestDeleteUnit(t *testing.T) {
 	unitRepository := new(mocks.UnitRepository)
 
-	unitRepository.On("Delete", 4).Return(resources.Unit4)
+	unitRepository.On("Delete", 4).Return(resources.Unit4, nil)
 
 	unitService := UnitService{
 		IUnitRepository: unitRepository,

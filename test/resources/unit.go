@@ -1,6 +1,6 @@
 package resources
 
-import "../../model"
+import "github.com/almanalfaruq/alfarpos-backend/model"
 
 var Unit1 = model.Unit{
 	Template: model.Template{ID: 1},

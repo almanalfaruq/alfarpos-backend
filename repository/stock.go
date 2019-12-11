@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"../model"
-	"../util"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
 type StockRepository struct {
@@ -14,21 +14,21 @@ type IStockRepository interface {
 	FindByProduct(product model.Product) model.Stock
 	New(stock model.Stock) model.Stock
 	Update(stock model.Stock) model.Stock
-	Delete(id int) model.Stock
+	Delete(id int) (model.Stock, error)
 	DeleteAll() int
 }
 
 func (repo *StockRepository) FindAll() []model.Stock {
 	var stocks []model.Stock
 	db := repo.GetDb()
-	db.Find(&stocks)
+	db.Set("gorm:auto_preload", true).Find(&stocks)
 	return stocks
 }
 
 func (repo *StockRepository) FindByProduct(product model.Product) model.Stock {
 	var stock model.Stock
 	db := repo.GetDb()
-	db.Model(&product).Related(&stock)
+	db.Set("gorm:auto_preload", true).Model(&product).Related(&stock)
 	return stock
 }
 
@@ -50,12 +50,12 @@ func (repo *StockRepository) Update(stock model.Stock) model.Stock {
 	return stock
 }
 
-func (repo *StockRepository) Delete(id int) model.Stock {
+func (repo *StockRepository) Delete(id int) (model.Stock, error) {
 	var stock model.Stock
 	db := repo.GetDb()
 	db.Where("id = ?", id).First(&stock)
-	db.Delete(&stock)
-	return stock
+	err := db.Delete(&stock).Error
+	return stock, err
 }
 
 func (repo *StockRepository) DeleteAll() int {

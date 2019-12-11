@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	. "../util"
+	. "github.com/almanalfaruq/alfarpos-backend/util"
 )
 
 func TestRead(t *testing.T) {
@@ -20,7 +20,7 @@ func TestRead(t *testing.T) {
 
 	t.Run("Read - Pass", func(t *testing.T) {
 		var actualResult Config
-		err := actualResult.Read("../config.yaml", &actualResult)
+		err := actualResult.Read("github.com/almanalfaruq/alfarpos-backend/config.yaml", &actualResult)
 
 		assert.Nil(t, err)
 		assert.Equal(t, expectedResult, actualResult)
@@ -34,7 +34,7 @@ func TestRead(t *testing.T) {
 
 	t.Run("Read - Fail Wrong Content", func(t *testing.T) {
 		var actualResult Config
-		err := actualResult.Read("../test/resources/config.yaml", &actualResult)
+		err := actualResult.Read("github.com/almanalfaruq/alfarpos-backend/test/resources/config.yaml", &actualResult)
 
 		assert.NotNil(t, err)
 	})

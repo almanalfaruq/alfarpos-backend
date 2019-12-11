@@ -3,10 +3,10 @@ package service_test
 import (
 	"testing"
 
-	"../model"
-	. "../service"
-	"../test/mocks"
-	"../test/resources"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	. "github.com/almanalfaruq/alfarpos-backend/service"
+	"github.com/almanalfaruq/alfarpos-backend/test/mocks"
+	"github.com/almanalfaruq/alfarpos-backend/test/resources"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,8 +45,9 @@ func TestGetPaymentById(t *testing.T) {
 
 		actualResult, err := paymentService.GetOnePayment(5)
 
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
+		assert.NotNil(t, err)
+		assert.Equal(t, err.Error(), "Payment not found")
+		assert.Empty(t, actualResult)
 		assert.Equal(t, expectedResult, actualResult)
 	})
 }
@@ -62,8 +63,9 @@ func TestGetAllPayment(t *testing.T) {
 
 	expectedResult := resources.Payments
 
-	actualResult := paymentService.GetAllPayment()
+	actualResult, err := paymentService.GetAllPayment()
 
+	assert.Nil(t, err)
 	assert.NotNil(t, actualResult)
 	assert.NotEmpty(t, actualResult)
 	assert.Equal(t, expectedResult[0].ID, actualResult[0].ID)
@@ -168,7 +170,7 @@ func TestUpdatePayment(t *testing.T) {
 func TestDeletePayment(t *testing.T) {
 	paymentRepository := new(mocks.PaymentRepository)
 
-	paymentRepository.On("Delete", 4).Return(resources.Payment4)
+	paymentRepository.On("Delete", 4).Return(resources.Payment4, nil)
 
 	paymentService := PaymentService{
 		IPaymentRepository: paymentRepository,

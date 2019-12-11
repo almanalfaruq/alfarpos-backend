@@ -1,8 +1,10 @@
 package repository
 
 import (
-	"../model"
-	"../util"
+	"fmt"
+
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
 type CategoryRepository struct {
@@ -12,10 +14,10 @@ type CategoryRepository struct {
 type ICategoryRepository interface {
 	FindAll() []model.Category
 	FindById(id int) model.Category
-	FindByName(name string) model.Category
+	FindByName(name string) []model.Category
 	New(category model.Category) model.Category
 	Update(category model.Category) model.Category
-	Delete(id int) model.Category
+	Delete(id int) (model.Category, error)
 }
 
 func (repo *CategoryRepository) FindAll() []model.Category {
@@ -32,11 +34,11 @@ func (repo *CategoryRepository) FindById(id int) model.Category {
 	return category
 }
 
-func (repo *CategoryRepository) FindByName(name string) model.Category {
-	var category model.Category
+func (repo *CategoryRepository) FindByName(name string) []model.Category {
+	var categories []model.Category
 	db := repo.GetDb()
-	db.Where("name = ?", name).First(&category)
-	return category
+	db.Where("LOWER(name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&categories)
+	return categories
 }
 
 func (repo *CategoryRepository) New(category model.Category) model.Category {
@@ -57,10 +59,10 @@ func (repo *CategoryRepository) Update(category model.Category) model.Category {
 	return category
 }
 
-func (repo *CategoryRepository) Delete(id int) model.Category {
+func (repo *CategoryRepository) Delete(id int) (model.Category, error) {
 	var category model.Category
 	db := repo.GetDb()
 	db.Where("id = ?", id).First(&category)
-	db.Delete(&category)
-	return category
+	err := db.Delete(&category).Error
+	return category, err
 }

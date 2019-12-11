@@ -2,9 +2,11 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
+	"strings"
 
-	"../model"
-	"../repository"
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/repository"
 )
 
 type PaymentService struct {
@@ -12,19 +14,33 @@ type PaymentService struct {
 }
 
 type IPaymentService interface {
-	GetAllPayment() []model.Payment
+	GetAllPayment() ([]model.Payment, error)
 	GetOnePayment(id int) (model.Payment, error)
+	GetPaymentsByName(name string) ([]model.Payment, error)
 	NewPayment(paymentData string) (model.Payment, error)
 	UpdatePayment(paymentData string) (model.Payment, error)
-	DeletePayment(id int) int
+	DeletePayment(id int) (model.Payment, error)
 }
 
-func (service *PaymentService) GetAllPayment() []model.Payment {
-	return service.FindAll()
+func (service *PaymentService) GetAllPayment() ([]model.Payment, error) {
+	return service.FindAll(), nil
 }
 
 func (service *PaymentService) GetOnePayment(id int) (model.Payment, error) {
-	return service.FindById(id), nil
+	payment := service.FindById(id)
+	if payment.ID == 0 {
+		return payment, errors.New("Payment not found")
+	}
+	return payment, nil
+}
+
+func (service *PaymentService) GetPaymentsByName(name string) ([]model.Payment, error) {
+	name = strings.ToLower(name)
+	payments := service.FindByName(name)
+	if len(payments) == 0 {
+		return payments, errors.New("Payments not found")
+	}
+	return payments, nil
 }
 
 func (service *PaymentService) NewPayment(paymentData string) (model.Payment, error) {
@@ -49,5 +65,5 @@ func (service *PaymentService) UpdatePayment(paymentData string) (model.Payment,
 }
 
 func (service *PaymentService) DeletePayment(id int) (model.Payment, error) {
-	return service.Delete(id), nil
+	return service.Delete(id)
 }
