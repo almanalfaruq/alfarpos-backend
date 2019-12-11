@@ -162,6 +162,7 @@ func (service *ProductService) NewProductUsingExcel(sheetName string, excelFile 
 		} else {
 			category = categories[0]
 		}
+		product.CategoryID = int(category.ID)
 		product.Category.ID = category.ID
 		units := service.Unit.FindByName(product.Unit.Name)
 		var unit model.Unit
@@ -171,6 +172,7 @@ func (service *ProductService) NewProductUsingExcel(sheetName string, excelFile 
 		} else {
 			unit = units[0]
 		}
+		product.UnitID = int(unit.ID)
 		product.Unit.ID = unit.ID
 		products := service.Product.FindByCode(product.Code)
 		if len(products) == 0 {

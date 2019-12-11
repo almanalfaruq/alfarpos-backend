@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"strings"
+	"os"
 	"testing"
+
+	"github.com/almanalfaruq/alfarpos-backend/util"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	. "github.com/almanalfaruq/alfarpos-backend/service"
@@ -421,19 +423,178 @@ func TestProductNewProduct(t *testing.T) {
 
 func TestProductNewProductUsingExcel(t *testing.T) {
 	testTable := []struct {
-		testName           string
-		sheetName          string
-		excelFile          io.Reader
-		categoryFindByName string
-		categoryNew        model.Category
-		unitFindByName     string
-		unitNew            model.Unit
-		productFindByCode  string
-		productNew         model.Product
-		productUpdate      model.Product
-		stockNew           model.Stock
-		expectedResult     error
+		testName string
+		args     func() (string, io.ReadCloser)
+		mock     func() (*ProductService, error)
 	}{
-		{"NewProductUsingExcel - Error", "", strings.NewReader(""), "", model.Category{}, "", model.Unit{}, "", model.Product{}, model.Product{}, model.Stock{}, errors.New("zip: not a valid zip file")},
+		{
+			testName: "Error - Not Valid File",
+			args: func() (string, io.ReadCloser) {
+				file, _ := os.Open("")
+				return "", file
+			},
+			mock: func() (*ProductService, error) {
+				return &ProductService{
+					Product:  nil,
+					Category: nil,
+					Unit:     nil,
+					Stock:    nil,
+				}, errors.New("invalid argument")
+			},
+		},
+		{
+			testName: "Error - Sheet Not Exists",
+			args: func() (string, io.ReadCloser) {
+				file, _ := os.Open("../test/resources/test.xlsx")
+				return "abcde", file
+			},
+			mock: func() (*ProductService, error) {
+				return &ProductService{
+					Product:  nil,
+					Category: nil,
+					Unit:     nil,
+					Stock:    nil,
+				}, errors.New("sheet abcde is not exist")
+			},
+		},
+		{
+			testName: "Success - No Import",
+			args: func() (string, io.ReadCloser) {
+				file, _ := os.Open("../test/resources/test.xlsx")
+				return "", file
+			},
+			mock: func() (*ProductService, error) {
+				return &ProductService{
+					Product:  nil,
+					Category: nil,
+					Unit:     nil,
+					Stock:    nil,
+				}, nil
+			},
+		},
+		{
+			testName: "Success - No Blank Data - New Product",
+			args: func() (string, io.ReadCloser) {
+				file, _ := os.Open("../test/resources/test.xlsx")
+				return "Product1", file
+			},
+			mock: func() (*ProductService, error) {
+				productRepository := new(mocks.ProductRepository)
+				categoryRepository := new(mocks.CategoryRepository)
+				unitRepository := new(mocks.UnitRepository)
+				stockRepository := new(mocks.StockRepository)
+
+				categoryRepository.On("FindByName", "Category1").Return(resources.Categories[:1])
+				unitRepository.On("FindByName", "Unit1").Return(resources.Units[:1])
+				productRepository.On("FindByCode", "Product1").Return([]model.Product{})
+				productStub := resources.Product1
+				productStub.ID = 0
+				productRepository.On("New", productStub).Return(resources.Product1)
+				stockStub := resources.Stock1
+				stockStub.ID = 0
+				stockStub.Quantity = 0
+				stockRepository.On("New", stockStub).Return(resources.Stock1)
+				return &ProductService{
+					Product:  productRepository,
+					Category: categoryRepository,
+					Unit:     unitRepository,
+					Stock:    stockRepository,
+				}, nil
+			},
+		},
+		{
+			testName: "Success - No Blank Data - New Category and Unit | Update Product",
+			args: func() (string, io.ReadCloser) {
+				file, _ := os.Open("../test/resources/test.xlsx")
+				return "Product1", file
+			},
+			mock: func() (*ProductService, error) {
+				productRepository := new(mocks.ProductRepository)
+				categoryRepository := new(mocks.CategoryRepository)
+				unitRepository := new(mocks.UnitRepository)
+				stockRepository := new(mocks.StockRepository)
+
+				categoryRepository.On("FindByName", "Category1").Return([]model.Category{})
+				categoryStub := model.Category{Name: "Category1"}
+				categoryRepository.On("New", categoryStub).Return(resources.Category1)
+				unitRepository.On("FindByName", "Unit1").Return([]model.Unit{})
+				unitStub := model.Unit{Name: "Unit1"}
+				unitRepository.On("New", unitStub).Return(resources.Unit1)
+				productRepository.On("FindByCode", "Product1").Return(resources.Products[:1])
+				productRepository.On("Update", resources.Product1).Return(resources.Product1)
+				stockStub := resources.Stock1
+				stockStub.ID = 0
+				stockStub.Quantity = 0
+				stockRepository.On("New", stockStub).Return(resources.Stock1)
+				return &ProductService{
+					Product:  productRepository,
+					Category: categoryRepository,
+					Unit:     unitRepository,
+					Stock:    stockRepository,
+				}, nil
+			},
+		},
+	}
+
+	for _, tt := range testTable {
+		sheetName, excelFile := tt.args()
+		service, expectedResult := tt.mock()
+		t.Run(tt.testName, func(t *testing.T) {
+			actualResult := service.NewProductUsingExcel(sheetName, excelFile)
+			assert.Equal(t, expectedResult, actualResult)
+		})
+		excelFile.Close()
+	}
+}
+
+func TestProductUpdateProduct(t *testing.T) {
+	productStub := resources.Product1
+	productStub.SellPrice = util.ToInt64(55000)
+
+	productRepository := new(mocks.ProductRepository)
+	productRepository.On("Update", productStub).Return(productStub)
+
+	testTable := []struct {
+		testName string
+		arg      func() string
+		expect   model.Product
+		wantErr  bool
+	}{
+		{
+			testName: "Error - Failed Unmarshal JSON",
+			arg: func() string {
+				return `{product_id: 1}`
+			},
+			expect:  model.Product{},
+			wantErr: true,
+		},
+		{
+			testName: "Success",
+			arg: func() string {
+				jsonByte, _ := json.Marshal(productStub)
+				return string(jsonByte)
+			},
+			expect: productStub,
+		},
+	}
+
+	service := &ProductService{
+		Product:  productRepository,
+		Category: nil,
+		Unit:     nil,
+		Stock:    nil,
+	}
+
+	for _, tt := range testTable {
+		t.Run(tt.testName, func(t *testing.T) {
+			arg := tt.arg()
+			actualResult, err := service.UpdateProduct(arg)
+			if tt.wantErr {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
+			assert.Equal(t, tt.expect, actualResult)
+		})
 	}
 }
