@@ -12,14 +12,6 @@ type DatabaseConnection struct {
 	DB *gorm.DB
 }
 
-type IDatabaseConnection interface {
-	Open(config Config) *gorm.DB
-	GetDb() *gorm.DB
-	MigrateDb()
-	DropDb()
-	Close()
-}
-
 func (databaseConnection *DatabaseConnection) Open(config Config) *gorm.DB {
 	var url string
 	if config.Env == "test" {

@@ -1,190 +1,290 @@
-package service_test
+package service
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
-	. "github.com/almanalfaruq/alfarpos-backend/service"
-	"github.com/almanalfaruq/alfarpos-backend/test/mocks"
-	"github.com/almanalfaruq/alfarpos-backend/test/resources"
-	"github.com/stretchr/testify/assert"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
 )
 
-func TestGetCategoryById(t *testing.T) {
-	t.Run("Get Category By ID - Pass", func(t *testing.T) {
-		categoryRepository := new(mocks.CategoryRepository)
+func TestCategoryService_GetOneCategory(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		categoryRepository.On("FindById", 1).Return(resources.Category1)
-
-		categoryService := CategoryService{
-			ICategoryRepository: categoryRepository,
-		}
-
-		expectedResult := resources.Category1
-
-		actualResult, err := categoryService.GetOneCategory(1)
-
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
-		assert.NotEmpty(t, actualResult)
-		assert.Equal(t, expectedResult.ID, actualResult.ID)
-		assert.Equal(t, expectedResult.Name, actualResult.Name)
-	})
-
-	t.Run("Get Category By ID - Error", func(t *testing.T) {
-		var category model.Category
-		categoryRepository := new(mocks.CategoryRepository)
-
-		categoryRepository.On("FindById", 5).Return(category)
-
-		categoryService := CategoryService{
-			ICategoryRepository: categoryRepository,
-		}
-
-		expectedResult := category
-
-		actualResult, err := categoryService.GetOneCategory(5)
-
-		assert.NotNil(t, err)
-		assert.Equal(t, err.Error(), "Category not found")
-		assert.Empty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-}
-
-func TestGetAllCategory(t *testing.T) {
-	categoryRepository := new(mocks.CategoryRepository)
-
-	categoryRepository.On("FindAll").Return(resources.Categories)
-
-	categoryService := CategoryService{
-		ICategoryRepository: categoryRepository,
+	catRepo := NewMockcategoryRepositoryIface(ctrl)
+	category := CategoryService{
+		category: catRepo,
 	}
-
-	expectedResult := resources.Categories
-
-	actualResult, err := categoryService.GetAllCategory()
-
-	assert.Nil(t, err)
-	assert.NotNil(t, actualResult)
-	assert.NotEmpty(t, actualResult)
-	assert.Equal(t, expectedResult[0].ID, actualResult[0].ID)
-	assert.Equal(t, expectedResult[0].Name, actualResult[0].Name)
-	assert.Equal(t, expectedResult[1].ID, actualResult[1].ID)
-	assert.Equal(t, expectedResult[1].Name, actualResult[1].Name)
-	assert.Equal(t, expectedResult[2].ID, actualResult[2].ID)
-	assert.Equal(t, expectedResult[2].Name, actualResult[2].Name)
-	assert.Equal(t, expectedResult[3].ID, actualResult[3].ID)
-	assert.Equal(t, expectedResult[3].Name, actualResult[3].Name)
-}
-
-func TestNewCategory(t *testing.T) {
-	t.Run("New Category - Success", func(t *testing.T) {
-		categoryRepository := new(mocks.CategoryRepository)
-
-		categoryRepository.On("New", resources.Category2).Return(resources.Category2)
-
-		categoryService := CategoryService{
-			ICategoryRepository: categoryRepository,
-		}
-
-		expectedResult := resources.Category2
-
-		jsonCategory := `{"id": 2, "name": "Category2"}`
-
-		actualResult, err := categoryService.NewCategory(jsonCategory)
-
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
-		assert.NotEmpty(t, actualResult)
-		assert.Equal(t, expectedResult.ID, actualResult.ID)
-		assert.Equal(t, expectedResult.Name, actualResult.Name)
-	})
-
-	t.Run("New Category - Error", func(t *testing.T) {
-		var category model.Category
-		categoryRepository := new(mocks.CategoryRepository)
-
-		categoryRepository.On("New", category).Return(category)
-
-		categoryService := CategoryService{
-			ICategoryRepository: categoryRepository,
-		}
-
-		expectedResult := category
-
-		jsonCategory := `{name: "Category2"}`
-
-		actualResult, err := categoryService.NewCategory(jsonCategory)
-
-		assert.NotNil(t, err)
-		assert.NotNil(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-}
-
-func TestUpdateCategory(t *testing.T) {
-	t.Run("Update Category - Success", func(t *testing.T) {
-		categoryRepository := new(mocks.CategoryRepository)
-
-		categoryRepository.On("Update", resources.Category2Updated).Return(resources.Category2Updated)
-
-		categoryService := CategoryService{
-			ICategoryRepository: categoryRepository,
-		}
-
-		expectedResult := resources.Category2Updated
-
-		jsonCategory := `{"id": 2, "name": "Category2Updated"}`
-
-		actualResult, err := categoryService.UpdateCategory(jsonCategory)
-
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
-		assert.NotEmpty(t, actualResult)
-		assert.Equal(t, expectedResult.ID, actualResult.ID)
-		assert.Equal(t, expectedResult.Name, actualResult.Name)
-	})
-
-	t.Run("Update Category - Error", func(t *testing.T) {
-		var category model.Category
-		categoryRepository := new(mocks.CategoryRepository)
-
-		categoryRepository.On("Update", category).Return(category)
-
-		categoryService := CategoryService{
-			ICategoryRepository: categoryRepository,
-		}
-
-		expectedResult := category
-
-		jsonCategory := `{name: "Category2Updated"}`
-
-		actualResult, err := categoryService.UpdateCategory(jsonCategory)
-
-		assert.NotNil(t, err)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-}
-
-func TestDeleteCategory(t *testing.T) {
-	categoryRepository := new(mocks.CategoryRepository)
-
-	categoryRepository.On("Delete", 4).Return(resources.Category4, nil)
-
-	categoryService := CategoryService{
-		ICategoryRepository: categoryRepository,
+	type args struct {
+		id int64
 	}
+	tests := []struct {
+		name    string
+		mock    func(args args)
+		args    args
+		want    model.Category
+		wantErr bool
+	}{
+		{
+			name: "Success",
+			mock: func(args args) {
+				catRepo.EXPECT().FindById(args.id).Return(model.Category{
+					Template: model.Template{
+						ID: uint(args.id),
+					},
+					Name: "bayi",
+				}, nil)
+			},
+			args: args{
+				id: int64(20),
+			},
+			want: model.Category{
+				Template: model.Template{
+					ID: uint(20),
+				},
+				Name: "bayi",
+			},
+		},
+		{
+			name: "Error-NotFound",
+			mock: func(args args) {
+				catRepo.EXPECT().FindById(args.id).Return(model.Category{
+					Template: model.Template{
+						ID: uint(0),
+					},
+					Name: "bayi",
+				}, nil)
+			},
+			args: args{
+				id: int64(20),
+			},
+			want:    model.Category{},
+			wantErr: true,
+		},
+		{
+			name: "Error-DB",
+			mock: func(args args) {
+				catRepo.EXPECT().FindById(args.id).Return(model.Category{}, fmt.Errorf("error"))
+			},
+			args: args{
+				id: int64(20),
+			},
+			want:    model.Category{},
+			wantErr: true,
+		},
+		{
+			name: "Error-Param",
+			mock: func(args args) {
+			},
+			args: args{
+				id: int64(0),
+			},
+			want:    model.Category{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock(tt.args)
+			got, err := category.GetOneCategory(tt.args.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CategoryService.GetOneCategory() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			require.Equal(t, tt.want, got)
+		})
+	}
+}
 
-	expectedResult := resources.Category4
+func TestCategoryService_GetCategoriesByName(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	id := 4
+	catRepo := NewMockcategoryRepositoryIface(ctrl)
+	category := CategoryService{
+		category: catRepo,
+	}
+	type args struct {
+		name string
+	}
+	tests := []struct {
+		name    string
+		mock    func(name string)
+		args    args
+		want    []model.Category
+		wantErr bool
+	}{
+		{
+			name: "Success",
+			mock: func(name string) {
+				catRepo.EXPECT().FindByName(name).Return([]model.Category{
+					{
 
-	actualResult, err := categoryService.DeleteCategory(id)
+						Template: model.Template{
+							ID: uint(20),
+						},
+						Name: "perkantoran",
+					},
+				})
+			},
+			args: args{
+				name: "kantor",
+			},
+			want: []model.Category{
+				{
 
-	assert.Nil(t, err)
-	assert.NotNil(t, actualResult)
-	assert.NotEmpty(t, actualResult)
-	assert.Equal(t, expectedResult.ID, actualResult.ID)
-	assert.Equal(t, expectedResult.Name, actualResult.Name)
+					Template: model.Template{
+						ID: uint(20),
+					},
+					Name: "perkantoran",
+				},
+			},
+		},
+		{
+			name: "Error",
+			mock: func(name string) {
+				catRepo.EXPECT().FindByName(name).Return([]model.Category{})
+			},
+			args: args{
+				name: "kantor",
+			},
+			want:    []model.Category{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock(tt.args.name)
+			got, err := category.GetCategoriesByName(tt.args.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CategoryService.GetCategoriesByName() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestCategoryService_NewCategory(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	catRepo := NewMockcategoryRepositoryIface(ctrl)
+	category := CategoryService{
+		category: catRepo,
+	}
+	type args struct {
+		name string
+	}
+	tests := []struct {
+		name    string
+		mock    func(args args)
+		args    args
+		want    model.Category
+		wantErr bool
+	}{
+		{
+			name: "Success",
+			mock: func(args args) {
+				catRepo.EXPECT().New(model.Category{
+					Name: args.name,
+				}).Return(model.Category{
+					Template: model.Template{
+						ID: uint(10),
+					},
+					Name: args.name,
+				}, nil)
+			},
+			args: args{
+				name: "alat tulis",
+			},
+			want: model.Category{
+				Template: model.Template{
+					ID: uint(10),
+				},
+				Name: "alat tulis",
+			},
+		},
+		{
+			name: "Error-Param",
+			mock: func(args args) {
+			},
+			args: args{
+				name: "",
+			},
+			want:    model.Category{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock(tt.args)
+			got, err := category.NewCategory(tt.args.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CategoryService.NewCategory() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestCategoryService_DeleteCategory(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	catRepo := NewMockcategoryRepositoryIface(ctrl)
+	category := CategoryService{
+		category: catRepo,
+	}
+	type args struct {
+		id int64
+	}
+	tests := []struct {
+		name    string
+		mock    func(args args)
+		args    args
+		want    model.Category
+		wantErr bool
+	}{
+		{
+			name: "Success",
+			mock: func(args args) {
+				catRepo.EXPECT().Delete(args.id).Return(model.Category{
+					Template: model.Template{
+						ID: uint(args.id),
+					},
+					Name: "alat tulis",
+				}, nil)
+			},
+			args: args{
+				id: int64(10),
+			},
+			want: model.Category{
+				Template: model.Template{
+					ID: uint(10),
+				},
+				Name: "alat tulis",
+			},
+		},
+		{
+			name: "Error-Param",
+			mock: func(args args) {
+			},
+			args: args{
+				id: int64(0),
+			},
+			want:    model.Category{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock(tt.args)
+			got, err := category.DeleteCategory(tt.args.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CategoryService.DeleteCategory() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			require.Equal(t, tt.want, got)
+		})
+	}
 }

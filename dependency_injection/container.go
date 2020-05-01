@@ -7,128 +7,59 @@ import (
 	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
-func InjectUserController(databaseConnection *util.DatabaseConnection, config util.Config) controller.UserController {
-	userRepository := &repository.UserRepository{
-		IDatabaseConnection: databaseConnection,
-	}
-	userService := &service.UserService{
-		User:   userRepository,
-		Config: config,
-	}
-	userController := controller.UserController{
-		IUserService: userService,
-	}
+func InjectUserController(dbConn *util.DatabaseConnection, config util.Config) *controller.UserController {
+	userRepo := repository.NewUserRepo(dbConn)
+	userService := service.NewUserService(config, userRepo)
+	userController := controller.NewUserController(userService)
 	return userController
 }
 
-func InjectProductController(databaseConnection *util.DatabaseConnection, config util.Config) controller.ProductController {
-	productRepository := &repository.ProductRepository{
-		IDatabaseConnection: databaseConnection,
-	}
-	categoryRepository := &repository.CategoryRepository{
-		IDatabaseConnection: databaseConnection,
-	}
-	unitRepository := &repository.UnitRepository{
-		IDatabaseConnection: databaseConnection,
-	}
-	stockRepository := &repository.StockRepository{
-		IDatabaseConnection: databaseConnection,
-	}
-	productService := &service.ProductService{
-		Product:  productRepository,
-		Category: categoryRepository,
-		Unit:     unitRepository,
-		Stock:    stockRepository,
-	}
-	productController := controller.ProductController{
-		IProductService: productService,
-		Config:          config,
-	}
+func InjectProductController(dbConn *util.DatabaseConnection, config util.Config) *controller.ProductController {
+	productRepository := repository.NewProductRepo(dbConn)
+	categoryRepository := repository.NewCategoryRepo(dbConn)
+	unitRepository := repository.NewUnitRepo(dbConn)
+	stockRepository := repository.NewStockRepo(dbConn)
+	productService := service.NewProductService(productRepository, categoryRepository, unitRepository, stockRepository)
+	productController := controller.NewProductController(config, productService)
 	return productController
 }
 
-func InjectOrderController(databaseConnection *util.DatabaseConnection, config util.Config) controller.OrderController {
-	orderRepository := &repository.OrderRepository{
-		IDatabaseConnection: databaseConnection,
-	}
-	orderDetailRepository := &repository.OrderDetailRepository{
-		IDatabaseConnection: databaseConnection,
-	}
-	paymentRepository := &repository.PaymentRepository{
-		IDatabaseConnection: databaseConnection,
-	}
-	customerRepository := &repository.CustomerRepository{
-		IDatabaseConnection: databaseConnection,
-	}
-	productRepository := &repository.ProductRepository{
-		IDatabaseConnection: databaseConnection,
-	}
-	orderService := &service.OrderService{
-		Order:       orderRepository,
-		OrderDetail: orderDetailRepository,
-		Payment:     paymentRepository,
-		Customer:    customerRepository,
-		Product:     productRepository,
-	}
-	orderController := controller.OrderController{
-		IOrderService: orderService,
-		Config:        config,
-	}
+func InjectOrderController(dbConn *util.DatabaseConnection, config util.Config) *controller.OrderController {
+	orderRepository := repository.NewOrderRepo(dbConn)
+	orderDetailRepository := repository.NewOrderDetailRepo(dbConn)
+	paymentRepository := repository.NewPaymentRepo(dbConn)
+	customerRepository := repository.NewCustomerRepo(dbConn)
+	productRepository := repository.NewProductRepo(dbConn)
+	orderService := service.NewOrderService(orderRepository, orderDetailRepository, paymentRepository, customerRepository,
+		productRepository)
+	orderController := controller.NewOrderController(config, orderService)
 	return orderController
 }
 
-func InjectCategoryController(databaseConnection *util.DatabaseConnection, config util.Config) controller.CategoryController {
-	categoryRepository := &repository.CategoryRepository{
-		IDatabaseConnection: databaseConnection,
-	}
-	categoryService := &service.CategoryService{
-		ICategoryRepository: categoryRepository,
-	}
-	categoryController := controller.CategoryController{
-		ICategoryService: categoryService,
-		Config:           config,
-	}
+func InjectCategoryController(dbConn *util.DatabaseConnection, config util.Config) *controller.CategoryController {
+	categoryRepository := repository.NewCategoryRepo(dbConn)
+	categoryService := service.NewCategoryService(categoryRepository)
+	categoryController := controller.NewCategoryController(config, categoryService)
 	return categoryController
 }
 
-func InjectUnitController(databaseConnection *util.DatabaseConnection, config util.Config) controller.UnitController {
-	unitRepository := &repository.UnitRepository{
-		IDatabaseConnection: databaseConnection,
-	}
-	unitService := &service.UnitService{
-		IUnitRepository: unitRepository,
-	}
-	unitController := controller.UnitController{
-		IUnitService: unitService,
-		Config:       config,
-	}
+func InjectUnitController(dbConn *util.DatabaseConnection, config util.Config) *controller.UnitController {
+	unitRepository := repository.NewUnitRepo(dbConn)
+	unitService := service.NewUnitService(unitRepository)
+	unitController := controller.NewUnitController(config, unitService)
 	return unitController
 }
 
-func InjectPaymentController(databaseConnection *util.DatabaseConnection, config util.Config) controller.PaymentController {
-	paymentRepository := &repository.PaymentRepository{
-		IDatabaseConnection: databaseConnection,
-	}
-	paymentService := &service.PaymentService{
-		IPaymentRepository: paymentRepository,
-	}
-	paymentController := controller.PaymentController{
-		IPaymentService: paymentService,
-		Config:          config,
-	}
+func InjectPaymentController(dbConn *util.DatabaseConnection, config util.Config) *controller.PaymentController {
+	paymentRepository := repository.NewPaymentRepo(dbConn)
+	paymentService := service.NewPaymentService(paymentRepository)
+	paymentController := controller.NewPaymentController(config, paymentService)
 	return paymentController
 }
 
-func InjectPrintController(databaseConnection *util.DatabaseConnection, config util.Config) controller.PrintController {
-	orderRepository := &repository.OrderRepository{
-		IDatabaseConnection: databaseConnection,
-	}
-	printService := &service.PrintService{
-		Order:  orderRepository,
-		Config: config,
-	}
-	printController := controller.PrintController{
-		IPrintService: printService,
-	}
+func InjectPrintController(dbConn *util.DatabaseConnection, config util.Config) *controller.PrintController {
+	orderRepository := repository.NewOrderRepo(dbConn)
+	printService := service.NewPrintService(config, orderRepository)
+	printController := controller.NewPrintController(printService)
 	return printController
 }

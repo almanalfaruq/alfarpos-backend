@@ -8,14 +8,19 @@ import (
 	"github.com/kataras/golog"
 
 	"github.com/almanalfaruq/alfarpos-backend/model/response"
-	"github.com/almanalfaruq/alfarpos-backend/service"
 )
 
 type UserController struct {
-	service.IUserService
+	user userServiceIface
 }
 
-func (controller *UserController) RegisterHandler(w http.ResponseWriter, r *http.Request) {
+func NewUserController(userService userServiceIface) *UserController {
+	return &UserController{
+		user: userService,
+	}
+}
+
+func (c *UserController) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -38,7 +43,7 @@ func (controller *UserController) RegisterHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	user, err := controller.NewUser(string(body))
+	user, err := c.user.NewUser(string(body))
 	if err != nil {
 		golog.Error(err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
@@ -69,7 +74,7 @@ func (controller *UserController) RegisterHandler(w http.ResponseWriter, r *http
 	}
 }
 
-func (controller *UserController) LoginHandler(w http.ResponseWriter, r *http.Request) {
+func (c *UserController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -93,7 +98,7 @@ func (controller *UserController) LoginHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	token, err := controller.LoginUser(string(body))
+	token, err := c.user.LoginUser(string(body))
 	if err != nil {
 		golog.Error(err)
 		w.WriteHeader(http.StatusUnauthorized)

@@ -7,17 +7,23 @@ import (
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/almanalfaruq/alfarpos-backend/model/response"
-	"github.com/almanalfaruq/alfarpos-backend/service"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/kataras/golog"
 )
 
 type OrderController struct {
-	service.IOrderService
-	util.Config
+	order orderServiceIface
+	conf  util.Config
 }
 
-func (controller *OrderController) GetAllOrderHandler(w http.ResponseWriter, r *http.Request) {
+func NewOrderController(conf util.Config, orderService orderServiceIface) *OrderController {
+	return &OrderController{
+		conf:  conf,
+		order: orderService,
+	}
+}
+
+func (c *OrderController) GetAllOrderHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -26,7 +32,7 @@ func (controller *OrderController) GetAllOrderHandler(w http.ResponseWriter, r *
 	var responseMapper response.ResponseMapper
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 	if err != nil {
 		golog.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -58,7 +64,7 @@ func (controller *OrderController) GetAllOrderHandler(w http.ResponseWriter, r *
 		return
 	}
 
-	orders, err = controller.GetAllOrder()
+	orders, err = c.order.GetAllOrder()
 	if err != nil {
 		golog.Error(err)
 		responseMapper = response.ResponseMapper{
@@ -87,7 +93,7 @@ func (controller *OrderController) GetAllOrderHandler(w http.ResponseWriter, r *
 	}
 }
 
-func (controller *OrderController) NewOrderHandler(w http.ResponseWriter, r *http.Request) {
+func (c *OrderController) NewOrderHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -96,7 +102,7 @@ func (controller *OrderController) NewOrderHandler(w http.ResponseWriter, r *htt
 	var responseMapper response.ResponseMapper
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 	if err != nil {
 		golog.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -146,7 +152,7 @@ func (controller *OrderController) NewOrderHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	order, err = controller.NewOrder(string(body))
+	order, err = c.order.NewOrder(string(body))
 	if err != nil {
 		golog.Error(err)
 		responseMapper = response.ResponseMapper{

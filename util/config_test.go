@@ -1,26 +1,24 @@
-package util_test
+package util
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	. "github.com/almanalfaruq/alfarpos-backend/util"
 )
 
 func TestRead(t *testing.T) {
 	expectedResult := Config{Env: "test", Database: Database{
 		Host:       "localhost",
 		Port:       5432,
-		Username:   "postgres",
+		Username:   "test",
 		Password:   "",
-		DBName:     "alfarpos",
-		DBTestName: "alfarpos_test",
-	}}
+		DBName:     "testdb",
+		DBTestName: "testdb",
+	}, SecretKey: "secret"}
 
 	t.Run("Read - Pass", func(t *testing.T) {
 		var actualResult Config
-		err := actualResult.Read("github.com/almanalfaruq/alfarpos-backend/config.yaml", &actualResult)
+		err := actualResult.Read("../test/resources/test.yaml", &actualResult)
 
 		assert.Nil(t, err)
 		assert.Equal(t, expectedResult, actualResult)

@@ -1,69 +1,66 @@
 package service
 
 import (
-	"encoding/json"
 	"errors"
 	"strings"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
-	"github.com/almanalfaruq/alfarpos-backend/repository"
 )
 
 type CategoryService struct {
-	repository.ICategoryRepository
+	category categoryRepositoryIface
 }
 
-type ICategoryService interface {
-	GetAllCategory() ([]model.Category, error)
-	GetOneCategory(id int) (model.Category, error)
-	GetCategoriesByName(name string) ([]model.Category, error)
-	NewCategory(categoryData string) (model.Category, error)
-	UpdateCategory(categoryData string) (model.Category, error)
-	DeleteCategory(id int) (model.Category, error)
+func NewCategoryService(categoryRepo categoryRepositoryIface) *CategoryService {
+	return &CategoryService{
+		category: categoryRepo,
+	}
 }
 
 func (service *CategoryService) GetAllCategory() ([]model.Category, error) {
-	return service.FindAll(), nil
+	return service.category.FindAll(), nil
 }
 
-func (service *CategoryService) GetOneCategory(id int) (model.Category, error) {
-	category := service.FindById(id)
+func (service *CategoryService) GetOneCategory(id int64) (model.Category, error) {
+	if id == 0 {
+		return model.Category{}, ErrEmptyParam
+	}
+	category, err := service.category.FindById(id)
+	if err != nil {
+		return model.Category{}, err
+	}
 	if category.ID == 0 {
-		return category, errors.New("Category not found")
+		return model.Category{}, errors.New("Category not found")
 	}
 	return category, nil
 }
 
 func (service *CategoryService) GetCategoriesByName(name string) ([]model.Category, error) {
 	name = strings.ToLower(name)
-	categories := service.FindByName(name)
+	categories := service.category.FindByName(name)
 	if len(categories) == 0 {
 		return categories, errors.New("Categories not found")
 	}
 	return categories, nil
 }
 
-func (service *CategoryService) NewCategory(categoryData string) (model.Category, error) {
-	var category model.Category
-	categoryDataByte := []byte(categoryData)
-	err := json.Unmarshal(categoryDataByte, &category)
-	if err != nil {
-		return category, err
+func (service *CategoryService) NewCategory(name string) (model.Category, error) {
+	if name == "" {
+		return model.Category{}, ErrEmptyParam
 	}
-	return service.New(category), nil
+	category := model.Category{
+		Name: name,
+	}
+	return service.category.New(category)
 }
 
-func (service *CategoryService) UpdateCategory(categoryData string) (model.Category, error) {
-	var category model.Category
-	categoryDataByte := []byte(categoryData)
-	err := json.Unmarshal(categoryDataByte, &category)
-	if err != nil {
-		return category, err
-	}
-	category = service.Update(category)
-	return category, nil
+func (service *CategoryService) UpdateCategory(category model.Category) (model.Category, error) {
+	return service.category.Update(category)
 }
 
-func (service *CategoryService) DeleteCategory(id int) (model.Category, error) {
-	return service.Delete(id)
+func (service *CategoryService) DeleteCategory(id int64) (model.Category, error) {
+	if id == 0 {
+		return model.Category{}, ErrEmptyParam
+	}
+	return service.category.Delete(id)
 }

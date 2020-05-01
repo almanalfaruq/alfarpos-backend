@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
-	"github.com/almanalfaruq/alfarpos-backend/repository"
 )
 
 type OrderDetailService struct {
-	order       repository.IOrderRepository
-	orderDetail repository.IOrderDetailRepository
+	order       orderRepositoryIface
+	orderDetail orderDetailRepositoryIface
 }
 
-type IOrderDetailService interface {
-	GetOrderDetailByOrder(orderDetailData string) ([]model.OrderDetail, error)
-	DeleteOrderDetail(id int) (model.OrderDetail, error)
-	DeleteOrderDetailByOrderId(orderDetailData string) (int, error)
+func NewOrderDetailService(orderRepo orderRepositoryIface, orderDetailRepo orderDetailRepositoryIface) *OrderDetailService {
+	return &OrderDetailService{
+		order:       orderRepo,
+		orderDetail: orderDetailRepo,
+	}
 }
 
 func (service *OrderDetailService) GetOrderDetailByOrder(orderDetailData string) ([]model.OrderDetail, error) {

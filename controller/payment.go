@@ -9,18 +9,24 @@ import (
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/almanalfaruq/alfarpos-backend/model/response"
-	"github.com/almanalfaruq/alfarpos-backend/service"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 )
 
 type PaymentController struct {
-	service.IPaymentService
-	util.Config
+	payment paymentServiceIface
+	conf    util.Config
 }
 
-func (controller *PaymentController) GetPaymentsHandler(w http.ResponseWriter, r *http.Request) {
+func NewPaymentController(conf util.Config, paymentService paymentServiceIface) *PaymentController {
+	return &PaymentController{
+		payment: paymentService,
+		conf:    conf,
+	}
+}
+
+func (c *PaymentController) GetPaymentsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -31,7 +37,7 @@ func (controller *PaymentController) GetPaymentsHandler(w http.ResponseWriter, r
 
 	if query == "" {
 		golog.Info("GET - Payment: GetAllPaymentHandler (/payments)")
-		payments, err = controller.GetAllPayment()
+		payments, err = c.payment.GetAllPayment()
 		if err != nil {
 			golog.Error(err)
 			responseMapper = response.ResponseMapper{
@@ -49,7 +55,7 @@ func (controller *PaymentController) GetPaymentsHandler(w http.ResponseWriter, r
 		}
 	} else {
 		golog.Infof("GET - Product: GetPaymentsByNameHandler (/payments?query=%s)", query)
-		payments, err = controller.GetPaymentsByName(query)
+		payments, err = c.payment.GetPaymentsByName(query)
 		if err != nil {
 			golog.Error(err)
 			responseMapper = response.ResponseMapper{
@@ -80,7 +86,7 @@ func (controller *PaymentController) GetPaymentsHandler(w http.ResponseWriter, r
 	}
 }
 
-func (controller *PaymentController) GetPaymentByIdHandler(w http.ResponseWriter, r *http.Request) {
+func (c *PaymentController) GetPaymentByIdHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -88,7 +94,7 @@ func (controller *PaymentController) GetPaymentByIdHandler(w http.ResponseWriter
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
 	golog.Infof("GET - Product: GetPaymentByIdHandler (/payments/id/%v)", id)
-	payment, err := controller.GetOnePayment(int(id))
+	payment, err := c.payment.GetOnePayment(int(id))
 	if err != nil {
 		golog.Error(err)
 		responseMapper = response.ResponseMapper{
@@ -118,14 +124,14 @@ func (controller *PaymentController) GetPaymentByIdHandler(w http.ResponseWriter
 	}
 }
 
-func (controller *PaymentController) NewPaymentHandler(w http.ResponseWriter, r *http.Request) {
+func (c *PaymentController) NewPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	golog.Info("POST - Payment: NewPaymentHandler (/payments)")
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 
 	if err != nil {
 		golog.Error(err)
@@ -177,7 +183,7 @@ func (controller *PaymentController) NewPaymentHandler(w http.ResponseWriter, r 
 		return
 	}
 
-	payment, err := controller.NewPayment(string(body))
+	payment, err := c.payment.NewPayment(string(body))
 	if err != nil {
 		golog.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -192,13 +198,13 @@ func (controller *PaymentController) NewPaymentHandler(w http.ResponseWriter, r 
 	}
 }
 
-func (controller *PaymentController) UpdatePaymentHandler(w http.ResponseWriter, r *http.Request) {
+func (c *PaymentController) UpdatePaymentHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
 	golog.Infof("PUT - Payment: UpdatePaymentHandler (/payments/%v)", id)
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 
 	if err != nil {
 		golog.Error(err)
@@ -250,7 +256,7 @@ func (controller *PaymentController) UpdatePaymentHandler(w http.ResponseWriter,
 		return
 	}
 
-	payment, err := controller.UpdatePayment(string(body))
+	payment, err := c.payment.UpdatePayment(string(body))
 	if err != nil {
 		golog.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -267,13 +273,13 @@ func (controller *PaymentController) UpdatePaymentHandler(w http.ResponseWriter,
 	}
 }
 
-func (controller *PaymentController) DeletePaymentHandler(w http.ResponseWriter, r *http.Request) {
+func (c *PaymentController) DeletePaymentHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
 	golog.Infof("DELETE - Payment: DeletePaymentHandler (/payments/%v)", id)
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 
 	if err != nil {
 		golog.Error(err)
@@ -307,7 +313,7 @@ func (controller *PaymentController) DeletePaymentHandler(w http.ResponseWriter,
 		return
 	}
 
-	payment, err := controller.DeletePayment(int(id))
+	payment, err := c.payment.DeletePayment(int(id))
 	if err != nil {
 		golog.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -8,22 +8,23 @@ import (
 	"github.com/dustin/go-humanize"
 
 	"github.com/jung-kurt/gofpdf"
-
-	"github.com/almanalfaruq/alfarpos-backend/repository"
 )
 
 type PrintService struct {
-	Order  repository.IOrderRepository
-	Config util.Config
+	order orderRepositoryIface
+	conf  util.Config
 }
 
-type IPrintService interface {
-	OrderByInvoiceToPdf(invoice string) *gofpdf.Fpdf
+func NewPrintService(conf util.Config, orderRepo orderRepositoryIface) *PrintService {
+	return &PrintService{
+		order: orderRepo,
+		conf:  conf,
+	}
 }
 
 func (service *PrintService) OrderByInvoiceToPdf(invoice string) *gofpdf.Fpdf {
 	invoice = strings.ToLower(invoice)
-	Order := service.Order.FindByInvoice(invoice)
+	Order := service.order.FindByInvoice(invoice)
 
 	pdf := gofpdf.NewCustom(&gofpdf.InitType{
 		UnitStr: "mm",
@@ -32,9 +33,9 @@ func (service *PrintService) OrderByInvoiceToPdf(invoice string) *gofpdf.Fpdf {
 	pdf.SetMargins(5, 2, 5)
 	pdf.SetFont("Helvetica", "B", 12)
 	pdf.AddPage()
-	pdf.WriteAligned(0, 35, service.Config.ShopProfile.Name, "C")
+	pdf.WriteAligned(0, 35, service.conf.ShopProfile.Name, "C")
 	pdf.SetFont("Helvetica", "", 10)
-	pdf.WriteAligned(0, 35, service.Config.ShopProfile.Address, "C")
+	pdf.WriteAligned(0, 35, service.conf.ShopProfile.Address, "C")
 	pdf.SetFont("Courier", "", 10)
 	pdf.SetDashPattern([]float64{0.8, 0.8}, 0)
 	textDate := fmt.Sprintf("Tgl.: %02d-%02d-%d", Order.CreatedAt.Day(), Order.CreatedAt.Month(), Order.CreatedAt.Year())

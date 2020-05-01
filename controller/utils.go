@@ -1,16 +1,48 @@
 package controller
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/almanalfaruq/alfarpos-backend/model/response"
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/kataras/golog"
 )
 
-func ParseJwtToUser(authHeader string, secretKey string) (model.User, error) {
+func renderJSONError(w http.ResponseWriter, status int, err error, message string) {
+	golog.Error(err)
+	renderJSON(w, status, err.Error(), message)
+}
+
+func renderJSONSuccess(w http.ResponseWriter, status int, data interface{}, message string) {
+	renderJSON(w, status, data, message)
+}
+
+func renderJSON(w http.ResponseWriter, status int, data interface{}, message string) {
+	responseMapper := parseToResponseMapper(status, data, message)
+	w.WriteHeader(status)
+	err := json.NewEncoder(w).Encode(responseMapper)
+	if err != nil {
+		golog.Error(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func checkUser(user model.User, roles ...model.Role) bool {
+	for _, role := range roles {
+		if user.RoleID == role {
+			return true
+		}
+	}
+	return false
+}
+
+func parseJwtToUser(authHeader string, secretKey string) (model.User, error) {
 	if !strings.Contains(authHeader, "Bearer") {
 		return model.User{}, errors.New("Authorization header is empty")
 	}
@@ -34,7 +66,7 @@ func ParseJwtToUser(authHeader string, secretKey string) (model.User, error) {
 	return claims.User, nil
 }
 
-func ParseToResponseMapper(code int, data interface{}, message string) response.ResponseMapper {
+func parseToResponseMapper(code int, data interface{}, message string) response.ResponseMapper {
 	return response.ResponseMapper{
 		Code:    code,
 		Data:    data,

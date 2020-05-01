@@ -17,3 +17,12 @@ type User struct {
 	Phone    string `json:"phone"`
 	RoleID   Role   `json:"role_id"`
 }
+
+func (u *User) HasRole(roles ...Role) bool {
+	for _, role := range roles {
+		if u.RoleID == role {
+			return true
+		}
+	}
+	return false
+}

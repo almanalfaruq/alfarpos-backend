@@ -11,17 +11,23 @@ import (
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/almanalfaruq/alfarpos-backend/model/response"
-	"github.com/almanalfaruq/alfarpos-backend/service"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/kataras/golog"
 )
 
 type ProductController struct {
-	service.IProductService
-	util.Config
+	product productServiceIface
+	conf    util.Config
 }
 
-func (controller *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Request) {
+func NewProductController(conf util.Config, productService productServiceIface) *ProductController {
+	return &ProductController{
+		conf:    conf,
+		product: productService,
+	}
+}
+
+func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -33,7 +39,7 @@ func (controller *ProductController) GetProductsHandler(w http.ResponseWriter, r
 
 	if query == "" {
 		golog.Info("GET - Product: GetProductsHandler (/products)")
-		products, err = controller.GetAllProduct()
+		products, err = c.product.GetAllProduct()
 		if err != nil {
 			golog.Error(err)
 			responseMapper = response.ResponseMapper{
@@ -52,7 +58,7 @@ func (controller *ProductController) GetProductsHandler(w http.ResponseWriter, r
 	} else {
 		golog.Infof("GET - Product: GetProductsByNameHandler (/products?searchBy=%s&query=%s)", searchBy, query)
 		if searchBy == "" || searchBy == "name" {
-			products, err = controller.GetProductsByName(query)
+			products, err = c.product.GetProductsByName(query)
 			if err != nil {
 				golog.Error(err)
 				responseMapper = response.ResponseMapper{
@@ -69,7 +75,7 @@ func (controller *ProductController) GetProductsHandler(w http.ResponseWriter, r
 				return
 			}
 		} else if searchBy == "unit" {
-			products, err = controller.GetProductsByUnitName(query)
+			products, err = c.product.GetProductsByUnitName(query)
 			if err != nil {
 				golog.Error(err)
 				responseMapper = response.ResponseMapper{
@@ -86,7 +92,7 @@ func (controller *ProductController) GetProductsHandler(w http.ResponseWriter, r
 				return
 			}
 		} else if searchBy == "category" {
-			products, err = controller.GetProductsByCategoryName(query)
+			products, err = c.product.GetProductsByCategoryName(query)
 			if err != nil {
 				golog.Error(err)
 				responseMapper = response.ResponseMapper{
@@ -103,7 +109,7 @@ func (controller *ProductController) GetProductsHandler(w http.ResponseWriter, r
 				return
 			}
 		} else if searchBy == "code" {
-			products, err = controller.GetProductsByCode(query)
+			products, err = c.product.GetProductsByCode(query)
 			if err != nil {
 				golog.Error(err)
 				responseMapper = response.ResponseMapper{
@@ -137,7 +143,7 @@ func (controller *ProductController) GetProductsHandler(w http.ResponseWriter, r
 	}
 }
 
-func (controller *ProductController) GetProductByIdHandler(w http.ResponseWriter, r *http.Request) {
+func (c *ProductController) GetProductByIdHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -145,7 +151,7 @@ func (controller *ProductController) GetProductByIdHandler(w http.ResponseWriter
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
 	golog.Infof("GET - Product: GetProductByIdHandler (/products/id/%v)", id)
-	product, err := controller.GetOneProduct(int(id))
+	product, err := c.product.GetOneProduct(int(id))
 	if err != nil {
 		golog.Error(err)
 		responseMapper = response.ResponseMapper{
@@ -175,7 +181,7 @@ func (controller *ProductController) GetProductByIdHandler(w http.ResponseWriter
 	}
 }
 
-func (controller *ProductController) GetProductByCodeHandler(w http.ResponseWriter, r *http.Request) {
+func (c *ProductController) GetProductByCodeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -183,7 +189,7 @@ func (controller *ProductController) GetProductByCodeHandler(w http.ResponseWrit
 	vars := mux.Vars(r)
 	code := vars["code"]
 	golog.Infof("GET - Product: GetProductByCodeHandler (/products/code/%v)", code)
-	product, err := controller.GetOneProductByCode(code)
+	product, err := c.product.GetOneProductByCode(code)
 	if err != nil {
 		golog.Error(err)
 		responseMapper = response.ResponseMapper{
@@ -213,14 +219,14 @@ func (controller *ProductController) GetProductByCodeHandler(w http.ResponseWrit
 	}
 }
 
-func (controller *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Request) {
+func (c *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	golog.Info("POST - Product: NewProductHandler (/products)")
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 
 	if err != nil {
 		golog.Error(err)
@@ -272,7 +278,7 @@ func (controller *ProductController) NewProductHandler(w http.ResponseWriter, r 
 		return
 	}
 
-	product, err := controller.NewProduct(string(body))
+	product, err := c.product.NewProduct(string(body))
 	if err != nil {
 		golog.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -287,7 +293,7 @@ func (controller *ProductController) NewProductHandler(w http.ResponseWriter, r 
 	}
 }
 
-func (controller *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *http.Request) {
+func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -296,7 +302,7 @@ func (controller *ProductController) UploadExcelProductHandler(w http.ResponseWr
 	golog.Infof("POST - Product: UploadExcelProductHandler (/products/upload_excel/%v)", sheetName)
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 
 	if err != nil {
 		golog.Error(err)
@@ -344,13 +350,13 @@ func (controller *ProductController) UploadExcelProductHandler(w http.ResponseWr
 	}
 	defer file.Close()
 
-	err = controller.NewProductUsingExcel(sheetName, file)
+	err = c.product.NewProductUsingExcel(sheetName, file)
 	if err != nil {
 		golog.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	products, err := controller.GetAllProduct()
+	products, err := c.product.GetAllProduct()
 	if err != nil {
 		golog.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -367,13 +373,13 @@ func (controller *ProductController) UploadExcelProductHandler(w http.ResponseWr
 	}
 }
 
-func (controller *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
+func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
 	golog.Infof("PUT - Product: UpdateProductHandler (/products/%v)", id)
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 
 	if err != nil {
 		golog.Error(err)
@@ -425,7 +431,7 @@ func (controller *ProductController) UpdateProductHandler(w http.ResponseWriter,
 		return
 	}
 
-	product, err := controller.UpdateProduct(string(body))
+	product, err := c.product.UpdateProduct(string(body))
 	if err != nil {
 		golog.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -442,13 +448,13 @@ func (controller *ProductController) UpdateProductHandler(w http.ResponseWriter,
 	}
 }
 
-func (controller *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
+func (c *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
 	golog.Infof("DELETE - Product: DeleteProductHandler (/products/%v)", id)
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 
 	if err != nil {
 		golog.Error(err)
@@ -482,7 +488,7 @@ func (controller *ProductController) DeleteProductHandler(w http.ResponseWriter,
 		return
 	}
 
-	product, err := controller.DeleteProduct(int(id))
+	product, err := c.product.DeleteProduct(int(id))
 	if err != nil {
 		golog.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

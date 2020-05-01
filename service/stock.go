@@ -4,17 +4,18 @@ import (
 	"encoding/json"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
-	"github.com/almanalfaruq/alfarpos-backend/repository"
 )
 
 type StockService struct {
-	Product repository.IProductRepository
-	Stock   repository.IStockRepository
+	product productRepositoryIface
+	stock   stockRepositoryIface
 }
 
-type IStockService interface {
-	GetByProduct(stockData string) (model.Stock, error)
-	UpdateStock(stockData string) (model.Stock, error)
+func NewStockService(productRepo productRepositoryIface, stockRepo stockRepositoryIface) *StockService {
+	return &StockService{
+		product: productRepo,
+		stock:   stockRepo,
+	}
 }
 
 func (service *StockService) GetByProduct(stockData string) (model.Stock, error) {
@@ -24,8 +25,8 @@ func (service *StockService) GetByProduct(stockData string) (model.Stock, error)
 	if err != nil {
 		return stock, err
 	}
-	product := service.Product.FindById(stock.ProductID)
-	stock = service.Stock.FindByProduct(product)
+	product := service.product.FindById(stock.ProductID)
+	stock = service.stock.FindByProduct(product)
 	return stock, nil
 }
 
@@ -36,6 +37,6 @@ func (service *StockService) UpdateStock(stockData string) (model.Stock, error) 
 	if err != nil {
 		return stock, err
 	}
-	stock = service.Stock.Update(stock)
+	stock = service.stock.Update(stock)
 	return stock, nil
 }

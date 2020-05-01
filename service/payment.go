@@ -6,28 +6,24 @@ import (
 	"strings"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
-	"github.com/almanalfaruq/alfarpos-backend/repository"
 )
 
 type PaymentService struct {
-	repository.IPaymentRepository
+	payment paymentRepositoryIface
 }
 
-type IPaymentService interface {
-	GetAllPayment() ([]model.Payment, error)
-	GetOnePayment(id int) (model.Payment, error)
-	GetPaymentsByName(name string) ([]model.Payment, error)
-	NewPayment(paymentData string) (model.Payment, error)
-	UpdatePayment(paymentData string) (model.Payment, error)
-	DeletePayment(id int) (model.Payment, error)
+func NewPaymentService(paymentRepo paymentRepositoryIface) *PaymentService {
+	return &PaymentService{
+		payment: paymentRepo,
+	}
 }
 
 func (service *PaymentService) GetAllPayment() ([]model.Payment, error) {
-	return service.FindAll(), nil
+	return service.payment.FindAll(), nil
 }
 
 func (service *PaymentService) GetOnePayment(id int) (model.Payment, error) {
-	payment := service.FindById(id)
+	payment := service.payment.FindById(id)
 	if payment.ID == 0 {
 		return payment, errors.New("Payment not found")
 	}
@@ -36,7 +32,7 @@ func (service *PaymentService) GetOnePayment(id int) (model.Payment, error) {
 
 func (service *PaymentService) GetPaymentsByName(name string) ([]model.Payment, error) {
 	name = strings.ToLower(name)
-	payments := service.FindByName(name)
+	payments := service.payment.FindByName(name)
 	if len(payments) == 0 {
 		return payments, errors.New("Payments not found")
 	}
@@ -50,7 +46,7 @@ func (service *PaymentService) NewPayment(paymentData string) (model.Payment, er
 	if err != nil {
 		return payment, err
 	}
-	return service.New(payment), nil
+	return service.payment.New(payment), nil
 }
 
 func (service *PaymentService) UpdatePayment(paymentData string) (model.Payment, error) {
@@ -60,10 +56,10 @@ func (service *PaymentService) UpdatePayment(paymentData string) (model.Payment,
 	if err != nil {
 		return payment, err
 	}
-	payment = service.Update(payment)
+	payment = service.payment.Update(payment)
 	return payment, nil
 }
 
 func (service *PaymentService) DeletePayment(id int) (model.Payment, error) {
-	return service.Delete(id)
+	return service.payment.Delete(id)
 }

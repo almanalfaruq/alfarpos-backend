@@ -10,41 +10,38 @@ import (
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/almanalfaruq/alfarpos-backend/model/response"
-	"github.com/almanalfaruq/alfarpos-backend/repository"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
 type UserService struct {
-	User   repository.IUserRepository
-	Config util.Config
+	user userRepositoryIface
+	conf util.Config
 }
 
-type IUserService interface {
-	GetOneUser(id int) (model.User, error)
-	GetAllUser() []model.User
-	LoginUser(userData string) (string, error)
-	NewUser(userData string) (model.User, error)
-	UpdateUser(userData string) (model.User, error)
-	DeleteUser(id int) (model.User, error)
+func NewUserService(conf util.Config, userRepo userRepositoryIface) *UserService {
+	return &UserService{
+		conf: conf,
+		user: userRepo,
+	}
 }
 
 func (service *UserService) GetOneUser(id int) (model.User, error) {
-	return service.User.FindById(id), nil
+	return service.user.FindById(id), nil
 }
 
 func (service *UserService) GetAllUser() []model.User {
-	return service.User.FindAll()
+	return service.user.FindAll()
 }
 
 func (service *UserService) LoginUser(userData string) (string, error) {
 	var user model.User
-	secretKey := []byte(service.Config.SecretKey)
+	secretKey := []byte(service.conf.SecretKey)
 	userDataByte := []byte(userData)
 	err := json.Unmarshal(userDataByte, &user)
 	if err != nil {
 		return "", err
 	}
-	userFromDb := service.User.FindByUsername(user.Username)
+	userFromDb := service.user.FindByUsername(user.Username)
 	err = bcrypt.CompareHashAndPassword([]byte(userFromDb.Password), []byte(user.Password))
 	if err != nil {
 		return "", errors.New("Username or Password mismatch")
@@ -73,7 +70,7 @@ func (service *UserService) NewUser(userData string) (model.User, error) {
 		return model.User{}, err
 	}
 	user.Password = string(encryptedPassword)
-	user, err = service.User.New(user)
+	user, err = service.user.New(user)
 	if err != nil {
 		return model.User{}, err
 	}
@@ -88,10 +85,10 @@ func (service *UserService) UpdateUser(userData string) (model.User, error) {
 	if err != nil {
 		return user, err
 	}
-	user = service.User.Update(user)
+	user = service.user.Update(user)
 	return user, nil
 }
 
 func (service *UserService) DeleteUser(id int) (model.User, error) {
-	return service.User.Delete(id), nil
+	return service.user.Delete(id), nil
 }

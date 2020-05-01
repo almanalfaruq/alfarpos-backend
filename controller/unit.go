@@ -9,18 +9,24 @@ import (
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/almanalfaruq/alfarpos-backend/model/response"
-	"github.com/almanalfaruq/alfarpos-backend/service"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 )
 
 type UnitController struct {
-	service.IUnitService
-	util.Config
+	unit unitServiceIface
+	conf util.Config
 }
 
-func (controller *UnitController) GetUnitsHandler(w http.ResponseWriter, r *http.Request) {
+func NewUnitController(conf util.Config, unitService unitServiceIface) *UnitController {
+	return &UnitController{
+		unit: unitService,
+		conf: conf,
+	}
+}
+
+func (c *UnitController) GetUnitsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -31,7 +37,7 @@ func (controller *UnitController) GetUnitsHandler(w http.ResponseWriter, r *http
 
 	if query == "" {
 		golog.Info("GET - Unit: GetAllUnitHandler (/units)")
-		units, err = controller.GetAllUnit()
+		units, err = c.unit.GetAllUnit()
 		if err != nil {
 			golog.Error(err)
 			responseMapper = response.ResponseMapper{
@@ -49,7 +55,7 @@ func (controller *UnitController) GetUnitsHandler(w http.ResponseWriter, r *http
 		}
 	} else {
 		golog.Infof("GET - Product: GetUnitsByNameHandler (/units?query=%s)", query)
-		units, err = controller.GetUnitsByName(query)
+		units, err = c.unit.GetUnitsByName(query)
 		if err != nil {
 			golog.Error(err)
 			responseMapper = response.ResponseMapper{
@@ -80,7 +86,7 @@ func (controller *UnitController) GetUnitsHandler(w http.ResponseWriter, r *http
 	}
 }
 
-func (controller *UnitController) GetUnitByIdHandler(w http.ResponseWriter, r *http.Request) {
+func (c *UnitController) GetUnitByIdHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -88,7 +94,7 @@ func (controller *UnitController) GetUnitByIdHandler(w http.ResponseWriter, r *h
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
 	golog.Infof("GET - Product: GetUnitByIdHandler (/units/id/%v)", id)
-	unit, err := controller.GetOneUnit(int(id))
+	unit, err := c.unit.GetOneUnit(int(id))
 	if err != nil {
 		golog.Error(err)
 		responseMapper = response.ResponseMapper{
@@ -118,14 +124,14 @@ func (controller *UnitController) GetUnitByIdHandler(w http.ResponseWriter, r *h
 	}
 }
 
-func (controller *UnitController) NewUnitHandler(w http.ResponseWriter, r *http.Request) {
+func (c *UnitController) NewUnitHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	golog.Info("POST - Unit: NewUnitHandler (/units)")
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 
 	if err != nil {
 		golog.Error(err)
@@ -177,7 +183,7 @@ func (controller *UnitController) NewUnitHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	unit, err := controller.NewUnit(string(body))
+	unit, err := c.unit.NewUnit(string(body))
 	if err != nil {
 		golog.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -192,13 +198,13 @@ func (controller *UnitController) NewUnitHandler(w http.ResponseWriter, r *http.
 	}
 }
 
-func (controller *UnitController) UpdateUnitHandler(w http.ResponseWriter, r *http.Request) {
+func (c *UnitController) UpdateUnitHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
 	golog.Infof("PUT - Unit: UpdateUnitHandler (/units/%v)", id)
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 
 	if err != nil {
 		golog.Error(err)
@@ -250,7 +256,7 @@ func (controller *UnitController) UpdateUnitHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	unit, err := controller.UpdateUnit(string(body))
+	unit, err := c.unit.UpdateUnit(string(body))
 	if err != nil {
 		golog.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -267,13 +273,13 @@ func (controller *UnitController) UpdateUnitHandler(w http.ResponseWriter, r *ht
 	}
 }
 
-func (controller *UnitController) DeleteUnitHandler(w http.ResponseWriter, r *http.Request) {
+func (c *UnitController) DeleteUnitHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
 	golog.Infof("DELETE - Unit: DeleteUnitHandler (/units/%v)", id)
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 
 	if err != nil {
 		golog.Error(err)
@@ -307,7 +313,7 @@ func (controller *UnitController) DeleteUnitHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	unit, err := controller.DeleteUnit(int(id))
+	unit, err := c.unit.DeleteUnit(int(id))
 	if err != nil {
 		golog.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
