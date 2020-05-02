@@ -1,0 +1,147 @@
+basePath: /api/
+definitions:
+  model.Category:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: Category
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.Product:
+    properties:
+      buy_price:
+        example: 10000
+        type: integer
+      category:
+        $ref: '#/definitions/model.Category'
+        type: object
+      category_id:
+        example: 1
+        type: integer
+      code:
+        example: unique-code
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      discount:
+        example: 0.1
+        type: number
+      id:
+        example: 1
+        type: integer
+      image_url:
+        example: http://localhost/image/image.jpg
+        type: string
+      name:
+        example: product name
+        type: string
+      quantity:
+        example: 10
+        type: integer
+      sell_price:
+        example: 15000
+        type: integer
+      unit:
+        $ref: '#/definitions/model.Unit'
+        type: object
+      unit_id:
+        example: 2
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  model.Unit:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: Unit
+        type: string
+      updated_at:
+        type: string
+    type: object
+  response.ResponseMapper:
+    properties:
+      code:
+        example: 200
+        type: integer
+      data:
+        type: object
+      message:
+        example: Success getting all products
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: alman.alfaruq@gmail.com
+    name: Almantera Tiantana Al Faruqi
+    url: https://twitter.com/almanalfaruq
+  description: This is a backend server for alfarpos.
+  license: {}
+  title: AlfarPOS BackEnd
+  version: "1.0"
+paths:
+  /products:
+    get:
+      description: Get Products based on query
+      parameters:
+      - description: name, unit, category, or code
+        in: query
+        name: searchBy
+        type: string
+      - description: If this empty, it will fetch all products
+        in: query
+        name: query
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Return array of product
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ResponseMapper'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Product'
+                  type: array
+              type: object
+        "404":
+          description: Return error with message
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ResponseMapper'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Return error with message
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ResponseMapper'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: Get Products based on query
+      tags:
+      - product
+swagger: "2.0"

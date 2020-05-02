@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"net/http"
 
 	"github.com/rs/cors"
@@ -8,6 +9,7 @@ import (
 	"github.com/almanalfaruq/alfarpos-backend/routes"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 
+	_ "github.com/almanalfaruq/alfarpos-backend/docs"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/kataras/golog"
 )
@@ -15,14 +17,30 @@ import (
 var config util.Config
 var databaseConnection util.DBConn
 
+// @title AlfarPOS BackEnd
+// @version 1.0
+// @description This is a backend server for alfarpos.
+
+// @contact.name Almantera Tiantana Al Faruqi
+// @contact.url https://twitter.com/almanalfaruq
+// @contact.email alman.alfaruq@gmail.com
+
+// @host localhost:8080
+// @BasePath /api/
+// @query.collection.format multi
+
 func main() {
-	initMigration()
+	var shouldDropDB bool
+	flag.BoolVar(&shouldDropDB, "drop", false, "flag to drop db")
+	flag.Parse()
+
+	initMigration(shouldDropDB)
 	initRouter()
 
 	defer databaseConnection.Close()
 }
 
-func initMigration() {
+func initMigration(shouldDropDB bool) {
 	err := config.Read("./config.yaml", &config)
 	if err != nil {
 		panic(err)
@@ -31,9 +49,11 @@ func initMigration() {
 	databaseConnection.Open(config)
 	golog.Info("Connected!")
 	// Database Drop
-	// golog.Warn("Dropping database...")
-	// databaseConnection.DropDb()
-	// golog.Info("Dropped!")
+	if shouldDropDB {
+		golog.Warn("Dropping database...")
+		databaseConnection.DropDb()
+		golog.Info("Dropped!")
+	}
 
 	// Database Migration
 	golog.Warn("Migrating database...")
