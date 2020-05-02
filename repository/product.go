@@ -23,7 +23,7 @@ func (repo *ProductRepository) FindAll() []model.Product {
 	return categories
 }
 
-func (repo *ProductRepository) FindById(id int) model.Product {
+func (repo *ProductRepository) FindById(id int64) model.Product {
 	var product model.Product
 	db := repo.db.GetDb()
 	db.Set("gorm:auto_preload", true).Where("id = ?", id).First(&product)
@@ -32,7 +32,7 @@ func (repo *ProductRepository) FindById(id int) model.Product {
 
 func (repo *ProductRepository) FindByCode(code string) []model.Product {
 	var products []model.Product
-	db := repo.GetDb()
+	db := repo.db.GetDb()
 	db.Set("gorm:auto_preload", true).Where("LOWER(code) LIKE ?", fmt.Sprintf("%%%s%%", code)).Find(&products)
 	return products
 }
@@ -78,7 +78,7 @@ func (repo *ProductRepository) Update(product model.Product) model.Product {
 	return product
 }
 
-func (repo *ProductRepository) Delete(id int) (model.Product, error) {
+func (repo *ProductRepository) Delete(id int64) (model.Product, error) {
 	var product model.Product
 	db := repo.db.GetDb()
 	db.Where("id = ?", id).First(&product)
@@ -86,9 +86,9 @@ func (repo *ProductRepository) Delete(id int) (model.Product, error) {
 	return product, err
 }
 
-func (repo *ProductRepository) DeleteAll() int {
+func (repo *ProductRepository) DeleteAll() int64 {
 	var product model.Product
-	var productCount int
+	var productCount int64
 	db := repo.db.GetDb()
 	db.Model(&product).Count(&productCount)
 	db.Unscoped().Delete(&product)

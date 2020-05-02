@@ -36,7 +36,7 @@ func (service *ProductService) GetAllProduct() ([]model.Product, error) {
 	return service.product.FindAll(), nil
 }
 
-func (service *ProductService) GetOneProduct(id int) (model.Product, error) {
+func (service *ProductService) GetOneProduct(id int64) (model.Product, error) {
 	product := service.product.FindById(id)
 	if product.ID == 0 {
 		return product, errors.New("Product not found")
@@ -96,7 +96,7 @@ func (service *ProductService) NewProduct(productData string) (model.Product, er
 	}
 	product = service.product.New(product)
 	stock := model.Stock{
-		ProductID: int(product.ID),
+		ProductID: int64(product.ID),
 		Product:   product,
 		Quantity:  0,
 	}
@@ -104,7 +104,7 @@ func (service *ProductService) NewProduct(productData string) (model.Product, er
 	return product, nil
 }
 
-func (service *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Reader) error {
+func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Reader) error {
 	golog.Info("Starting excel import...")
 	excel, err := excelize.OpenReader(excelFile)
 	if err != nil {
@@ -113,77 +113,52 @@ func (service *ProductService) NewProductUsingExcel(sheetName string, excelFile 
 	if sheetName == "" {
 		sheetName = "Sheet1"
 	}
-	rows, err := excel.GetRows(sheetName)
-	if err != nil {
-		return err
+	rows := excel.GetRows(sheetName)
+	if len(rows) < 1 {
+		return fmt.Errorf("Rows length < 1")
 	}
+	products := s.parseExcelRowsToProduct(rows)
 	productCounter := 0
-	for indexRow, row := range rows {
-		if indexRow == 0 {
-			continue
-		}
-		code := row[0]
-		name := row[1]
-		sellPrice, _ := strconv.ParseInt(row[2], 10, 64)
-		quantity, _ := strconv.ParseInt(row[3], 10, 64)
-		categoryName := row[4]
-		buyPrice, _ := strconv.ParseInt(row[5], 10, 64)
-		unitName := row[6]
-		if code == "" || name == "" {
-			continue
-		}
-		golog.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", name, quantity, sellPrice, buyPrice)
-		product := model.Product{
-			Code:      code,
-			Name:      name,
-			SellPrice: &sellPrice,
-			Quantity:  &quantity,
-			Category: model.Category{
-				Name: categoryName,
-			},
-			BuyPrice: &buyPrice,
-			Unit: model.Unit{
-				Name: unitName,
-			},
-		}
-		categories := service.category.FindByName(product.Category.Name)
+	for _, product := range products {
+		golog.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", product.Name, *product.Quantity, *product.SellPrice, *product.BuyPrice)
+		categories := s.category.FindByName(product.Category.Name)
 		var category model.Category
 		if len(categories) == 0 {
 			category = model.Category{Name: product.Category.Name}
-			category, err = service.category.New(category)
+			category, err = s.category.New(category)
 			if err != nil {
 				continue
 			}
 		} else {
 			category = categories[0]
 		}
-		product.CategoryID = int(category.ID)
+		product.CategoryID = int64(category.ID)
 		product.Category.ID = category.ID
-		units := service.unit.FindByName(product.Unit.Name)
+		units := s.unit.FindByName(product.Unit.Name)
 		var unit model.Unit
 		if len(units) == 0 {
 			unit = model.Unit{Name: product.Unit.Name}
-			unit = service.unit.New(unit)
+			unit = s.unit.New(unit)
 		} else {
 			unit = units[0]
 		}
-		product.UnitID = int(unit.ID)
+		product.UnitID = int64(unit.ID)
 		product.Unit.ID = unit.ID
-		oldProduct := service.product.FindByCode(product.Code)[0]
-		if oldProduct.ID == 0 {
-			product = service.product.New(product)
+		oldProducts := s.product.FindByCode(product.Code)
+		if len(oldProducts) < 1 {
+			product = s.product.New(product)
 			golog.Infof("%#v created!", product)
 		} else {
-			product.ID = oldProduct.ID
-			product = service.product.Update(product)
+			product.ID = oldProducts[0].ID
+			product = s.product.Update(product)
 			golog.Infof("%#v updated!", product)
 		}
 		stock := model.Stock{
-			ProductID: int(product.ID),
+			ProductID: int64(product.ID),
 			Product:   product,
 			Quantity:  0,
 		}
-		service.stock.New(stock)
+		s.stock.New(stock)
 		productCounter++
 	}
 	if productCounter != len(rows)-1 {
@@ -205,6 +180,49 @@ func (service *ProductService) UpdateProduct(productData string) (model.Product,
 	return product, nil
 }
 
-func (service *ProductService) DeleteProduct(id int) (model.Product, error) {
+func (service *ProductService) DeleteProduct(id int64) (model.Product, error) {
 	return service.product.Delete(id)
+}
+
+func (s *ProductService) parseExcelRowsToProduct(rows [][]string) []model.Product {
+	var products []model.Product
+	// skip index 0 - Header
+	for _, row := range rows[1:] {
+		code := row[0]
+		name := row[1]
+		sellPrice, err := strconv.ParseInt(row[2], 10, 64)
+		if err != nil {
+			continue
+		}
+		quantity, err := strconv.ParseInt(row[3], 10, 64)
+		if err != nil {
+			continue
+		}
+		categoryName := row[4]
+		buyPrice, err := strconv.ParseInt(row[5], 10, 64)
+		if err != nil {
+			continue
+		}
+		unitName := row[6]
+		if code == "" || name == "" {
+			continue
+		}
+
+		product := model.Product{
+			Code:      code,
+			Name:      name,
+			SellPrice: &sellPrice,
+			Quantity:  &quantity,
+			Category: model.Category{
+				Name: categoryName,
+			},
+			BuyPrice: &buyPrice,
+			Unit: model.Unit{
+				Name: unitName,
+			},
+		}
+
+		products = append(products, product)
+	}
+	return products
 }

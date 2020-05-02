@@ -23,7 +23,7 @@ func (repo *PaymentRepository) FindAll() []model.Payment {
 	return categories
 }
 
-func (repo *PaymentRepository) FindById(id int) model.Payment {
+func (repo *PaymentRepository) FindById(id int64) model.Payment {
 	var payment model.Payment
 	db := repo.db.GetDb()
 	db.Where("id = ?", id).First(&payment)
@@ -55,7 +55,7 @@ func (repo *PaymentRepository) Update(payment model.Payment) model.Payment {
 	return payment
 }
 
-func (repo *PaymentRepository) Delete(id int) (model.Payment, error) {
+func (repo *PaymentRepository) Delete(id int64) (model.Payment, error) {
 	var payment model.Payment
 	db := repo.db.GetDb()
 	db.Where("id = ?", id).First(&payment)

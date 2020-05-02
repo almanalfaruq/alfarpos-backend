@@ -46,7 +46,7 @@ func (repo *StockRepository) Update(stock model.Stock) model.Stock {
 	return stock
 }
 
-func (repo *StockRepository) Delete(id int) (model.Stock, error) {
+func (repo *StockRepository) Delete(id int64) (model.Stock, error) {
 	var stock model.Stock
 	db := repo.db.GetDb()
 	db.Where("id = ?", id).First(&stock)
@@ -54,9 +54,9 @@ func (repo *StockRepository) Delete(id int) (model.Stock, error) {
 	return stock, err
 }
 
-func (repo *StockRepository) DeleteAll() int {
+func (repo *StockRepository) DeleteAll() int64 {
 	var stock model.Stock
-	var stockCount int
+	var stockCount int64
 	db := repo.db.GetDb()
 	db.Model(&stock).Count(&stockCount)
 	db.Unscoped().Delete(&stock)

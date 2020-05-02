@@ -22,7 +22,7 @@ func (service *PaymentService) GetAllPayment() ([]model.Payment, error) {
 	return service.payment.FindAll(), nil
 }
 
-func (service *PaymentService) GetOnePayment(id int) (model.Payment, error) {
+func (service *PaymentService) GetOnePayment(id int64) (model.Payment, error) {
 	payment := service.payment.FindById(id)
 	if payment.ID == 0 {
 		return payment, errors.New("Payment not found")
@@ -60,6 +60,6 @@ func (service *PaymentService) UpdatePayment(paymentData string) (model.Payment,
 	return payment, nil
 }
 
-func (service *PaymentService) DeletePayment(id int) (model.Payment, error) {
+func (service *PaymentService) DeletePayment(id int64) (model.Payment, error) {
 	return service.payment.Delete(id)
 }

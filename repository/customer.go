@@ -21,7 +21,7 @@ func (repo *CustomerRepository) FindAll() []model.Customer {
 	return customers
 }
 
-func (repo *CustomerRepository) FindById(id int) model.Customer {
+func (repo *CustomerRepository) FindById(id int64) model.Customer {
 	var customer model.Customer
 	db := repo.db.GetDb()
 	db.Where("id = ?", id).First(&customer)
@@ -46,7 +46,7 @@ func (repo *CustomerRepository) Update(customer model.Customer) model.Customer {
 	return customer
 }
 
-func (repo *CustomerRepository) Delete(id int) model.Customer {
+func (repo *CustomerRepository) Delete(id int64) model.Customer {
 	var customer model.Customer
 	db := repo.db.GetDb()
 	db.Where("id = ?", id).First(&customer)

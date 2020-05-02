@@ -33,15 +33,6 @@ func renderJSON(w http.ResponseWriter, status int, data interface{}, message str
 	}
 }
 
-func checkUser(user model.User, roles ...model.Role) bool {
-	for _, role := range roles {
-		if user.RoleID == role {
-			return true
-		}
-	}
-	return false
-}
-
 func parseJwtToUser(authHeader string, secretKey string) (model.User, error) {
 	if !strings.Contains(authHeader, "Bearer") {
 		return model.User{}, errors.New("Authorization header is empty")

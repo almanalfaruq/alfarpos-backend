@@ -23,7 +23,7 @@ func (repo *UnitRepository) FindAll() []model.Unit {
 	return categories
 }
 
-func (repo *UnitRepository) FindById(id int) model.Unit {
+func (repo *UnitRepository) FindById(id int64) model.Unit {
 	var unit model.Unit
 	db := repo.db.GetDb()
 	db.Where("id = ?", id).First(&unit)
@@ -55,7 +55,7 @@ func (repo *UnitRepository) Update(unit model.Unit) model.Unit {
 	return unit
 }
 
-func (repo *UnitRepository) Delete(id int) (model.Unit, error) {
+func (repo *UnitRepository) Delete(id int64) (model.Unit, error) {
 	var unit model.Unit
 	db := repo.db.GetDb()
 	db.Where("id = ?", id).First(&unit)

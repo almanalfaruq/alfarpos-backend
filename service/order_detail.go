@@ -2,6 +2,8 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 )
@@ -26,17 +28,29 @@ func (service *OrderDetailService) GetOrderDetailByOrder(orderDetailData string)
 		return []model.OrderDetail{}, err
 	}
 	if order.Invoice != "" {
-		order = service.order.FindByInvoice(order.Invoice)
+		order, err = service.order.FindByInvoice(order.Invoice)
+		if err != nil {
+			if errors.Is(err, model.ErrNotFound) {
+				return []model.OrderDetail{}, fmt.Errorf("Order with invoice: %s is not found", order.Invoice)
+			}
+			return []model.OrderDetail{}, err
+		}
 	} else {
-		order = service.order.FindById(int(order.ID))
+		order, err = service.order.FindById(int64(order.ID))
+		if err != nil {
+			if errors.Is(err, model.ErrNotFound) {
+				return []model.OrderDetail{}, fmt.Errorf("Order with id: %d is not found", order.ID)
+			}
+			return []model.OrderDetail{}, err
+		}
 	}
-	return service.orderDetail.FindByOrder(order), nil
+	return service.orderDetail.FindByOrder(order)
 }
 
-func (service *OrderDetailService) DeleteOrderDetail(id int) (model.OrderDetail, error) {
-	return service.orderDetail.Delete(id), nil
+func (service *OrderDetailService) DeleteOrderDetail(id int64) (model.OrderDetail, error) {
+	return service.orderDetail.Delete(id)
 }
 
-func (service *OrderDetailService) DeleteOrderDetailByOrderId(id int) (int, error) {
-	return service.orderDetail.DeleteByOrderId(id), nil
+func (service *OrderDetailService) DeleteOrderDetailByOrderId(id int64) (int64, error) {
+	return service.orderDetail.DeleteByOrderId(id)
 }

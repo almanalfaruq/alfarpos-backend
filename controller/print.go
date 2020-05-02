@@ -28,19 +28,23 @@ func (c *PrintController) OrderByInvoiceToPdfHandler(w http.ResponseWriter, r *h
 	golog.Infof("GET - Printer: OrderByInvoiceToPdfHandler (/print/order/%s)", invoice)
 	textAttachment := fmt.Sprintf("attachment; filename=\"%s.pdf\";", invoice)
 
-	pdf := c.print.OrderByInvoiceToPdf(invoice)
-	err := pdf.Output(buffer)
+	pdf, err := c.print.OrderByInvoiceToPdf(invoice)
 	if err != nil {
-		golog.Errorf("GET - Printer: OrderByInvoiceToPdfHandler (/print/order/%s) Error\nError: %v", invoice, err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+	}
+
+	err = pdf.Output(buffer)
+	if err != nil {
+		message := fmt.Sprintf("GET - Printer: OrderByInvoiceToPdfHandler (/print/order/%s)", invoice)
+		renderJSONError(w, http.StatusInternalServerError, err, message)
 		return
 	}
 	pdf.Close()
 
 	_, err = buffer.WriteTo(w)
 	if err != nil {
-		golog.Errorf("GET - Printer: OrderByInvoiceToPdfHandler (/print/order/%s) Error\nError: %v", invoice, err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		message := fmt.Sprintf("GET - Printer: OrderByInvoiceToPdfHandler (/print/order/%s)", invoice)
+		renderJSONError(w, http.StatusInternalServerError, err, message)
 		return
 	}
 

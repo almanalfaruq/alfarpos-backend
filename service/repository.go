@@ -14,50 +14,50 @@ type categoryRepositoryIface interface {
 
 type customerRepositoryIface interface {
 	FindAll() []model.Customer
-	FindById(id int) model.Customer
+	FindById(id int64) model.Customer
 	New(customer model.Customer) model.Customer
 	Update(customer model.Customer) model.Customer
-	Delete(id int) model.Customer
+	Delete(id int64) model.Customer
 }
 
 type orderDetailRepositoryIface interface {
-	FindByOrder(order model.Order) []model.OrderDetail
-	New(orderDetail model.OrderDetail) model.OrderDetail
-	Update(orderDetail model.OrderDetail) model.OrderDetail
-	Delete(id int) model.OrderDetail
-	DeleteByOrderId(id int) int
+	FindByOrder(order model.Order) ([]model.OrderDetail, error)
+	New(orderDetail model.OrderDetail) (model.OrderDetail, error)
+	Update(orderDetail model.OrderDetail) (model.OrderDetail, error)
+	Delete(id int64) (model.OrderDetail, error)
+	DeleteByOrderId(id int64) (int64, error)
 }
 
 type orderRepositoryIface interface {
 	FindAll() []model.Order
-	FindById(id int) model.Order
-	FindByInvoice(invoice string) model.Order
-	FindByUserId(userId int) []model.Order
-	New(order model.Order) model.Order
-	Update(order model.Order) model.Order
-	Delete(id int) (model.Order, error)
+	FindById(id int64) (model.Order, error)
+	FindByInvoice(invoice string) (model.Order, error)
+	FindByUserId(userId int64) ([]model.Order, error)
+	New(order model.Order) (model.Order, error)
+	Update(order model.Order) (model.Order, error)
+	Delete(id int64) (model.Order, error)
 }
 
 type paymentRepositoryIface interface {
 	FindAll() []model.Payment
-	FindById(id int) model.Payment
+	FindById(id int64) model.Payment
 	FindByName(name string) []model.Payment
 	New(payment model.Payment) model.Payment
 	Update(payment model.Payment) model.Payment
-	Delete(id int) (model.Payment, error)
+	Delete(id int64) (model.Payment, error)
 }
 
 type productRepositoryIface interface {
 	FindAll() []model.Product
-	FindById(id int) model.Product
+	FindById(id int64) model.Product
 	FindByCode(code string) []model.Product
 	FindByName(name string) []model.Product
 	FindByCategoryName(name string) []model.Product
 	FindByUnitName(name string) []model.Product
 	New(product model.Product) model.Product
 	Update(product model.Product) model.Product
-	Delete(id int) (model.Product, error)
-	DeleteAll() int
+	Delete(id int64) (model.Product, error)
+	DeleteAll() int64
 }
 
 type stockRepositoryIface interface {
@@ -65,24 +65,24 @@ type stockRepositoryIface interface {
 	FindByProduct(product model.Product) model.Stock
 	New(stock model.Stock) model.Stock
 	Update(stock model.Stock) model.Stock
-	Delete(id int) (model.Stock, error)
-	DeleteAll() int
+	Delete(id int64) (model.Stock, error)
+	DeleteAll() int64
 }
 
 type unitRepositoryIface interface {
 	FindAll() []model.Unit
-	FindById(id int) model.Unit
+	FindById(id int64) model.Unit
 	FindByName(name string) []model.Unit
 	New(unit model.Unit) model.Unit
 	Update(unit model.Unit) model.Unit
-	Delete(id int) (model.Unit, error)
+	Delete(id int64) (model.Unit, error)
 }
 
 type userRepositoryIface interface {
 	FindAll() []model.User
-	FindById(id int) model.User
+	FindById(id int64) model.User
 	FindByUsername(username string) model.User
 	New(user model.User) (model.User, error)
 	Update(user model.User) model.User
-	Delete(id int) model.User
+	Delete(id int64) model.User
 }

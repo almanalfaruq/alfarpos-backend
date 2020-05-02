@@ -149,7 +149,7 @@ func (m *MockcustomerServiceIface) EXPECT() *MockcustomerServiceIfaceMockRecorde
 }
 
 // GetOneCustomer mocks base method
-func (m *MockcustomerServiceIface) GetOneCustomer(id int) (model.Customer, error) {
+func (m *MockcustomerServiceIface) GetOneCustomer(id int64) (model.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOneCustomer", id)
 	ret0, _ := ret[0].(model.Customer)
@@ -208,7 +208,7 @@ func (mr *MockcustomerServiceIfaceMockRecorder) UpdateCustomer(customerData inte
 }
 
 // DeleteCustomer mocks base method
-func (m *MockcustomerServiceIface) DeleteCustomer(id int) (model.Customer, error) {
+func (m *MockcustomerServiceIface) DeleteCustomer(id int64) (model.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteCustomer", id)
 	ret0, _ := ret[0].(model.Customer)
@@ -261,7 +261,7 @@ func (mr *MockorderDetailServiceIfaceMockRecorder) GetOrderDetailByOrder(orderDe
 }
 
 // DeleteOrderDetail mocks base method
-func (m *MockorderDetailServiceIface) DeleteOrderDetail(id int) (model.OrderDetail, error) {
+func (m *MockorderDetailServiceIface) DeleteOrderDetail(id int64) (model.OrderDetail, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteOrderDetail", id)
 	ret0, _ := ret[0].(model.OrderDetail)
@@ -276,10 +276,10 @@ func (mr *MockorderDetailServiceIfaceMockRecorder) DeleteOrderDetail(id interfac
 }
 
 // DeleteOrderDetailByOrderId mocks base method
-func (m *MockorderDetailServiceIface) DeleteOrderDetailByOrderId(orderDetailData string) (int, error) {
+func (m *MockorderDetailServiceIface) DeleteOrderDetailByOrderId(orderDetailData string) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteOrderDetailByOrderId", orderDetailData)
-	ret0, _ := ret[0].(int)
+	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -329,7 +329,7 @@ func (mr *MockorderServiceIfaceMockRecorder) GetAllOrder() *gomock.Call {
 }
 
 // GetOneOrder mocks base method
-func (m *MockorderServiceIface) GetOneOrder(id int) (model.Order, error) {
+func (m *MockorderServiceIface) GetOneOrder(id int64) (model.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOneOrder", id)
 	ret0, _ := ret[0].(model.Order)
@@ -359,7 +359,7 @@ func (mr *MockorderServiceIfaceMockRecorder) GetOrderByInvoice(invoice interface
 }
 
 // GetOrderByUserId mocks base method
-func (m *MockorderServiceIface) GetOrderByUserId(userId int) ([]model.Order, error) {
+func (m *MockorderServiceIface) GetOrderByUserId(userId int64) ([]model.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOrderByUserId", userId)
 	ret0, _ := ret[0].([]model.Order)
@@ -404,7 +404,7 @@ func (mr *MockorderServiceIfaceMockRecorder) UpdateOrder(OrderData interface{}) 
 }
 
 // DeleteOrder mocks base method
-func (m *MockorderServiceIface) DeleteOrder(id int) (model.Order, error) {
+func (m *MockorderServiceIface) DeleteOrder(id int64) (model.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteOrder", id)
 	ret0, _ := ret[0].(model.Order)
@@ -457,7 +457,7 @@ func (mr *MockpaymentServiceIfaceMockRecorder) GetAllPayment() *gomock.Call {
 }
 
 // GetOnePayment mocks base method
-func (m *MockpaymentServiceIface) GetOnePayment(id int) (model.Payment, error) {
+func (m *MockpaymentServiceIface) GetOnePayment(id int64) (model.Payment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOnePayment", id)
 	ret0, _ := ret[0].(model.Payment)
@@ -517,7 +517,7 @@ func (mr *MockpaymentServiceIfaceMockRecorder) UpdatePayment(paymentData interfa
 }
 
 // DeletePayment mocks base method
-func (m *MockpaymentServiceIface) DeletePayment(id int) (model.Payment, error) {
+func (m *MockpaymentServiceIface) DeletePayment(id int64) (model.Payment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeletePayment", id)
 	ret0, _ := ret[0].(model.Payment)
@@ -607,7 +607,7 @@ func (mr *MockproductServiceIfaceMockRecorder) GetAllProduct() *gomock.Call {
 }
 
 // GetOneProduct mocks base method
-func (m *MockproductServiceIface) GetOneProduct(id int) (model.Product, error) {
+func (m *MockproductServiceIface) GetOneProduct(id int64) (model.Product, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOneProduct", id)
 	ret0, _ := ret[0].(model.Product)
@@ -741,7 +741,7 @@ func (mr *MockproductServiceIfaceMockRecorder) UpdateProduct(productData interfa
 }
 
 // DeleteProduct mocks base method
-func (m *MockproductServiceIface) DeleteProduct(id int) (model.Product, error) {
+func (m *MockproductServiceIface) DeleteProduct(id int64) (model.Product, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteProduct", id)
 	ret0, _ := ret[0].(model.Product)
@@ -847,7 +847,7 @@ func (mr *MockunitServiceIfaceMockRecorder) GetAllUnit() *gomock.Call {
 }
 
 // GetOneUnit mocks base method
-func (m *MockunitServiceIface) GetOneUnit(id int) (model.Unit, error) {
+func (m *MockunitServiceIface) GetOneUnit(id int64) (model.Unit, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOneUnit", id)
 	ret0, _ := ret[0].(model.Unit)
@@ -907,7 +907,7 @@ func (mr *MockunitServiceIfaceMockRecorder) UpdateUnit(unitData interface{}) *go
 }
 
 // DeleteUnit mocks base method
-func (m *MockunitServiceIface) DeleteUnit(id int) (model.Unit, error) {
+func (m *MockunitServiceIface) DeleteUnit(id int64) (model.Unit, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteUnit", id)
 	ret0, _ := ret[0].(model.Unit)
@@ -945,7 +945,7 @@ func (m *MockuserServiceIface) EXPECT() *MockuserServiceIfaceMockRecorder {
 }
 
 // GetOneUser mocks base method
-func (m *MockuserServiceIface) GetOneUser(id int) (model.User, error) {
+func (m *MockuserServiceIface) GetOneUser(id int64) (model.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOneUser", id)
 	ret0, _ := ret[0].(model.User)
@@ -1019,7 +1019,7 @@ func (mr *MockuserServiceIfaceMockRecorder) UpdateUser(userData interface{}) *go
 }
 
 // DeleteUser mocks base method
-func (m *MockuserServiceIface) DeleteUser(id int) (model.User, error) {
+func (m *MockuserServiceIface) DeleteUser(id int64) (model.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteUser", id)
 	ret0, _ := ret[0].(model.User)

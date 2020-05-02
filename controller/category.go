@@ -150,6 +150,7 @@ func (c *CategoryController) UpdateCategoryHandler(w http.ResponseWriter, r *htt
 		renderJSONError(w, http.StatusInternalServerError, err, "Cannot unmarshal JSON")
 		return
 	}
+
 	category, err := c.category.UpdateCategory(data)
 	if err != nil {
 		renderJSONError(w, http.StatusInternalServerError, err, err.Error())

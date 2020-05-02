@@ -1,7 +1,10 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/jinzhu/gorm"
 )
 
 type OrderDetailRepository struct {
@@ -14,43 +17,65 @@ func NewOrderDetailRepo(db dbIface) *OrderDetailRepository {
 	}
 }
 
-func (repo *OrderDetailRepository) FindByOrder(order model.Order) []model.OrderDetail {
+func (repo *OrderDetailRepository) FindByOrder(order model.Order) ([]model.OrderDetail, error) {
 	var orderDetails []model.OrderDetail
 	db := repo.db.GetDb()
-	db.Set("gorm:auto_preload", true).Model(&order).Related(&orderDetails)
-	return orderDetails
+	err := db.Set("gorm:auto_preload", true).Model(&order).Related(&orderDetails).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return []model.OrderDetail{}, model.ErrNotFound
+		}
+		return []model.OrderDetail{}, err
+	}
+	return orderDetails, nil
 }
 
-func (repo *OrderDetailRepository) New(orderDetail model.OrderDetail) model.OrderDetail {
+func (repo *OrderDetailRepository) New(orderDetail model.OrderDetail) (model.OrderDetail, error) {
 	db := repo.db.GetDb()
 	isNotExist := db.NewRecord(orderDetail)
-	if isNotExist {
-		db.Create(&orderDetail)
+	if !isNotExist {
+		return orderDetail, fmt.Errorf("Order detail is exists")
 	}
-	return orderDetail
+	db.Create(&orderDetail)
+	return orderDetail, nil
 }
 
-func (repo *OrderDetailRepository) Update(orderDetail model.OrderDetail) model.OrderDetail {
+func (repo *OrderDetailRepository) Update(orderDetail model.OrderDetail) (model.OrderDetail, error) {
 	var oldOrderDetail model.OrderDetail
 	db := repo.db.GetDb()
-	db.Set("gorm:auto_preload", true).Where("id = ?", orderDetail.ID).First(&oldOrderDetail)
+	err := db.Set("gorm:auto_preload", true).Where("id = ?", orderDetail.ID).First(&oldOrderDetail).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return model.OrderDetail{}, model.ErrNotFound
+		}
+		return model.OrderDetail{}, err
+	}
 	oldOrderDetail = orderDetail
-	db.Save(&oldOrderDetail)
-	return orderDetail
+	return orderDetail, db.Save(&oldOrderDetail).Error
 }
 
-func (repo *OrderDetailRepository) Delete(id int) model.OrderDetail {
+func (repo *OrderDetailRepository) Delete(id int64) (model.OrderDetail, error) {
 	var orderDetail model.OrderDetail
 	db := repo.db.GetDb()
-	db.Set("gorm:auto_preload", true).Where("id = ?", id).First(&orderDetail)
-	db.Delete(&orderDetail)
-	return orderDetail
+	err := db.Set("gorm:auto_preload", true).Where("id = ?", id).First(&orderDetail).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return model.OrderDetail{}, model.ErrNotFound
+		}
+		return model.OrderDetail{}, err
+	}
+	return orderDetail, db.Delete(&orderDetail).Error
 }
 
-func (repo *OrderDetailRepository) DeleteByOrderId(id int) int {
-	var orderDetailCount int
+func (repo *OrderDetailRepository) DeleteByOrderId(id int64) (int64, error) {
+	var orderDetailCount int64
 	db := repo.db.GetDb()
-	db.Model(&model.OrderDetail{}).Where("product_id = ?", id).Count(&orderDetailCount)
-	db.Where("product_id = ?", id).Delete(&model.OrderDetail{})
-	return orderDetailCount
+	err := db.Model(&model.OrderDetail{}).Where("product_id = ?", id).Count(&orderDetailCount).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return 0, model.ErrNotFound
+		}
+		return 0, err
+	}
+	return orderDetailCount, db.Where("product_id = ?", id).Delete(&model.OrderDetail{}).Error
 }

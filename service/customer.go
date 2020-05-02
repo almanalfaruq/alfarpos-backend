@@ -22,7 +22,7 @@ func (service *CustomerService) GetAllCustomer() []model.Customer {
 	return service.customer.FindAll()
 }
 
-func (service *CustomerService) GetOneCustomer(id int) (model.Customer, error) {
+func (service *CustomerService) GetOneCustomer(id int64) (model.Customer, error) {
 	return service.customer.FindById(id), nil
 }
 
@@ -48,6 +48,6 @@ func (service *CustomerService) UpdateCustomer(customerData string) (model.Custo
 	return customer, nil
 }
 
-func (service *CustomerService) DeleteCustomer(id int) (model.Customer, error) {
+func (service *CustomerService) DeleteCustomer(id int64) (model.Customer, error) {
 	return service.customer.Delete(id), nil
 }

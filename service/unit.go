@@ -22,7 +22,7 @@ func (service *UnitService) GetAllUnit() ([]model.Unit, error) {
 	return service.unit.FindAll(), nil
 }
 
-func (service *UnitService) GetOneUnit(id int) (model.Unit, error) {
+func (service *UnitService) GetOneUnit(id int64) (model.Unit, error) {
 	unit := service.unit.FindById(id)
 	if unit.ID == 0 {
 		return unit, errors.New("Unit not found")
@@ -60,6 +60,6 @@ func (service *UnitService) UpdateUnit(unitData string) (model.Unit, error) {
 	return unit, nil
 }
 
-func (service *UnitService) DeleteUnit(id int) (model.Unit, error) {
+func (service *UnitService) DeleteUnit(id int64) (model.Unit, error) {
 	return service.unit.Delete(id)
 }

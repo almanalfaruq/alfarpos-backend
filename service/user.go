@@ -25,7 +25,7 @@ func NewUserService(conf util.Config, userRepo userRepositoryIface) *UserService
 	}
 }
 
-func (service *UserService) GetOneUser(id int) (model.User, error) {
+func (service *UserService) GetOneUser(id int64) (model.User, error) {
 	return service.user.FindById(id), nil
 }
 
@@ -89,6 +89,6 @@ func (service *UserService) UpdateUser(userData string) (model.User, error) {
 	return user, nil
 }
 
-func (service *UserService) DeleteUser(id int) (model.User, error) {
+func (service *UserService) DeleteUser(id int64) (model.User, error) {
 	return service.user.Delete(id), nil
 }

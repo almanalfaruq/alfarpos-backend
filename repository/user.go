@@ -22,7 +22,7 @@ func (repo *UserRepository) FindAll() []model.User {
 	return users
 }
 
-func (repo *UserRepository) FindById(id int) model.User {
+func (repo *UserRepository) FindById(id int64) model.User {
 	var user model.User
 	db := repo.db.GetDb()
 	db.Where("id = ?", id).First(&user)
@@ -58,7 +58,7 @@ func (repo *UserRepository) Update(user model.User) model.User {
 	return user
 }
 
-func (repo *UserRepository) Delete(id int) model.User {
+func (repo *UserRepository) Delete(id int64) model.User {
 	var user model.User
 	db := repo.db.GetDb()
 	db.Where("id = ?", id).First(&user)

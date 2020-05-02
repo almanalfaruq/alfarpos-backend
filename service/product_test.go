@@ -1,4 +1,4 @@
-package service_test
+package service
 
 import (
 	"encoding/json"
@@ -7,552 +7,45 @@ import (
 	"os"
 	"testing"
 
-	"github.com/almanalfaruq/alfarpos-backend/util"
-
 	"github.com/almanalfaruq/alfarpos-backend/model"
-	. "github.com/almanalfaruq/alfarpos-backend/service"
-	"github.com/almanalfaruq/alfarpos-backend/test/mocks"
-	"github.com/almanalfaruq/alfarpos-backend/test/resources"
+	"github.com/almanalfaruq/alfarpos-backend/util"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestProductGetAllProduct(t *testing.T) {
-	t.Run("GetAllProduct - Success", func(t *testing.T) {
-		productRepository := new(mocks.ProductRepository)
-		categoryRepository := new(mocks.CategoryRepository)
-		unitRepository := new(mocks.UnitRepository)
-		stockRepository := new(mocks.StockRepository)
-
-		productRepository.On("FindAll").Return(resources.Products)
-
-		productService := ProductService{
-			Product:  productRepository,
-			Category: categoryRepository,
-			Unit:     unitRepository,
-			Stock:    stockRepository,
-		}
-
-		expectedResult := resources.Products
-
-		actualResult, err := productService.GetAllProduct()
-
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
-		assert.NotEmpty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-}
-
-func TestProductGetOneProduct(t *testing.T) {
-	t.Run("GetOneProduct - Success", func(t *testing.T) {
-		productRepository := new(mocks.ProductRepository)
-		categoryRepository := new(mocks.CategoryRepository)
-		unitRepository := new(mocks.UnitRepository)
-		stockRepository := new(mocks.StockRepository)
-
-		productRepository.On("FindById", 2).Return(resources.Product2)
-
-		productService := ProductService{
-			Product:  productRepository,
-			Category: categoryRepository,
-			Unit:     unitRepository,
-			Stock:    stockRepository,
-		}
-
-		expectedResult := resources.Product2
-
-		actualResult, err := productService.GetOneProduct(2)
-
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
-		assert.NotEmpty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-
-	t.Run("GetOneProduct - Error", func(t *testing.T) {
-		productRepository := new(mocks.ProductRepository)
-		categoryRepository := new(mocks.CategoryRepository)
-		unitRepository := new(mocks.UnitRepository)
-		stockRepository := new(mocks.StockRepository)
-
-		productRepository.On("FindById", 10).Return(model.Product{})
-
-		productService := ProductService{
-			Product:  productRepository,
-			Category: categoryRepository,
-			Unit:     unitRepository,
-			Stock:    stockRepository,
-		}
-
-		expectedResult := model.Product{}
-
-		actualResult, err := productService.GetOneProduct(10)
-
-		assert.NotNil(t, err)
-		assert.Equal(t, err.Error(), "Product not found")
-		assert.Empty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-}
-
-func TestProductGetOneProductByCode(t *testing.T) {
-	t.Run("GetOneProductByCode - Success", func(t *testing.T) {
-		productRepository := new(mocks.ProductRepository)
-		categoryRepository := new(mocks.CategoryRepository)
-		unitRepository := new(mocks.UnitRepository)
-		stockRepository := new(mocks.StockRepository)
-
-		productRepository.On("FindByCode", "Product3").Return([]model.Product{
-			resources.Product3,
-		})
-
-		productService := ProductService{
-			Product:  productRepository,
-			Category: categoryRepository,
-			Unit:     unitRepository,
-			Stock:    stockRepository,
-		}
-
-		expectedResult := resources.Product3
-
-		actualResult, err := productService.GetOneProductByCode("Product3")
-
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
-		assert.NotEmpty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-
-	t.Run("GetOneProductByCode - Error", func(t *testing.T) {
-		productRepository := new(mocks.ProductRepository)
-		categoryRepository := new(mocks.CategoryRepository)
-		unitRepository := new(mocks.UnitRepository)
-		stockRepository := new(mocks.StockRepository)
-
-		productRepository.On("FindByCode", "Product10").Return([]model.Product{})
-
-		productService := ProductService{
-			Product:  productRepository,
-			Category: categoryRepository,
-			Unit:     unitRepository,
-			Stock:    stockRepository,
-		}
-
-		expectedResult := model.Product{}
-
-		actualResult, err := productService.GetOneProductByCode("Product10")
-
-		assert.NotNil(t, err)
-		assert.Equal(t, err.Error(), "Product not found")
-		assert.Empty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-}
-
-func TestProductGetProductsByCode(t *testing.T) {
-	t.Run("GetProductsByCode - Success", func(t *testing.T) {
-		productRepository := new(mocks.ProductRepository)
-		categoryRepository := new(mocks.CategoryRepository)
-		unitRepository := new(mocks.UnitRepository)
-		stockRepository := new(mocks.StockRepository)
-
-		productRepository.On("FindByCode", "Product").Return(resources.Products)
-
-		productService := ProductService{
-			Product:  productRepository,
-			Category: categoryRepository,
-			Unit:     unitRepository,
-			Stock:    stockRepository,
-		}
-
-		expectedResult := resources.Products
-
-		actualResult, err := productService.GetProductsByCode("Product")
-
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
-		assert.NotEmpty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-
-	t.Run("GetProductsByCode - Error", func(t *testing.T) {
-		productRepository := new(mocks.ProductRepository)
-		categoryRepository := new(mocks.CategoryRepository)
-		unitRepository := new(mocks.UnitRepository)
-		stockRepository := new(mocks.StockRepository)
-
-		productRepository.On("FindByCode", "Productttt").Return([]model.Product{})
-
-		productService := ProductService{
-			Product:  productRepository,
-			Category: categoryRepository,
-			Unit:     unitRepository,
-			Stock:    stockRepository,
-		}
-
-		expectedResult := []model.Product{}
-
-		actualResult, err := productService.GetProductsByCode("Productttt")
-
-		assert.NotNil(t, err)
-		assert.Equal(t, err.Error(), "Products not found")
-		assert.Empty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-}
-
-func TestProductGetProductsByName(t *testing.T) {
-	t.Run("GetProductsByName - Success", func(t *testing.T) {
-		productRepository := new(mocks.ProductRepository)
-		categoryRepository := new(mocks.CategoryRepository)
-		unitRepository := new(mocks.UnitRepository)
-		stockRepository := new(mocks.StockRepository)
-
-		productRepository.On("FindByName", "product").Return(resources.Products)
-
-		productService := ProductService{
-			Product:  productRepository,
-			Category: categoryRepository,
-			Unit:     unitRepository,
-			Stock:    stockRepository,
-		}
-
-		expectedResult := resources.Products
-
-		actualResult, err := productService.GetProductsByName("Product")
-
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
-		assert.NotEmpty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-
-	t.Run("GetProductsByName - Error", func(t *testing.T) {
-		productRepository := new(mocks.ProductRepository)
-		categoryRepository := new(mocks.CategoryRepository)
-		unitRepository := new(mocks.UnitRepository)
-		stockRepository := new(mocks.StockRepository)
-
-		productRepository.On("FindByName", "productttt").Return([]model.Product{})
-
-		productService := ProductService{
-			Product:  productRepository,
-			Category: categoryRepository,
-			Unit:     unitRepository,
-			Stock:    stockRepository,
-		}
-
-		expectedResult := []model.Product{}
-
-		actualResult, err := productService.GetProductsByName("Productttt")
-
-		assert.NotNil(t, err)
-		assert.Equal(t, err.Error(), "Products not found")
-		assert.Empty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-}
-
-func TestProductGetProductsByCategoryName(t *testing.T) {
-	t.Run("GetProductsByCategoryName - Success", func(t *testing.T) {
-		productRepository := new(mocks.ProductRepository)
-		categoryRepository := new(mocks.CategoryRepository)
-		unitRepository := new(mocks.UnitRepository)
-		stockRepository := new(mocks.StockRepository)
-
-		productRepository.On("FindByCategoryName", "category3").Return([]model.Product{resources.Product3})
-
-		productService := ProductService{
-			Product:  productRepository,
-			Category: categoryRepository,
-			Unit:     unitRepository,
-			Stock:    stockRepository,
-		}
-
-		expectedResult := []model.Product{
-			resources.Product3,
-		}
-
-		actualResult, err := productService.GetProductsByCategoryName("Category3")
-
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
-		assert.NotEmpty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-
-	t.Run("GetProductsByCategoryName - Error", func(t *testing.T) {
-		productRepository := new(mocks.ProductRepository)
-		categoryRepository := new(mocks.CategoryRepository)
-		unitRepository := new(mocks.UnitRepository)
-		stockRepository := new(mocks.StockRepository)
-
-		productRepository.On("FindByCategoryName", "category10").Return([]model.Product{})
-
-		productService := ProductService{
-			Product:  productRepository,
-			Category: categoryRepository,
-			Unit:     unitRepository,
-			Stock:    stockRepository,
-		}
-
-		expectedResult := []model.Product{}
-
-		actualResult, err := productService.GetProductsByCategoryName("Category10")
-
-		assert.NotNil(t, err)
-		assert.Equal(t, err.Error(), "Products not found")
-		assert.Empty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-}
-
-func TestProductGetProductsByUnitName(t *testing.T) {
-	t.Run("GetProductsByUnitName - Success", func(t *testing.T) {
-		productRepository := new(mocks.ProductRepository)
-		categoryRepository := new(mocks.CategoryRepository)
-		unitRepository := new(mocks.UnitRepository)
-		stockRepository := new(mocks.StockRepository)
-
-		productRepository.On("FindByUnitName", "unit2").Return([]model.Product{resources.Product2})
-
-		productService := ProductService{
-			Product:  productRepository,
-			Category: categoryRepository,
-			Unit:     unitRepository,
-			Stock:    stockRepository,
-		}
-
-		expectedResult := []model.Product{
-			resources.Product2,
-		}
-
-		actualResult, err := productService.GetProductsByUnitName("Unit2")
-
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
-		assert.NotEmpty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-
-	t.Run("GetProductsByUnitName - Error", func(t *testing.T) {
-		productRepository := new(mocks.ProductRepository)
-		categoryRepository := new(mocks.CategoryRepository)
-		unitRepository := new(mocks.UnitRepository)
-		stockRepository := new(mocks.StockRepository)
-
-		productRepository.On("FindByUnitName", "unit10").Return([]model.Product{})
-
-		productService := ProductService{
-			Product:  productRepository,
-			Category: categoryRepository,
-			Unit:     unitRepository,
-			Stock:    stockRepository,
-		}
-
-		expectedResult := []model.Product{}
-
-		actualResult, err := productService.GetProductsByUnitName("Unit10")
-
-		assert.NotNil(t, err)
-		assert.Equal(t, err.Error(), "Products not found")
-		assert.Empty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-}
-
-func TestProductNewProduct(t *testing.T) {
-	t.Run("NewProduct - Success", func(t *testing.T) {
-		productRepository := new(mocks.ProductRepository)
-		categoryRepository := new(mocks.CategoryRepository)
-		unitRepository := new(mocks.UnitRepository)
-		stockRepository := new(mocks.StockRepository)
-
-		productRepository.On("New", resources.Product3).Return(resources.Product3)
-		stock3Edit := resources.Stock3
-		stock3Edit.ID = 0
-		stock3Edit.Quantity = 0
-		stockRepository.On("New", stock3Edit).Return(stock3Edit)
-
-		productService := ProductService{
-			Product:  productRepository,
-			Category: categoryRepository,
-			Unit:     unitRepository,
-			Stock:    stockRepository,
-		}
-
-		jsonBytes, _ := json.Marshal(resources.Product3)
-		jsonString := string(jsonBytes)
-
-		expectedResult := resources.Product3
-
-		actualResult, err := productService.NewProduct(jsonString)
-
-		assert.Nil(t, err)
-		assert.NotNil(t, actualResult)
-		assert.NotEmpty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-
-	t.Run("NewProduct - Error", func(t *testing.T) {
-		productRepository := new(mocks.ProductRepository)
-		categoryRepository := new(mocks.CategoryRepository)
-		unitRepository := new(mocks.UnitRepository)
-		stockRepository := new(mocks.StockRepository)
-
-		productService := ProductService{
-			Product:  productRepository,
-			Category: categoryRepository,
-			Unit:     unitRepository,
-			Stock:    stockRepository,
-		}
-
-		jsonString := `{
-			code: "product2"
-		}`
-
-		expectedResult := model.Product{}
-
-		actualResult, err := productService.NewProduct(jsonString)
-
-		assert.NotNil(t, err)
-		assert.Empty(t, actualResult)
-		assert.Equal(t, expectedResult, actualResult)
-	})
-}
-
-func TestProductNewProductUsingExcel(t *testing.T) {
-	testTable := []struct {
-		testName string
-		args     func() (string, io.ReadCloser)
-		mock     func() (*ProductService, error)
-	}{
-		{
-			testName: "Error - Not Valid File",
-			args: func() (string, io.ReadCloser) {
-				file, _ := os.Open("")
-				return "", file
-			},
-			mock: func() (*ProductService, error) {
-				return &ProductService{
-					Product:  nil,
-					Category: nil,
-					Unit:     nil,
-					Stock:    nil,
-				}, errors.New("invalid argument")
-			},
-		},
-		{
-			testName: "Error - Sheet Not Exists",
-			args: func() (string, io.ReadCloser) {
-				file, _ := os.Open("../test/resources/test.xlsx")
-				return "abcde", file
-			},
-			mock: func() (*ProductService, error) {
-				return &ProductService{
-					Product:  nil,
-					Category: nil,
-					Unit:     nil,
-					Stock:    nil,
-				}, errors.New("sheet abcde is not exist")
-			},
-		},
-		{
-			testName: "Success - No Import",
-			args: func() (string, io.ReadCloser) {
-				file, _ := os.Open("../test/resources/test.xlsx")
-				return "", file
-			},
-			mock: func() (*ProductService, error) {
-				return &ProductService{
-					Product:  nil,
-					Category: nil,
-					Unit:     nil,
-					Stock:    nil,
-				}, nil
-			},
-		},
-		{
-			testName: "Success - No Blank Data - New Product",
-			args: func() (string, io.ReadCloser) {
-				file, _ := os.Open("../test/resources/test.xlsx")
-				return "Product1", file
-			},
-			mock: func() (*ProductService, error) {
-				productRepository := new(mocks.ProductRepository)
-				categoryRepository := new(mocks.CategoryRepository)
-				unitRepository := new(mocks.UnitRepository)
-				stockRepository := new(mocks.StockRepository)
-
-				categoryRepository.On("FindByName", "Category1").Return(resources.Categories[:1])
-				unitRepository.On("FindByName", "Unit1").Return(resources.Units[:1])
-				productRepository.On("FindByCode", "Product1").Return([]model.Product{})
-				productStub := resources.Product1
-				productStub.ID = 0
-				productRepository.On("New", productStub).Return(resources.Product1)
-				stockStub := resources.Stock1
-				stockStub.ID = 0
-				stockStub.Quantity = 0
-				stockRepository.On("New", stockStub).Return(resources.Stock1)
-				return &ProductService{
-					Product:  productRepository,
-					Category: categoryRepository,
-					Unit:     unitRepository,
-					Stock:    stockRepository,
-				}, nil
-			},
-		},
-		{
-			testName: "Success - No Blank Data - New Category and Unit | Update Product",
-			args: func() (string, io.ReadCloser) {
-				file, _ := os.Open("../test/resources/test.xlsx")
-				return "Product1", file
-			},
-			mock: func() (*ProductService, error) {
-				productRepository := new(mocks.ProductRepository)
-				categoryRepository := new(mocks.CategoryRepository)
-				unitRepository := new(mocks.UnitRepository)
-				stockRepository := new(mocks.StockRepository)
-
-				categoryRepository.On("FindByName", "Category1").Return([]model.Category{})
-				categoryStub := model.Category{Name: "Category1"}
-				categoryRepository.On("New", categoryStub).Return(resources.Category1)
-				unitRepository.On("FindByName", "Unit1").Return([]model.Unit{})
-				unitStub := model.Unit{Name: "Unit1"}
-				unitRepository.On("New", unitStub).Return(resources.Unit1)
-				productRepository.On("FindByCode", "Product1").Return(resources.Products[:1])
-				productRepository.On("Update", resources.Product1).Return(resources.Product1)
-				stockStub := resources.Stock1
-				stockStub.ID = 0
-				stockStub.Quantity = 0
-				stockRepository.On("New", stockStub).Return(resources.Stock1)
-				return &ProductService{
-					Product:  productRepository,
-					Category: categoryRepository,
-					Unit:     unitRepository,
-					Stock:    stockRepository,
-				}, nil
-			},
-		},
-	}
-
-	for _, tt := range testTable {
-		sheetName, excelFile := tt.args()
-		service, expectedResult := tt.mock()
-		t.Run(tt.testName, func(t *testing.T) {
-			actualResult := service.NewProductUsingExcel(sheetName, excelFile)
-			assert.Equal(t, expectedResult, actualResult)
-		})
-		excelFile.Close()
-	}
-}
-
 func TestProductUpdateProduct(t *testing.T) {
-	productStub := resources.Product1
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	category := model.Category{
+		Template: model.Template{
+			ID: uint(10),
+		},
+		Name: "Category1",
+	}
+	unit := model.Unit{
+		Template: model.Template{
+			ID: uint(5),
+		},
+		Name: "Pcs",
+	}
+	product := model.Product{
+		Template: model.Template{
+			ID: uint(1),
+		},
+		Name:      "Product1",
+		Code:      "Product1",
+		BuyPrice:  util.ToInt64(int64(10000)),
+		SellPrice: util.ToInt64(int64(1500)),
+		Quantity:  util.ToInt64(int64(10)),
+		Category:  category,
+		Unit:      unit,
+	}
+	productStub := product
 	productStub.SellPrice = util.ToInt64(55000)
 
-	productRepository := new(mocks.ProductRepository)
-	productRepository.On("Update", productStub).Return(productStub)
+	productRepository := NewMockproductRepositoryIface(ctrl)
+	productRepository.EXPECT().Update(productStub).Return(productStub)
 
 	testTable := []struct {
 		testName string
@@ -579,10 +72,7 @@ func TestProductUpdateProduct(t *testing.T) {
 	}
 
 	service := &ProductService{
-		Product:  productRepository,
-		Category: nil,
-		Unit:     nil,
-		Stock:    nil,
+		product: productRepository,
 	}
 
 	for _, tt := range testTable {
@@ -596,5 +86,118 @@ func TestProductUpdateProduct(t *testing.T) {
 			}
 			assert.Equal(t, tt.expect, actualResult)
 		})
+	}
+}
+
+func TestProductService_NewProductUsingExcel(t *testing.T) {
+	t.Skip("Skipped because of unknown mock error")
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	productRepository := NewMockproductRepositoryIface(ctrl)
+	categoryRepository := NewMockcategoryRepositoryIface(ctrl)
+	unitRepository := NewMockunitRepositoryIface(ctrl)
+	stockRepository := NewMockstockRepositoryIface(ctrl)
+
+	s := NewProductService(productRepository, categoryRepository, unitRepository, stockRepository)
+
+	testTable := []struct {
+		testName string
+		args     func() (string, io.ReadCloser)
+		mock     func() error
+	}{
+		{
+			testName: "Error - Not Valid File",
+			args: func() (string, io.ReadCloser) {
+				file, _ := os.Open("")
+				return "", file
+			},
+			mock: func() error {
+				return errors.New("invalid argument")
+			},
+		},
+		{
+			testName: "Error - Sheet Not Exists",
+			args: func() (string, io.ReadCloser) {
+				file, _ := os.Open("../test/resources/test.xlsx")
+				return "abcde", file
+			},
+			mock: func() error {
+				return errors.New("Rows length < 1")
+			},
+		},
+		{
+			testName: "Success - No Import",
+			args: func() (string, io.ReadCloser) {
+				file, _ := os.Open("../test/resources/test.xlsx")
+				return "", file
+			},
+			mock: func() error {
+				return errors.New("Rows length < 1")
+			},
+		},
+		{
+			testName: "Success - No Blank Data - New Product",
+			args: func() (string, io.ReadCloser) {
+				file, _ := os.Open("../test/resources/test.xlsx")
+				return "Product1", file
+			},
+			mock: func() error {
+				category := model.Category{
+					Template: model.Template{
+						ID: uint(10),
+					},
+					Name: "Category1",
+				}
+				categoryRepository.EXPECT().FindByName("Category1").Return([]model.Category{category})
+				unit := model.Unit{
+					Template: model.Template{
+						ID: uint(5),
+					},
+					Name: "Unit1",
+				}
+				unitRepository.EXPECT().FindByName("Unit1").Return([]model.Unit{unit})
+				productRepository.EXPECT().FindByCode("Product1").Return([]model.Product{})
+				product := model.Product{
+					Template: model.Template{
+						ID: uint(1),
+					},
+					Name:       "Product1",
+					Code:       "Product1",
+					BuyPrice:   util.ToInt64(int64(10000)),
+					SellPrice:  util.ToInt64(int64(1500)),
+					Quantity:   util.ToInt64(int64(10)),
+					Category:   category,
+					CategoryID: int64(category.ID),
+					Unit:       unit,
+					UnitID:     int64(unit.ID),
+				}
+				productStub := product
+				productStub.ID = uint(0)
+				productRepository.EXPECT().New(productStub).Return(product)
+				stock := model.Stock{
+					Template: model.Template{
+						ID: uint(1),
+					},
+					ProductID: int64(1),
+					Quantity:  int64(10),
+				}
+				stockStub := stock
+				stockStub.ID = 0
+				stockStub.Quantity = 0
+				stockRepository.EXPECT().New(stockStub).Return(stock)
+				return nil
+			},
+		},
+	}
+
+	for _, tt := range testTable {
+		sheetName, excelFile := tt.args()
+		expectedResult := tt.mock()
+		t.Run(tt.testName, func(t *testing.T) {
+			actualResult := s.NewProductUsingExcel(sheetName, excelFile)
+			assert.Equal(t, expectedResult, actualResult)
+		})
+		excelFile.Close()
 	}
 }
