@@ -7,9 +7,9 @@ type Product struct {
 	BuyPrice   *int64   `json:"buy_price"`
 	SellPrice  *int64   `json:"sell_price"`
 	Quantity   *int64   `json:"quantity"`
-	CategoryID int      `json:"category_id"`
+	CategoryID int64    `json:"category_id"`
 	Category   Category `gorm:"foreignkey:CategoryID" json:"category"`
-	UnitID     int      `json:"unit_id"`
+	UnitID     int64    `json:"unit_id"`
 	Unit       Unit     `gorm:"foreignkey:UnitID" json:"unit"`
 	ImageUrl   string   `json:"image_url"`
 	Discount   float32  `gorm:"default:0.00" json:"discount"`

@@ -1,122 +1,71 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
-	"github.com/almanalfaruq/alfarpos-backend/model/response"
-	"github.com/almanalfaruq/alfarpos-backend/service"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/kataras/golog"
 )
 
 type ProductController struct {
-	service.IProductService
-	util.Config
+	product productServiceIface
+	conf    util.Config
 }
 
-func (controller *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Request) {
+func NewProductController(conf util.Config, productService productServiceIface) *ProductController {
+	return &ProductController{
+		conf:    conf,
+		product: productService,
+	}
+}
+
+func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	var products []model.Product
 	var err error
-	var responseMapper response.ResponseMapper
 	searchBy := r.URL.Query().Get("searchBy")
 	query := r.URL.Query().Get("query")
 
 	if query == "" {
 		golog.Info("GET - Product: GetProductsHandler (/products)")
-		products, err = controller.GetAllProduct()
+		products, err = c.product.GetAllProduct()
 		if err != nil {
-			golog.Error(err)
-			responseMapper = response.ResponseMapper{
-				Code:    http.StatusInternalServerError,
-				Data:    err.Error(),
-				Message: "Cannot get all products",
-			}
-			w.WriteHeader(http.StatusNotFound)
-			err = json.NewEncoder(w).Encode(responseMapper)
-			if err != nil {
-				golog.Error("Cannot encode json")
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
+			renderJSONError(w, http.StatusInternalServerError, err, "Cannot get all products")
 			return
 		}
 	} else {
 		golog.Infof("GET - Product: GetProductsByNameHandler (/products?searchBy=%s&query=%s)", searchBy, query)
 		if searchBy == "" || searchBy == "name" {
-			products, err = controller.GetProductsByName(query)
+			products, err = c.product.GetProductsByName(query)
 			if err != nil {
-				golog.Error(err)
-				responseMapper = response.ResponseMapper{
-					Code:    http.StatusNotFound,
-					Data:    err.Error(),
-					Message: "Cannot get products by name",
-				}
-				w.WriteHeader(http.StatusNotFound)
-				err = json.NewEncoder(w).Encode(responseMapper)
-				if err != nil {
-					golog.Error("Cannot encode json")
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
+				renderJSONError(w, http.StatusNotFound, err, "Cannot get products by name")
 				return
 			}
 		} else if searchBy == "unit" {
-			products, err = controller.GetProductsByUnitName(query)
+			products, err = c.product.GetProductsByUnitName(query)
 			if err != nil {
-				golog.Error(err)
-				responseMapper = response.ResponseMapper{
-					Code:    http.StatusNotFound,
-					Data:    err.Error(),
-					Message: "Cannot get products by unit",
-				}
-				w.WriteHeader(http.StatusNotFound)
-				err = json.NewEncoder(w).Encode(responseMapper)
-				if err != nil {
-					golog.Error("Cannot encode json")
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
+				renderJSONError(w, http.StatusNotFound, err, "Cannot get products by unit")
 				return
 			}
 		} else if searchBy == "category" {
-			products, err = controller.GetProductsByCategoryName(query)
+			products, err = c.product.GetProductsByCategoryName(query)
 			if err != nil {
-				golog.Error(err)
-				responseMapper = response.ResponseMapper{
-					Code:    http.StatusNotFound,
-					Data:    err.Error(),
-					Message: "Cannot get products by category",
-				}
-				w.WriteHeader(http.StatusNotFound)
-				err = json.NewEncoder(w).Encode(responseMapper)
-				if err != nil {
-					golog.Error("Cannot encode json")
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
+				renderJSONError(w, http.StatusNotFound, err, "Cannot get products by category")
 				return
 			}
 		} else if searchBy == "code" {
-			products, err = controller.GetProductsByCode(query)
+			products, err = c.product.GetProductsByCode(query)
 			if err != nil {
-				golog.Error(err)
-				responseMapper = response.ResponseMapper{
-					Code:    http.StatusNotFound,
-					Data:    err.Error(),
-					Message: "Cannot get products by code",
-				}
-				w.WriteHeader(http.StatusNotFound)
-				err = json.NewEncoder(w).Encode(responseMapper)
-				if err != nil {
-					golog.Error("Cannot encode json")
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
+				renderJSONError(w, http.StatusNotFound, err, "Cannot get products by code")
 				return
 			}
 		} else {
@@ -124,377 +73,215 @@ func (controller *ProductController) GetProductsHandler(w http.ResponseWriter, r
 		}
 	}
 
-	responseMapper = response.ResponseMapper{
-		Code:    http.StatusOK,
-		Data:    products,
-		Message: "Success getting products",
-	}
-	err = json.NewEncoder(w).Encode(responseMapper)
-	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	renderJSONSuccess(w, http.StatusOK, products, "Success getting products")
 }
 
-func (controller *ProductController) GetProductByIdHandler(w http.ResponseWriter, r *http.Request) {
+func (c *ProductController) GetProductByIdHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	var responseMapper response.ResponseMapper
 	vars := mux.Vars(r)
-	id, _ := strconv.ParseInt(vars["id"], 10, 32)
-	golog.Infof("GET - Product: GetProductByIdHandler (/products/id/%v)", id)
-	product, err := controller.GetOneProduct(int(id))
+	id, _ := strconv.ParseInt(vars["id"], 10, 64)
+	golog.Infof("GET - Product: GetProductByIdHandler (/products/id/%d)", id)
+	product, err := c.product.GetOneProduct(id)
 	if err != nil {
-		golog.Error(err)
-		responseMapper = response.ResponseMapper{
-			Code:    http.StatusNotFound,
-			Data:    err.Error(),
-			Message: fmt.Sprintf("Cannot find product with id: %v", id),
-		}
-		w.WriteHeader(http.StatusNotFound)
-		err = json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error("Cannot encode json")
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		renderJSONError(w, http.StatusNotFound, err, fmt.Sprintf("Cannot find product with id: %d", id))
 		return
 	}
 
-	responseMapper = response.ResponseMapper{
-		Code:    http.StatusOK,
-		Data:    product,
-		Message: fmt.Sprintf("Success getting product with id: %v", id),
-	}
-	err = json.NewEncoder(w).Encode(responseMapper)
-	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	renderJSONSuccess(w, http.StatusOK, product, fmt.Sprintf("Success getting product with id: %d", id))
 }
 
-func (controller *ProductController) GetProductByCodeHandler(w http.ResponseWriter, r *http.Request) {
+func (c *ProductController) GetProductByCodeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	var responseMapper response.ResponseMapper
 	vars := mux.Vars(r)
 	code := vars["code"]
-	golog.Infof("GET - Product: GetProductByCodeHandler (/products/code/%v)", code)
-	product, err := controller.GetOneProductByCode(code)
+	golog.Infof("GET - Product: GetProductByCodeHandler (/products/code/%s)", code)
+	product, err := c.product.GetOneProductByCode(code)
 	if err != nil {
-		golog.Error(err)
-		responseMapper = response.ResponseMapper{
-			Code:    http.StatusNotFound,
-			Data:    err.Error(),
-			Message: fmt.Sprintf("Cannot find product with code: %v", code),
-		}
-		w.WriteHeader(http.StatusNotFound)
-		err = json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error("Cannot encode json")
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		renderJSONError(w, http.StatusNotFound, err, fmt.Sprintf("Cannot find product with code: %s", code))
 		return
 	}
 
-	responseMapper = response.ResponseMapper{
-		Code:    http.StatusOK,
-		Data:    product,
-		Message: fmt.Sprintf("Success getting product with code: %v", code),
-	}
-	err = json.NewEncoder(w).Encode(responseMapper)
-	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	renderJSONSuccess(w, http.StatusOK, product, fmt.Sprintf("Success getting product with code: %s", code))
 }
 
-func (controller *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Request) {
+func (c *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	golog.Info("POST - Product: NewProductHandler (/products)")
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 
 	if err != nil {
-		golog.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusBadRequest,
-			Data:    err.Error(),
-			Message: "Cannot parse token",
-		}
-		err := json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
 		return
 	}
 
-	if user.RoleID == model.Cashier {
-		golog.Error("User must be Admin or Manager")
-		w.WriteHeader(http.StatusForbidden)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusForbidden,
-			Data:    "User must be Admin or Manager",
-			Message: "User must be Admin or Manager",
-		}
-		err := json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+		message := "User must be Admin or Manager"
+		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
 		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		golog.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusInternalServerError,
-			Data:    err.Error(),
-			Message: "Cannot read request body",
-		}
-		err = json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+		renderJSONError(w, http.StatusInternalServerError, err, "Cannot read request body")
 		return
 	}
 
-	product, err := controller.NewProduct(string(body))
+	product, err := c.product.NewProduct(string(body))
 	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(product)
+	renderJSONSuccess(w, http.StatusCreated, product, "Product created")
+}
+
+func (c *ProductController) ExportAllProductsToExcelHandler(w http.ResponseWriter, r *http.Request) {
+	excel, err := c.product.ExportAllProductsToExcel()
 	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		renderJSONError(w, http.StatusInternalServerError, err, "Cannot export all products to excel")
 		return
+	}
+
+	now := time.Now()
+	excelName := fmt.Sprintf("Exported-Product-%02d-%02d-%d.xlsx", now.Day(), now.Month(), now.Year())
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Header().Set("Content-Disposition", "attachment; filename="+excelName)
+	w.Header().Set("Content-Transfer-Encoding", "binary")
+	w.Header().Set("Expires", "0")
+	err = excel.Write(w)
+	if err != nil {
+		renderJSONError(w, http.StatusInternalServerError, err, "Cannot export all products to excel")
 	}
 }
 
-func (controller *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *http.Request) {
+func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	vars := mux.Vars(r)
 	sheetName := vars["sheetName"]
-	golog.Infof("POST - Product: UploadExcelProductHandler (/products/upload_excel/%v)", sheetName)
+	golog.Infof("POST - Product: UploadExcelProductHandler (/products/upload_excel/%s)", sheetName)
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 
 	if err != nil {
-		golog.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusBadRequest,
-			Data:    err.Error(),
-			Message: "Cannot parse token",
-		}
-		err := json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
 		return
 	}
 
-	if user.RoleID == model.Cashier {
-		golog.Error("User must be Admin or Manager")
-		w.WriteHeader(http.StatusForbidden)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusForbidden,
-			Data:    "User must be Admin or Manager",
-			Message: "User must be Admin or Manager",
-		}
-		err := json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+		message := "User must be Admin or Manager"
+		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
 		return
 	}
 
 	err = r.ParseMultipartForm(20 << 20)
 	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
 	file, _, err := r.FormFile("file")
 	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
 	defer file.Close()
 
-	err = controller.NewProductUsingExcel(sheetName, file)
+	err = c.product.NewProductUsingExcel(sheetName, file)
 	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
-	products, err := controller.GetAllProduct()
+
+	products, err := c.product.GetAllProduct()
 	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	err = json.NewEncoder(w).Encode(products)
-	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+
+	renderJSONSuccess(w, http.StatusCreated, products, fmt.Sprintf("Success improting %d data from excel", len(products)))
 }
 
-func (controller *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
+func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
-	golog.Infof("PUT - Product: UpdateProductHandler (/products/%v)", id)
+	golog.Infof("PUT - Product: UpdateProductHandler (/products/%d)", id)
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 
 	if err != nil {
-		golog.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusBadRequest,
-			Data:    err.Error(),
-			Message: "Cannot parse token",
-		}
-		err := json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
 		return
 	}
 
-	if user.RoleID == model.Cashier {
-		golog.Error("User must be Admin or Manager")
-		w.WriteHeader(http.StatusForbidden)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusForbidden,
-			Data:    "User must be Admin or Manager",
-			Message: "User must be Admin or Manager",
-		}
-		err := json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+		message := "User must be Admin or Manager"
+		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
 		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		golog.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusInternalServerError,
-			Data:    err.Error(),
-			Message: "Cannot read request body",
-		}
-		err = json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+		renderJSONError(w, http.StatusInternalServerError, err, "Cannot read request body")
 		return
 	}
 
-	product, err := controller.UpdateProduct(string(body))
+	product, err := c.product.UpdateProduct(string(body))
 	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	err = json.NewEncoder(w).Encode(product)
-	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	renderJSONSuccess(w, http.StatusOK, product, "Product updated")
 }
 
-func (controller *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, _ := strconv.ParseInt(vars["id"], 10, 32)
-	golog.Infof("DELETE - Product: DeleteProductHandler (/products/%v)", id)
-
-	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
-
-	if err != nil {
-		golog.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusBadRequest,
-			Data:    err.Error(),
-			Message: "Cannot parse token",
-		}
-		err := json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
-		return
-	}
-
-	if user.RoleID == model.Cashier {
-		golog.Error("User must be Admin or Manager")
-		w.WriteHeader(http.StatusForbidden)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusForbidden,
-			Data:    "User must be Admin or Manager",
-			Message: "User must be Admin or Manager",
-		}
-		err := json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
-		return
-	}
-
-	product, err := controller.DeleteProduct(int(id))
-	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
+func (c *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	err = json.NewEncoder(w).Encode(product)
+
+	vars := mux.Vars(r)
+	id, _ := strconv.ParseInt(vars["id"], 10, 64)
+	golog.Infof("DELETE - Product: DeleteProductHandler (/products/%d)", id)
+
+	authHeader := r.Header.Get("Authorization")
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
+
 	if err != nil {
+		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
+		return
+	}
+
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+		message := "User must be Admin or Manager"
+		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
+		return
+	}
+
+	product, err := c.product.DeleteProduct(id)
+	if err != nil {
+		renderJSONError(w, http.StatusBadRequest, err, err.Error())
 		golog.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	renderJSONSuccess(w, http.StatusOK, product, "Product deleted")
 }

@@ -13,7 +13,7 @@ import (
 )
 
 var config util.Config
-var databaseConnection util.DatabaseConnection
+var databaseConnection util.DBConn
 
 func main() {
 	initMigration()

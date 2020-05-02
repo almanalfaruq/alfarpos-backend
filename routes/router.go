@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func GetAllRoutes(database *util.DatabaseConnection, config util.Config) *mux.Router {
+func GetAllRoutes(database *util.DBConn, config util.Config) *mux.Router {
 	routes := mux.NewRouter().StrictSlash(true).PathPrefix("/api/").Subrouter()
 
 	userController := InjectUserController(database, config)
@@ -18,6 +18,7 @@ func GetAllRoutes(database *util.DatabaseConnection, config util.Config) *mux.Ro
 	routes.HandleFunc("/products/id/{id}/", productController.GetProductByIdHandler).Methods("GET")
 	routes.HandleFunc("/products/code/{code}/", productController.GetProductByCodeHandler).Methods("GET")
 	routes.HandleFunc("/products", productController.NewProductHandler).Methods("POST")
+	routes.HandleFunc("/products/export_excel", productController.ExportAllProductsToExcelHandler).Methods("GET")
 	routes.HandleFunc("/products/upload_excel/{sheetName}", productController.UploadExcelProductHandler).Methods("POST")
 	routes.HandleFunc("/products/{id}", productController.UpdateProductHandler).Methods("PUT")
 

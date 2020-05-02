@@ -1,98 +1,107 @@
 package service
 
 import (
-	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
-	"github.com/almanalfaruq/alfarpos-backend/repository"
 )
 
 type OrderService struct {
-	Order       repository.IOrderRepository
-	OrderDetail repository.IOrderDetailRepository
-	Payment     repository.IPaymentRepository
-	Customer    repository.ICustomerRepository
-	Product     repository.IProductRepository
+	order       orderRepositoryIface
+	orderDetail orderDetailRepositoryIface
+	payment     paymentRepositoryIface
+	customer    customerRepositoryIface
+	product     productRepositoryIface
 }
 
-type IOrderService interface {
-	GetAllOrder() ([]model.Order, error)
-	GetOneOrder(id int) (model.Order, error)
-	GetOrderByInvoice(invoice string) (model.Order, error)
-	GetOrderByUserId(userId int) ([]model.Order, error)
-	NewOrder(OrderData string) (model.Order, error)
-	UpdateOrder(OrderData string) (model.Order, error)
-	DeleteOrder(id int) (model.Order, error)
-}
-
-func (service *OrderService) GetAllOrder() ([]model.Order, error) {
-	return service.Order.FindAll(), nil
-}
-
-func (service *OrderService) GetOneOrder(id int) (model.Order, error) {
-	Order := service.Order.FindById(id)
-	if Order.ID == 0 {
-		return Order, errors.New("Order not found")
+func NewOrderService(orderRepo orderRepositoryIface, orderDetailRepo orderDetailRepositoryIface, paymentRepo paymentRepositoryIface,
+	customerRepo customerRepositoryIface, productRepo productRepositoryIface) *OrderService {
+	return &OrderService{
+		order:       orderRepo,
+		orderDetail: orderDetailRepo,
+		payment:     paymentRepo,
+		customer:    customerRepo,
+		product:     productRepo,
 	}
-	return Order, nil
 }
 
-func (service *OrderService) GetOrderByInvoice(invoice string) (model.Order, error) {
+func (s *OrderService) GetAllOrder() ([]model.Order, error) {
+	return s.order.FindAll(), nil
+}
+
+func (s *OrderService) GetOneOrder(id int64) (model.Order, error) {
+	order, err := s.order.FindById(id)
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			return model.Order{}, fmt.Errorf("Order with id: %d is not found", id)
+		}
+		return model.Order{}, err
+	}
+	return order, nil
+}
+
+func (s *OrderService) GetOrderByInvoice(invoice string) (model.Order, error) {
 	invoice = strings.ToLower(invoice)
-	Order := service.Order.FindByInvoice(invoice)
-	if Order.ID == 0 {
-		return Order, errors.New("Order not found")
-	}
-	return Order, nil
-}
-
-func (service *OrderService) GetOrderByUserId(userId int) ([]model.Order, error) {
-	Orders := service.Order.FindByUserId(userId)
-	if len(Orders) == 0 {
-		return Orders, errors.New("Orders not found")
-	}
-	return Orders, nil
-}
-
-func (service *OrderService) NewOrder(OrderData string) (model.Order, error) {
-	var Order model.Order
-	OrderDataByte := []byte(OrderData)
-	err := json.Unmarshal(OrderDataByte, &Order)
+	order, err := s.order.FindByInvoice(invoice)
 	if err != nil {
-		return Order, err
+		if errors.Is(err, model.ErrNotFound) {
+			return model.Order{}, fmt.Errorf("Order with invoice: %s is not found", invoice)
+		}
+		return model.Order{}, err
 	}
-	Customer := service.Customer.FindById(Order.CustomerID)
-	Order.Customer = Customer
-	Payment := service.Payment.FindById(Order.PaymentID)
-	Order.Payment = Payment
-	Order = service.Order.New(Order)
-	for _, OrderDetail := range Order.OrderDetails {
-		OrderDetail.OrderID = int(Order.ID)
-		OrderDetail.Order = Order
-		OrderDetail.Product = service.Product.FindById(OrderDetail.ProductID)
-		service.OrderDetail.New(OrderDetail)
-		Product := OrderDetail.Product
-		ProductQty := *Product.Quantity
-		stockQty := ProductQty - int64(OrderDetail.Quantity)
-		Product.Quantity = &stockQty
-		service.Product.Update(Product)
-	}
-	return Order, nil
+	return order, nil
 }
 
-func (service *OrderService) UpdateOrder(OrderData string) (model.Order, error) {
-	var Order model.Order
-	OrderDataByte := []byte(OrderData)
-	err := json.Unmarshal(OrderDataByte, &Order)
+func (s *OrderService) GetOrderByUserId(userId int64) ([]model.Order, error) {
+	orders, err := s.order.FindByUserId(userId)
 	if err != nil {
-		return Order, err
+		if errors.Is(err, model.ErrNotFound) {
+			return []model.Order{}, fmt.Errorf("Order with user id: %d is not found", userId)
+		}
+		return []model.Order{}, err
 	}
-	Order = service.Order.Update(Order)
-	return Order, nil
+	if len(orders) == 0 {
+		return orders, errors.New("Orders not found")
+	}
+	return orders, nil
 }
 
-func (service *OrderService) DeleteOrder(id int) (model.Order, error) {
-	return service.Order.Delete(id)
+func (s *OrderService) NewOrder(order model.Order) (model.Order, error) {
+	var (
+		err         error
+		orderDetail model.OrderDetail
+	)
+	customer := s.customer.FindById(order.CustomerID)
+	order.Customer = customer
+	payment := s.payment.FindById(order.PaymentID)
+	order.Payment = payment
+	order, err = s.order.New(order)
+	if err != nil {
+		return model.Order{}, err
+	}
+	for _, OrderDetail := range order.OrderDetails {
+		orderDetail.OrderID = int64(order.ID)
+		orderDetail.Order = order
+		orderDetail.Product = s.product.FindById(int64(orderDetail.ProductID))
+		_, err := s.orderDetail.New(OrderDetail)
+		if err != nil {
+			return model.Order{}, err
+		}
+		product := orderDetail.Product
+		productQty := *product.Quantity
+		stockQty := productQty - int64(orderDetail.Quantity)
+		product.Quantity = &stockQty
+		s.product.Update(product)
+	}
+	return order, nil
+}
+
+func (s *OrderService) UpdateOrder(order model.Order) (model.Order, error) {
+	return s.order.Update(order)
+}
+
+func (s *OrderService) DeleteOrder(id int64) (model.Order, error) {
+	return s.order.Delete(id)
 }

@@ -3,9 +3,9 @@ package model
 type Role int
 
 const (
-	Admin Role = iota + 1
-	Manager
-	Cashier
+	RoleAdmin Role = iota + 1
+	RoleManager
+	RoleCashier
 )
 
 type User struct {
@@ -16,4 +16,13 @@ type User struct {
 	Address  string `json:"address"`
 	Phone    string `json:"phone"`
 	RoleID   Role   `json:"role_id"`
+}
+
+func (u *User) HasRole(roles ...Role) bool {
+	for _, role := range roles {
+		if u.RoleID == role {
+			return true
+		}
+	}
+	return false
 }

@@ -1,21 +1,23 @@
 package controller
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/kataras/golog"
-
-	"github.com/almanalfaruq/alfarpos-backend/model/response"
-	"github.com/almanalfaruq/alfarpos-backend/service"
 )
 
 type UserController struct {
-	service.IUserService
+	user userServiceIface
 }
 
-func (controller *UserController) RegisterHandler(w http.ResponseWriter, r *http.Request) {
+func NewUserController(userService userServiceIface) *UserController {
+	return &UserController{
+		user: userService,
+	}
+}
+
+func (c *UserController) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -23,53 +25,20 @@ func (controller *UserController) RegisterHandler(w http.ResponseWriter, r *http
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		golog.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusInternalServerError,
-			Data:    err.Error(),
-			Message: "Cannot read request body",
-		}
-		err = json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+		renderJSONError(w, http.StatusInternalServerError, err, "Cannot read request body")
 		return
 	}
 
-	user, err := controller.NewUser(string(body))
+	user, err := c.user.NewUser(string(body))
 	if err != nil {
-		golog.Error(err)
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusUnprocessableEntity,
-			Data:    err.Error(),
-			Message: "Cannot create user",
-		}
-		err = json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+		renderJSONError(w, http.StatusUnprocessableEntity, err, "Cannot create user")
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	responseMapper := response.ResponseMapper{
-		Code:    http.StatusCreated,
-		Data:    user,
-		Message: "User created!",
-	}
-	err = json.NewEncoder(w).Encode(responseMapper)
-	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), 500)
-		return
-	}
+	renderJSONSuccess(w, http.StatusCreated, user, "User created")
 }
 
-func (controller *UserController) LoginHandler(w http.ResponseWriter, r *http.Request) {
+func (c *UserController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -77,49 +46,15 @@ func (controller *UserController) LoginHandler(w http.ResponseWriter, r *http.Re
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		golog.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusInternalServerError,
-			Data:    err.Error(),
-			Message: "Cannot read request body",
-		}
-		err = json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-			return
-		}
+		renderJSONError(w, http.StatusInternalServerError, err, "Cannot read request body")
 		return
 	}
 
-	token, err := controller.LoginUser(string(body))
+	token, err := c.user.LoginUser(string(body))
 	if err != nil {
-		golog.Error(err)
-		w.WriteHeader(http.StatusUnauthorized)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusUnauthorized,
-			Data:    err.Error(),
-			Message: "Cannot login user",
-		}
-		err = json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+		renderJSONError(w, http.StatusUnauthorized, err, "Cannot login user")
 		return
 	}
 
-	loginResponse := response.ResponseMapper{
-		Code:    http.StatusOK,
-		Data:    token,
-		Message: "User logged in!",
-	}
-
-	err = json.NewEncoder(w).Encode(loginResponse)
-	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), 500)
-		return
-	}
+	renderJSONSuccess(w, http.StatusOK, token, "User logged in")
 }

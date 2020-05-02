@@ -6,28 +6,24 @@ import (
 	"strings"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
-	"github.com/almanalfaruq/alfarpos-backend/repository"
 )
 
 type UnitService struct {
-	repository.IUnitRepository
+	unit unitRepositoryIface
 }
 
-type IUnitService interface {
-	GetAllUnit() ([]model.Unit, error)
-	GetOneUnit(id int) (model.Unit, error)
-	GetUnitsByName(name string) ([]model.Unit, error)
-	NewUnit(unitData string) (model.Unit, error)
-	UpdateUnit(unitData string) (model.Unit, error)
-	DeleteUnit(id int) (model.Unit, error)
+func NewUnitService(unitRepo unitRepositoryIface) *UnitService {
+	return &UnitService{
+		unit: unitRepo,
+	}
 }
 
 func (service *UnitService) GetAllUnit() ([]model.Unit, error) {
-	return service.FindAll(), nil
+	return service.unit.FindAll(), nil
 }
 
-func (service *UnitService) GetOneUnit(id int) (model.Unit, error) {
-	unit := service.FindById(id)
+func (service *UnitService) GetOneUnit(id int64) (model.Unit, error) {
+	unit := service.unit.FindById(id)
 	if unit.ID == 0 {
 		return unit, errors.New("Unit not found")
 	}
@@ -36,7 +32,7 @@ func (service *UnitService) GetOneUnit(id int) (model.Unit, error) {
 
 func (service *UnitService) GetUnitsByName(name string) ([]model.Unit, error) {
 	name = strings.ToLower(name)
-	units := service.FindByName(name)
+	units := service.unit.FindByName(name)
 	if len(units) == 0 {
 		return units, errors.New("Units not found")
 	}
@@ -50,7 +46,7 @@ func (service *UnitService) NewUnit(unitData string) (model.Unit, error) {
 	if err != nil {
 		return unit, err
 	}
-	return service.New(unit), nil
+	return service.unit.New(unit), nil
 }
 
 func (service *UnitService) UpdateUnit(unitData string) (model.Unit, error) {
@@ -60,10 +56,10 @@ func (service *UnitService) UpdateUnit(unitData string) (model.Unit, error) {
 	if err != nil {
 		return unit, err
 	}
-	unit = service.Update(unit)
+	unit = service.unit.Update(unit)
 	return unit, nil
 }
 
-func (service *UnitService) DeleteUnit(id int) (model.Unit, error) {
-	return service.Delete(id)
+func (service *UnitService) DeleteUnit(id int64) (model.Unit, error) {
+	return service.unit.Delete(id)
 }

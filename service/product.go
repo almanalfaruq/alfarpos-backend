@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"mime/multipart"
 	"strconv"
 	"strings"
 
@@ -14,36 +13,31 @@ import (
 	"github.com/360EntSecGroup-Skylar/excelize"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
-	"github.com/almanalfaruq/alfarpos-backend/repository"
 )
 
 type ProductService struct {
-	Product  repository.IProductRepository
-	Category repository.ICategoryRepository
-	Unit     repository.IUnitRepository
-	Stock    repository.IStockRepository
+	product  productRepositoryIface
+	category categoryRepositoryIface
+	unit     unitRepositoryIface
+	stock    stockRepositoryIface
 }
 
-type IProductService interface {
-	GetAllProduct() ([]model.Product, error)
-	GetOneProduct(id int) (model.Product, error)
-	GetOneProductByCode(code string) (model.Product, error)
-	GetProductsByCode(productCode string) ([]model.Product, error)
-	GetProductsByName(productName string) ([]model.Product, error)
-	GetProductsByCategoryName(categoryName string) ([]model.Product, error)
-	GetProductsByUnitName(unitName string) ([]model.Product, error)
-	NewProduct(productData string) (model.Product, error)
-	NewProductUsingExcel(sheetName string, excelFile multipart.File) error
-	UpdateProduct(productData string) (model.Product, error)
-	DeleteProduct(id int) (model.Product, error)
+func NewProductService(productRepo productRepositoryIface, categoryRepo categoryRepositoryIface, unitRepo unitRepositoryIface,
+	stockRepo stockRepositoryIface) *ProductService {
+	return &ProductService{
+		product:  productRepo,
+		category: categoryRepo,
+		unit:     unitRepo,
+		stock:    stockRepo,
+	}
 }
 
 func (service *ProductService) GetAllProduct() ([]model.Product, error) {
-	return service.Product.FindAll(), nil
+	return service.product.FindAll(), nil
 }
 
-func (service *ProductService) GetOneProduct(id int) (model.Product, error) {
-	product := service.Product.FindById(id)
+func (service *ProductService) GetOneProduct(id int64) (model.Product, error) {
+	product := service.product.FindById(id)
 	if product.ID == 0 {
 		return product, errors.New("Product not found")
 	}
@@ -51,17 +45,15 @@ func (service *ProductService) GetOneProduct(id int) (model.Product, error) {
 }
 
 func (service *ProductService) GetOneProductByCode(code string) (model.Product, error) {
-	var product model.Product
-	products := service.Product.FindByCode(code)
-	if len(products) == 0 {
-		return product, errors.New("Product not found")
+	products := service.product.FindByCode(code)
+	if products[0].ID == 0 {
+		return products[0], errors.New("Product not found")
 	}
-	product = products[0]
-	return product, nil
+	return products[0], nil
 }
 
 func (service *ProductService) GetProductsByCode(productCode string) ([]model.Product, error) {
-	products := service.Product.FindByCode(productCode)
+	products := service.product.FindByCode(productCode)
 	if len(products) == 0 {
 		return products, errors.New("Products not found")
 	}
@@ -70,7 +62,7 @@ func (service *ProductService) GetProductsByCode(productCode string) ([]model.Pr
 
 func (service *ProductService) GetProductsByName(productName string) ([]model.Product, error) {
 	productName = strings.ToLower(productName)
-	products := service.Product.FindByName(productName)
+	products := service.product.FindByName(productName)
 	if len(products) == 0 {
 		return products, errors.New("Products not found")
 	}
@@ -79,7 +71,7 @@ func (service *ProductService) GetProductsByName(productName string) ([]model.Pr
 
 func (service *ProductService) GetProductsByCategoryName(categoryName string) ([]model.Product, error) {
 	categoryName = strings.ToLower(categoryName)
-	products := service.Product.FindByCategoryName(categoryName)
+	products := service.product.FindByCategoryName(categoryName)
 	if len(products) == 0 {
 		return products, errors.New("Products not found")
 	}
@@ -88,7 +80,7 @@ func (service *ProductService) GetProductsByCategoryName(categoryName string) ([
 
 func (service *ProductService) GetProductsByUnitName(unitName string) ([]model.Product, error) {
 	unitName = strings.ToLower(unitName)
-	products := service.Product.FindByUnitName(unitName)
+	products := service.product.FindByUnitName(unitName)
 	if len(products) == 0 {
 		return products, errors.New("Products not found")
 	}
@@ -102,17 +94,48 @@ func (service *ProductService) NewProduct(productData string) (model.Product, er
 	if err != nil {
 		return product, err
 	}
-	product = service.Product.New(product)
+	product = service.product.New(product)
 	stock := model.Stock{
-		ProductID: int(product.ID),
+		ProductID: int64(product.ID),
 		Product:   product,
 		Quantity:  0,
 	}
-	service.Stock.New(stock)
+	service.stock.New(stock)
 	return product, nil
 }
 
-func (service *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Reader) error {
+func (s *ProductService) ExportAllProductsToExcel() (*excelize.File, error) {
+	products := s.product.FindAll()
+	sheetName := "Products"
+	xlsx := excelize.NewFile()
+
+	xlsx.SetSheetName(xlsx.GetSheetName(1), sheetName)
+	xlsx.SetCellValue(sheetName, "A1", "Barcode")
+	xlsx.SetCellValue(sheetName, "B1", "Nama Barang")
+	xlsx.SetCellValue(sheetName, "C1", "Harga Jual")
+	xlsx.SetCellValue(sheetName, "D1", "Stok")
+	xlsx.SetCellValue(sheetName, "E1", "Jenis Barang")
+	xlsx.SetCellValue(sheetName, "F1", "Harga Beli")
+	xlsx.SetCellValue(sheetName, "G1", "Satuan")
+
+	for i, product := range products {
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("A%d", i+2), product.Code)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("B%d", i+2), product.Name)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("C%d", i+2), product.SellPrice)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("D%d", i+2), product.Quantity)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("E%d", i+2), product.Category.Name)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("F%d", i+2), product.BuyPrice)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("G%d", i+2), product.Unit.Name)
+	}
+
+	err := xlsx.SaveAs("../public/exported-product.xlsx")
+	if err != nil {
+		return nil, err
+	}
+	return xlsx, nil
+}
+
+func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Reader) error {
 	golog.Info("Starting excel import...")
 	excel, err := excelize.OpenReader(excelFile)
 	if err != nil {
@@ -121,74 +144,52 @@ func (service *ProductService) NewProductUsingExcel(sheetName string, excelFile 
 	if sheetName == "" {
 		sheetName = "Sheet1"
 	}
-	rows, err := excel.GetRows(sheetName)
-	if err != nil {
-		return err
+	rows := excel.GetRows(sheetName)
+	if len(rows) < 1 {
+		return fmt.Errorf("Rows length < 1")
 	}
+	products := s.parseExcelRowsToProduct(rows)
 	productCounter := 0
-	for indexRow, row := range rows {
-		if indexRow == 0 {
-			continue
-		}
-		code := row[0]
-		name := row[1]
-		sellPrice, _ := strconv.ParseInt(row[2], 10, 64)
-		quantity, _ := strconv.ParseInt(row[3], 10, 64)
-		categoryName := row[4]
-		buyPrice, _ := strconv.ParseInt(row[5], 10, 64)
-		unitName := row[6]
-		if code == "" || name == "" {
-			continue
-		}
-		golog.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", name, quantity, sellPrice, buyPrice)
-		product := model.Product{
-			Code:      code,
-			Name:      name,
-			SellPrice: &sellPrice,
-			Quantity:  &quantity,
-			Category: model.Category{
-				Name: categoryName,
-			},
-			BuyPrice: &buyPrice,
-			Unit: model.Unit{
-				Name: unitName,
-			},
-		}
-		categories := service.Category.FindByName(product.Category.Name)
+	for _, product := range products {
+		golog.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", product.Name, *product.Quantity, *product.SellPrice, *product.BuyPrice)
+		categories := s.category.FindByName(product.Category.Name)
 		var category model.Category
 		if len(categories) == 0 {
 			category = model.Category{Name: product.Category.Name}
-			category = service.Category.New(category)
+			category, err = s.category.New(category)
+			if err != nil {
+				continue
+			}
 		} else {
 			category = categories[0]
 		}
-		product.CategoryID = int(category.ID)
+		product.CategoryID = int64(category.ID)
 		product.Category.ID = category.ID
-		units := service.Unit.FindByName(product.Unit.Name)
+		units := s.unit.FindByName(product.Unit.Name)
 		var unit model.Unit
 		if len(units) == 0 {
 			unit = model.Unit{Name: product.Unit.Name}
-			unit = service.Unit.New(unit)
+			unit = s.unit.New(unit)
 		} else {
 			unit = units[0]
 		}
-		product.UnitID = int(unit.ID)
+		product.UnitID = int64(unit.ID)
 		product.Unit.ID = unit.ID
-		products := service.Product.FindByCode(product.Code)
-		if len(products) == 0 {
-			product = service.Product.New(product)
+		oldProducts := s.product.FindByCode(product.Code)
+		if len(oldProducts) < 1 {
+			product = s.product.New(product)
 			golog.Infof("%#v created!", product)
 		} else {
-			product.ID = products[0].ID
-			product = service.Product.Update(product)
+			product.ID = oldProducts[0].ID
+			product = s.product.Update(product)
 			golog.Infof("%#v updated!", product)
 		}
 		stock := model.Stock{
-			ProductID: int(product.ID),
+			ProductID: int64(product.ID),
 			Product:   product,
 			Quantity:  0,
 		}
-		service.Stock.New(stock)
+		s.stock.New(stock)
 		productCounter++
 	}
 	if productCounter != len(rows)-1 {
@@ -206,10 +207,53 @@ func (service *ProductService) UpdateProduct(productData string) (model.Product,
 	if err != nil {
 		return product, err
 	}
-	product = service.Product.Update(product)
+	product = service.product.Update(product)
 	return product, nil
 }
 
-func (service *ProductService) DeleteProduct(id int) (model.Product, error) {
-	return service.Product.Delete(id)
+func (service *ProductService) DeleteProduct(id int64) (model.Product, error) {
+	return service.product.Delete(id)
+}
+
+func (s *ProductService) parseExcelRowsToProduct(rows [][]string) []model.Product {
+	var products []model.Product
+	// skip index 0 - Header
+	for _, row := range rows[1:] {
+		code := row[0]
+		name := row[1]
+		sellPrice, err := strconv.ParseInt(row[2], 10, 64)
+		if err != nil {
+			continue
+		}
+		quantity, err := strconv.ParseInt(row[3], 10, 64)
+		if err != nil {
+			continue
+		}
+		categoryName := row[4]
+		buyPrice, err := strconv.ParseInt(row[5], 10, 64)
+		if err != nil {
+			continue
+		}
+		unitName := row[6]
+		if code == "" || name == "" {
+			continue
+		}
+
+		product := model.Product{
+			Code:      code,
+			Name:      name,
+			SellPrice: &sellPrice,
+			Quantity:  &quantity,
+			Category: model.Category{
+				Name: categoryName,
+			},
+			BuyPrice: &buyPrice,
+			Unit: model.Unit{
+				Name: unitName,
+			},
+		}
+
+		products = append(products, product)
+	}
+	return products
 }

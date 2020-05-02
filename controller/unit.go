@@ -1,325 +1,173 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
-	"github.com/almanalfaruq/alfarpos-backend/model/response"
-	"github.com/almanalfaruq/alfarpos-backend/service"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 )
 
 type UnitController struct {
-	service.IUnitService
-	util.Config
+	unit unitServiceIface
+	conf util.Config
 }
 
-func (controller *UnitController) GetUnitsHandler(w http.ResponseWriter, r *http.Request) {
+func NewUnitController(conf util.Config, unitService unitServiceIface) *UnitController {
+	return &UnitController{
+		unit: unitService,
+		conf: conf,
+	}
+}
+
+func (c *UnitController) GetUnitsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	var units []model.Unit
 	var err error
-	var responseMapper response.ResponseMapper
 	query := r.URL.Query().Get("query")
 
 	if query == "" {
 		golog.Info("GET - Unit: GetAllUnitHandler (/units)")
-		units, err = controller.GetAllUnit()
+		units, err = c.unit.GetAllUnit()
 		if err != nil {
-			golog.Error(err)
-			responseMapper = response.ResponseMapper{
-				Code:    http.StatusInternalServerError,
-				Data:    err.Error(),
-				Message: "Cannot get all units",
-			}
-			w.WriteHeader(http.StatusNotFound)
-			err = json.NewEncoder(w).Encode(responseMapper)
-			if err != nil {
-				golog.Error("Cannot encode json")
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
+			renderJSONError(w, http.StatusInternalServerError, err, "Cannot get all units")
 			return
 		}
 	} else {
 		golog.Infof("GET - Product: GetUnitsByNameHandler (/units?query=%s)", query)
-		units, err = controller.GetUnitsByName(query)
+		units, err = c.unit.GetUnitsByName(query)
 		if err != nil {
-			golog.Error(err)
-			responseMapper = response.ResponseMapper{
-				Code:    http.StatusNotFound,
-				Data:    err.Error(),
-				Message: "Cannot get units by name",
-			}
-			w.WriteHeader(http.StatusNotFound)
-			err = json.NewEncoder(w).Encode(responseMapper)
-			if err != nil {
-				golog.Error("Cannot encode json")
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
+			renderJSONError(w, http.StatusNotFound, err, "Cannot get units by name")
 			return
 		}
 	}
 
-	responseMapper = response.ResponseMapper{
-		Code:    http.StatusOK,
-		Data:    units,
-		Message: "Success getting units",
-	}
-	err = json.NewEncoder(w).Encode(responseMapper)
-	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	renderJSONSuccess(w, http.StatusOK, units, "Success getting all units")
 }
 
-func (controller *UnitController) GetUnitByIdHandler(w http.ResponseWriter, r *http.Request) {
+func (c *UnitController) GetUnitByIdHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	var responseMapper response.ResponseMapper
 	vars := mux.Vars(r)
-	id, _ := strconv.ParseInt(vars["id"], 10, 32)
-	golog.Infof("GET - Product: GetUnitByIdHandler (/units/id/%v)", id)
-	unit, err := controller.GetOneUnit(int(id))
+	id, _ := strconv.ParseInt(vars["id"], 10, 64)
+	golog.Infof("GET - Product: GetUnitByIdHandler (/units/id/%d)", id)
+	unit, err := c.unit.GetOneUnit(id)
 	if err != nil {
-		golog.Error(err)
-		responseMapper = response.ResponseMapper{
-			Code:    http.StatusNotFound,
-			Data:    err.Error(),
-			Message: fmt.Sprintf("Cannot find unit with id: %v", id),
-		}
-		w.WriteHeader(http.StatusNotFound)
-		err = json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error("Cannot encode json")
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		renderJSON(w, http.StatusNotFound, err, fmt.Sprintf("Cannot find unit with id: %d", id))
 		return
 	}
 
-	responseMapper = response.ResponseMapper{
-		Code:    http.StatusOK,
-		Data:    unit,
-		Message: fmt.Sprintf("Success getting unit with id: %v", id),
-	}
-	err = json.NewEncoder(w).Encode(responseMapper)
-	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	renderJSONSuccess(w, http.StatusOK, unit, fmt.Sprintf("Success getting unit with id: %d", id))
 }
 
-func (controller *UnitController) NewUnitHandler(w http.ResponseWriter, r *http.Request) {
+func (c *UnitController) NewUnitHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	golog.Info("POST - Unit: NewUnitHandler (/units)")
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 
 	if err != nil {
-		golog.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusBadRequest,
-			Data:    err.Error(),
-			Message: "Cannot parse token",
-		}
-		err := json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
 		return
 	}
 
-	if user.RoleID == model.Cashier {
-		golog.Error("User must be Admin or Manager")
-		w.WriteHeader(http.StatusForbidden)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusForbidden,
-			Data:    "User must be Admin or Manager",
-			Message: "User must be Admin or Manager",
-		}
-		err := json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+		message := "User must be Admin or Manager"
+		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
 		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		golog.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusInternalServerError,
-			Data:    err.Error(),
-			Message: "Cannot read request body",
-		}
-		err = json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+		renderJSONError(w, http.StatusInternalServerError, err, "Cannot read request body")
 		return
 	}
 
-	unit, err := controller.NewUnit(string(body))
+	unit, err := c.unit.NewUnit(string(body))
 	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(unit)
-	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	renderJSONSuccess(w, http.StatusCreated, unit, "Unit created")
 }
 
-func (controller *UnitController) UpdateUnitHandler(w http.ResponseWriter, r *http.Request) {
+func (c *UnitController) UpdateUnitHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	vars := mux.Vars(r)
-	id, _ := strconv.ParseInt(vars["id"], 10, 32)
-	golog.Infof("PUT - Unit: UpdateUnitHandler (/units/%v)", id)
+	id, _ := strconv.ParseInt(vars["id"], 10, 64)
+	golog.Infof("PUT - Unit: UpdateUnitHandler (/units/%d)", id)
 
 	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
 
 	if err != nil {
-		golog.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusBadRequest,
-			Data:    err.Error(),
-			Message: "Cannot parse token",
-		}
-		err := json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
 		return
 	}
 
-	if user.RoleID == model.Cashier {
-		golog.Error("User must be Admin or Manager")
-		w.WriteHeader(http.StatusForbidden)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusForbidden,
-			Data:    "User must be Admin or Manager",
-			Message: "User must be Admin or Manager",
-		}
-		err := json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+		message := "User must be Admin or Manager"
+		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
 		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		golog.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusInternalServerError,
-			Data:    err.Error(),
-			Message: "Cannot read request body",
-		}
-		err = json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
+		renderJSONError(w, http.StatusInternalServerError, err, "Cannot read request body")
 		return
 	}
 
-	unit, err := controller.UpdateUnit(string(body))
+	unit, err := c.unit.UpdateUnit(string(body))
 	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	err = json.NewEncoder(w).Encode(unit)
-	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	renderJSONSuccess(w, http.StatusOK, unit, "Unit updated")
 }
 
-func (controller *UnitController) DeleteUnitHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, _ := strconv.ParseInt(vars["id"], 10, 32)
-	golog.Infof("DELETE - Unit: DeleteUnitHandler (/units/%v)", id)
-
-	authHeader := r.Header.Get("Authorization")
-	user, err := ParseJwtToUser(authHeader, controller.SecretKey)
-
-	if err != nil {
-		golog.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusBadRequest,
-			Data:    err.Error(),
-			Message: "Cannot parse token",
-		}
-		err := json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
-		return
-	}
-
-	if user.RoleID == model.Cashier {
-		golog.Error("User must be Admin or Manager")
-		w.WriteHeader(http.StatusForbidden)
-		responseMapper := response.ResponseMapper{
-			Code:    http.StatusForbidden,
-			Data:    "User must be Admin or Manager",
-			Message: "User must be Admin or Manager",
-		}
-		err := json.NewEncoder(w).Encode(responseMapper)
-		if err != nil {
-			golog.Error(err)
-			http.Error(w, err.Error(), 500)
-		}
-		return
-	}
-
-	unit, err := controller.DeleteUnit(int(id))
-	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
+func (c *UnitController) DeleteUnitHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	err = json.NewEncoder(w).Encode(unit)
+
+	vars := mux.Vars(r)
+	id, _ := strconv.ParseInt(vars["id"], 10, 64)
+	golog.Infof("DELETE - Unit: DeleteUnitHandler (/units/%d)", id)
+
+	authHeader := r.Header.Get("Authorization")
+	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
+
 	if err != nil {
-		golog.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
 		return
 	}
+
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+		message := "User must be Admin or Manager"
+		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
+		return
+	}
+
+	unit, err := c.unit.DeleteUnit(id)
+	if err != nil {
+		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+		return
+	}
+
+	renderJSONSuccess(w, http.StatusOK, unit, "Unit deleted")
 }

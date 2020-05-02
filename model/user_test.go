@@ -14,14 +14,14 @@ func TestUserModel(t *testing.T) {
 		fullname := "Almantera"
 		address := "Boyolali"
 		phone := "081225812599"
-		role := Admin
+		role := RoleAdmin
 
 		encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		if err != nil {
 			t.Fatal("Bcrypt error")
 		}
 
-		user := User{Template: Template{ID: 1}, Username: username, Password: string(encryptedPassword), FullName: fullname, Address: address, Phone: phone, RoleID: Admin}
+		user := User{Template: Template{ID: 1}, Username: username, Password: string(encryptedPassword), FullName: fullname, Address: address, Phone: phone, RoleID: RoleAdmin}
 
 		if user.ID != 1 {
 			FatalMessage(t, 1, user.ID)

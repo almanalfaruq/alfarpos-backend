@@ -8,36 +8,46 @@ import (
 
 	"github.com/kataras/golog"
 
-	"github.com/almanalfaruq/alfarpos-backend/service"
 	"github.com/gorilla/mux"
 )
 
 type PrintController struct {
-	service.IPrintService
+	print printServiceIface
 }
 
-func (controller *PrintController) OrderByInvoiceToPdfHandler(w http.ResponseWriter, r *http.Request) {
+func NewPrintController(printService printServiceIface) *PrintController {
+	return &PrintController{
+		print: printService,
+	}
+}
+
+func (c *PrintController) OrderByInvoiceToPdfHandler(w http.ResponseWriter, r *http.Request) {
 	buffer := new(bytes.Buffer)
 	vars := mux.Vars(r)
 	invoice := vars["invoice"]
 	golog.Infof("GET - Printer: OrderByInvoiceToPdfHandler (/print/order/%s)", invoice)
 	textAttachment := fmt.Sprintf("attachment; filename=\"%s.pdf\";", invoice)
 
-	pdf := controller.OrderByInvoiceToPdf(invoice)
-	err := pdf.Output(buffer)
+	pdf, err := c.print.OrderByInvoiceToPdf(invoice)
 	if err != nil {
-		golog.Errorf("GET - Printer: OrderByInvoiceToPdfHandler (/print/order/%s) Error\nError: %v", invoice, err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+	}
+
+	err = pdf.Output(buffer)
+	if err != nil {
+		message := fmt.Sprintf("GET - Printer: OrderByInvoiceToPdfHandler (/print/order/%s)", invoice)
+		renderJSONError(w, http.StatusInternalServerError, err, message)
 		return
 	}
 	pdf.Close()
 
 	_, err = buffer.WriteTo(w)
 	if err != nil {
-		golog.Errorf("GET - Printer: OrderByInvoiceToPdfHandler (/print/order/%s) Error\nError: %v", invoice, err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		message := fmt.Sprintf("GET - Printer: OrderByInvoiceToPdfHandler (/print/order/%s)", invoice)
+		renderJSONError(w, http.StatusInternalServerError, err, message)
 		return
 	}
+
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Pragma", "public")
 	w.Header().Set("Expires", "0")
