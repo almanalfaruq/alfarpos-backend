@@ -3,9 +3,9 @@ package model
 type Role int
 
 const (
-	Admin Role = iota + 1
-	Manager
-	Cashier
+	RoleAdmin Role = iota + 1
+	RoleManager
+	RoleCashier
 )
 
 type User struct {

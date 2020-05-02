@@ -81,7 +81,7 @@ func (c *UnitController) NewUnitHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if ok := user.HasRole(model.Manager, model.Admin); !ok {
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
 		return
@@ -119,7 +119,7 @@ func (c *UnitController) UpdateUnitHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if ok := user.HasRole(model.Manager, model.Admin); !ok {
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
 		return
@@ -157,7 +157,7 @@ func (c *UnitController) DeleteUnitHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if ok := user.HasRole(model.Manager, model.Admin); !ok {
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
 		return

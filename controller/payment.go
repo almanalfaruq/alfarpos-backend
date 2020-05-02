@@ -84,7 +84,7 @@ func (c *PaymentController) NewPaymentHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	if ok := user.HasRole(model.Manager, model.Admin); !ok {
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
 		return
@@ -122,7 +122,7 @@ func (c *PaymentController) UpdatePaymentHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	if ok := user.HasRole(model.Manager, model.Admin); !ok {
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
 		return
@@ -160,7 +160,7 @@ func (c *PaymentController) DeletePaymentHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	if ok := user.HasRole(model.Manager, model.Admin); !ok {
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
 		return

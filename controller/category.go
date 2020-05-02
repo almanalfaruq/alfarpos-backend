@@ -87,7 +87,7 @@ func (c *CategoryController) NewCategoryHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	if ok := user.HasRole(model.Manager, model.Admin); !ok {
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
 		return
@@ -131,7 +131,7 @@ func (c *CategoryController) UpdateCategoryHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	if ok := user.HasRole(model.Manager, model.Admin); !ok {
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
 		return
@@ -176,7 +176,7 @@ func (c *CategoryController) DeleteCategoryHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	if ok := user.HasRole(model.Manager, model.Admin); !ok {
+	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
 		return
