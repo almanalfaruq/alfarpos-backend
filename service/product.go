@@ -104,6 +104,37 @@ func (service *ProductService) NewProduct(productData string) (model.Product, er
 	return product, nil
 }
 
+func (s *ProductService) ExportAllProductsToExcel() (*excelize.File, error) {
+	products := s.product.FindAll()
+	sheetName := "Products"
+	xlsx := excelize.NewFile()
+
+	xlsx.SetSheetName(xlsx.GetSheetName(1), sheetName)
+	xlsx.SetCellValue(sheetName, "A1", "Barcode")
+	xlsx.SetCellValue(sheetName, "B1", "Nama Barang")
+	xlsx.SetCellValue(sheetName, "C1", "Harga Jual")
+	xlsx.SetCellValue(sheetName, "D1", "Stok")
+	xlsx.SetCellValue(sheetName, "E1", "Jenis Barang")
+	xlsx.SetCellValue(sheetName, "F1", "Harga Beli")
+	xlsx.SetCellValue(sheetName, "G1", "Satuan")
+
+	for i, product := range products {
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("A%d", i+2), product.Code)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("B%d", i+2), product.Name)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("C%d", i+2), product.SellPrice)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("D%d", i+2), product.Quantity)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("E%d", i+2), product.Category.Name)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("F%d", i+2), product.BuyPrice)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("G%d", i+2), product.Unit.Name)
+	}
+
+	err := xlsx.SaveAs("../public/exported-product.xlsx")
+	if err != nil {
+		return nil, err
+	}
+	return xlsx, nil
+}
+
 func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Reader) error {
 	golog.Info("Starting excel import...")
 	excel, err := excelize.OpenReader(excelFile)

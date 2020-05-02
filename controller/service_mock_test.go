@@ -5,10 +5,11 @@
 package controller
 
 import (
+	excelize "github.com/360EntSecGroup-Skylar/excelize"
 	model "github.com/almanalfaruq/alfarpos-backend/model"
 	gomock "github.com/golang/mock/gomock"
 	gofpdf "github.com/jung-kurt/gofpdf"
-	multipart "mime/multipart"
+	io "io"
 	reflect "reflect"
 )
 
@@ -374,33 +375,33 @@ func (mr *MockorderServiceIfaceMockRecorder) GetOrderByUserId(userId interface{}
 }
 
 // NewOrder mocks base method
-func (m *MockorderServiceIface) NewOrder(OrderData string) (model.Order, error) {
+func (m *MockorderServiceIface) NewOrder(order model.Order) (model.Order, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewOrder", OrderData)
+	ret := m.ctrl.Call(m, "NewOrder", order)
 	ret0, _ := ret[0].(model.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NewOrder indicates an expected call of NewOrder
-func (mr *MockorderServiceIfaceMockRecorder) NewOrder(OrderData interface{}) *gomock.Call {
+func (mr *MockorderServiceIfaceMockRecorder) NewOrder(order interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewOrder", reflect.TypeOf((*MockorderServiceIface)(nil).NewOrder), OrderData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewOrder", reflect.TypeOf((*MockorderServiceIface)(nil).NewOrder), order)
 }
 
 // UpdateOrder mocks base method
-func (m *MockorderServiceIface) UpdateOrder(OrderData string) (model.Order, error) {
+func (m *MockorderServiceIface) UpdateOrder(order model.Order) (model.Order, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateOrder", OrderData)
+	ret := m.ctrl.Call(m, "UpdateOrder", order)
 	ret0, _ := ret[0].(model.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateOrder indicates an expected call of UpdateOrder
-func (mr *MockorderServiceIfaceMockRecorder) UpdateOrder(OrderData interface{}) *gomock.Call {
+func (mr *MockorderServiceIfaceMockRecorder) UpdateOrder(order interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrder", reflect.TypeOf((*MockorderServiceIface)(nil).UpdateOrder), OrderData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrder", reflect.TypeOf((*MockorderServiceIface)(nil).UpdateOrder), order)
 }
 
 // DeleteOrder mocks base method
@@ -555,11 +556,12 @@ func (m *MockprintServiceIface) EXPECT() *MockprintServiceIfaceMockRecorder {
 }
 
 // OrderByInvoiceToPdf mocks base method
-func (m *MockprintServiceIface) OrderByInvoiceToPdf(invoice string) *gofpdf.Fpdf {
+func (m *MockprintServiceIface) OrderByInvoiceToPdf(invoice string) (*gofpdf.Fpdf, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OrderByInvoiceToPdf", invoice)
 	ret0, _ := ret[0].(*gofpdf.Fpdf)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // OrderByInvoiceToPdf indicates an expected call of OrderByInvoiceToPdf
@@ -696,6 +698,21 @@ func (mr *MockproductServiceIfaceMockRecorder) GetProductsByUnitName(unitName in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsByUnitName", reflect.TypeOf((*MockproductServiceIface)(nil).GetProductsByUnitName), unitName)
 }
 
+// ExportAllProductToExcel mocks base method
+func (m *MockproductServiceIface) ExportAllProductToExcel() (*excelize.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExportAllProductToExcel")
+	ret0, _ := ret[0].(*excelize.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExportAllProductToExcel indicates an expected call of ExportAllProductToExcel
+func (mr *MockproductServiceIfaceMockRecorder) ExportAllProductToExcel() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportAllProductToExcel", reflect.TypeOf((*MockproductServiceIface)(nil).ExportAllProductToExcel))
+}
+
 // NewProduct mocks base method
 func (m *MockproductServiceIface) NewProduct(productData string) (model.Product, error) {
 	m.ctrl.T.Helper()
@@ -712,7 +729,7 @@ func (mr *MockproductServiceIfaceMockRecorder) NewProduct(productData interface{
 }
 
 // NewProductUsingExcel mocks base method
-func (m *MockproductServiceIface) NewProductUsingExcel(sheetName string, excelFile multipart.File) error {
+func (m *MockproductServiceIface) NewProductUsingExcel(sheetName string, excelFile io.Reader) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewProductUsingExcel", sheetName, excelFile)
 	ret0, _ := ret[0].(error)

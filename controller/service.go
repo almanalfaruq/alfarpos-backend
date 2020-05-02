@@ -3,6 +3,7 @@ package controller
 import (
 	"io"
 
+	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/jung-kurt/gofpdf"
 )
@@ -62,6 +63,7 @@ type productServiceIface interface {
 	GetProductsByName(productName string) ([]model.Product, error)
 	GetProductsByCategoryName(categoryName string) ([]model.Product, error)
 	GetProductsByUnitName(unitName string) ([]model.Product, error)
+	ExportAllProductsToExcel() (*excelize.File, error)
 	NewProduct(productData string) (model.Product, error)
 	NewProductUsingExcel(sheetName string, excelFile io.Reader) error
 	UpdateProduct(productData string) (model.Product, error)

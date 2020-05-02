@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 
@@ -141,6 +142,25 @@ func (c *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	renderJSONSuccess(w, http.StatusCreated, product, "Product created")
+}
+
+func (c *ProductController) ExportAllProductsToExcelHandler(w http.ResponseWriter, r *http.Request) {
+	excel, err := c.product.ExportAllProductsToExcel()
+	if err != nil {
+		renderJSONError(w, http.StatusInternalServerError, err, "Cannot export all products to excel")
+		return
+	}
+
+	now := time.Now()
+	excelName := fmt.Sprintf("Exported-Product-%02d-%02d-%d.xlsx", now.Day(), now.Month(), now.Year())
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Header().Set("Content-Disposition", "attachment; filename="+excelName)
+	w.Header().Set("Content-Transfer-Encoding", "binary")
+	w.Header().Set("Expires", "0")
+	err = excel.Write(w)
+	if err != nil {
+		renderJSONError(w, http.StatusInternalServerError, err, "Cannot export all products to excel")
+	}
 }
 
 func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *http.Request) {
