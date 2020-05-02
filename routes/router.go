@@ -2,52 +2,62 @@ package routes
 
 import (
 	. "github.com/almanalfaruq/alfarpos-backend/dependency_injection"
+	_ "github.com/almanalfaruq/alfarpos-backend/docs"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func GetAllRoutes(database *util.DBConn, config util.Config) *mux.Router {
-	routes := mux.NewRouter().StrictSlash(true).PathPrefix("/api/").Subrouter()
+	routes := mux.NewRouter().StrictSlash(true)
+	routes.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
+		httpSwagger.DeepLinking(true),
+		httpSwagger.DocExpansion("none"),
+		httpSwagger.DomID("#swagger-ui"),
+	))
+	routesApi := routes.PathPrefix("/api/").Subrouter()
 
 	userController := InjectUserController(database, config)
-	routes.HandleFunc("/users/register", userController.RegisterHandler).Methods("POST")
-	routes.HandleFunc("/users/login", userController.LoginHandler).Methods("POST")
+	routesApi.HandleFunc("/users/register", userController.RegisterHandler).Methods("POST")
+	routesApi.HandleFunc("/users/login", userController.LoginHandler).Methods("POST")
 
 	productController := InjectProductController(database, config)
-	routes.HandleFunc("/products", productController.GetProductsHandler).Methods("GET")
-	routes.HandleFunc("/products/id/{id}/", productController.GetProductByIdHandler).Methods("GET")
-	routes.HandleFunc("/products/code/{code}/", productController.GetProductByCodeHandler).Methods("GET")
-	routes.HandleFunc("/products", productController.NewProductHandler).Methods("POST")
-	routes.HandleFunc("/products/export_excel", productController.ExportAllProductsToExcelHandler).Methods("GET")
-	routes.HandleFunc("/products/upload_excel/{sheetName}", productController.UploadExcelProductHandler).Methods("POST")
-	routes.HandleFunc("/products/{id}", productController.UpdateProductHandler).Methods("PUT")
+	routesApi.HandleFunc("/products", productController.GetProductsHandler).Methods("GET")
+	routesApi.HandleFunc("/products/id/{id}/", productController.GetProductByIdHandler).Methods("GET")
+	routesApi.HandleFunc("/products/code/{code}/", productController.GetProductByCodeHandler).Methods("GET")
+	routesApi.HandleFunc("/products", productController.NewProductHandler).Methods("POST")
+	routesApi.HandleFunc("/products/export_excel", productController.ExportAllProductsToExcelHandler).Methods("GET")
+	routesApi.HandleFunc("/products/upload_excel/{sheetName}", productController.UploadExcelProductHandler).Methods("POST")
+	routesApi.HandleFunc("/products/{id}", productController.UpdateProductHandler).Methods("PUT")
 
 	categoryController := InjectCategoryController(database, config)
-	routes.HandleFunc("/categories", categoryController.GetCategoriesHandler).Methods("GET")
-	routes.HandleFunc("/categories/id/{id}", categoryController.GetCategoryByIdHandler).Methods("GET")
-	routes.HandleFunc("/categories", categoryController.NewCategoryHandler).Methods("POST")
-	routes.HandleFunc("/categories/{id}", categoryController.UpdateCategoryHandler).Methods("PUT")
-	routes.HandleFunc("/categories/{id}", categoryController.DeleteCategoryHandler).Methods("DELETE")
+	routesApi.HandleFunc("/categories", categoryController.GetCategoriesHandler).Methods("GET")
+	routesApi.HandleFunc("/categories/id/{id}", categoryController.GetCategoryByIdHandler).Methods("GET")
+	routesApi.HandleFunc("/categories", categoryController.NewCategoryHandler).Methods("POST")
+	routesApi.HandleFunc("/categories/{id}", categoryController.UpdateCategoryHandler).Methods("PUT")
+	routesApi.HandleFunc("/categories/{id}", categoryController.DeleteCategoryHandler).Methods("DELETE")
 
 	unitController := InjectUnitController(database, config)
-	routes.HandleFunc("/units", unitController.GetUnitsHandler).Methods("GET")
-	routes.HandleFunc("/units/id/{id}", unitController.GetUnitByIdHandler).Methods("GET")
-	routes.HandleFunc("/units", unitController.NewUnitHandler).Methods("POST")
-	routes.HandleFunc("/units/{id}", unitController.UpdateUnitHandler).Methods("PUT")
-	routes.HandleFunc("/units/{id}", unitController.DeleteUnitHandler).Methods("DELETE")
+	routesApi.HandleFunc("/units", unitController.GetUnitsHandler).Methods("GET")
+	routesApi.HandleFunc("/units/id/{id}", unitController.GetUnitByIdHandler).Methods("GET")
+	routesApi.HandleFunc("/units", unitController.NewUnitHandler).Methods("POST")
+	routesApi.HandleFunc("/units/{id}", unitController.UpdateUnitHandler).Methods("PUT")
+	routesApi.HandleFunc("/units/{id}", unitController.DeleteUnitHandler).Methods("DELETE")
 
 	paymentController := InjectPaymentController(database, config)
-	routes.HandleFunc("/payments", paymentController.GetPaymentsHandler).Methods("GET")
-	routes.HandleFunc("/payments/id/{id}", paymentController.GetPaymentByIdHandler).Methods("GET")
-	routes.HandleFunc("/payments", paymentController.NewPaymentHandler).Methods("POST")
-	routes.HandleFunc("/payments/{id}", paymentController.UpdatePaymentHandler).Methods("PUT")
-	routes.HandleFunc("/payments/{id}", paymentController.DeletePaymentHandler).Methods("DELETE")
+	routesApi.HandleFunc("/payments", paymentController.GetPaymentsHandler).Methods("GET")
+	routesApi.HandleFunc("/payments/id/{id}", paymentController.GetPaymentByIdHandler).Methods("GET")
+	routesApi.HandleFunc("/payments", paymentController.NewPaymentHandler).Methods("POST")
+	routesApi.HandleFunc("/payments/{id}", paymentController.UpdatePaymentHandler).Methods("PUT")
+	routesApi.HandleFunc("/payments/{id}", paymentController.DeletePaymentHandler).Methods("DELETE")
 
 	orderController := InjectOrderController(database, config)
-	routes.HandleFunc("/orders", orderController.GetAllOrderHandler).Methods("GET")
-	routes.HandleFunc("/orders", orderController.NewOrderHandler).Methods("POST")
+	routesApi.HandleFunc("/orders", orderController.GetAllOrderHandler).Methods("GET")
+	routesApi.HandleFunc("/orders", orderController.NewOrderHandler).Methods("POST")
 
 	printController := InjectPrintController(database, config)
-	routes.HandleFunc("/print/order/{invoice}", printController.OrderByInvoiceToPdfHandler).Methods("GET")
+	routesApi.HandleFunc("/print/order/{invoice}", printController.OrderByInvoiceToPdfHandler).Methods("GET")
+
 	return routes
 }

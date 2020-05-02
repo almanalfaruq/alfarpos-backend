@@ -26,6 +26,17 @@ func NewProductController(conf util.Config, productService productServiceIface) 
 	}
 }
 
+// GetProducts godoc
+// @Summary Get Products based on query
+// @Description Get Products based on query
+// @Tags product
+// @Produce json
+// @Param searchBy query string false "name, unit, category, or code"
+// @Param query query string false "If this empty, it will fetch all products"
+// @Success 200 {object} response.ResponseMapper{data=[]model.Product} "Return array of product"
+// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Router /products [get]
 func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")

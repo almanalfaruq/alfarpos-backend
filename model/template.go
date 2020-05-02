@@ -5,8 +5,8 @@ import (
 )
 
 type Template struct {
-	ID        uint       `gorm:"primary_key" json:"id"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `json:"deleted_at"`
+	ID        uint       `gorm:"primary_key" json:"id" example:"1"`
+	CreatedAt time.Time  `gorm:"column:created_at;not null;default:CURRENT_TIMESTAMP" json:"created_at" example:""`
+	UpdatedAt time.Time  `json:"updated_at" example:""`
+	DeletedAt *time.Time `json:"deleted_at" example:""`
 }

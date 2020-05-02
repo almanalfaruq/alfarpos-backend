@@ -2,5 +2,5 @@ package model
 
 type Unit struct {
 	Template
-	Name string `json:"name"`
+	Name string `json:"name" example:"Unit"`
 }
