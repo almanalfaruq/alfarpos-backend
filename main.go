@@ -64,7 +64,7 @@ func initMigration(shouldDropDB bool) {
 
 func initRouter() {
 	port := os.Getenv("PORT")
-	routes := routes.GetAllRoutes(port, &databaseConnection, config)
+	routes := routes.GetAllRoutes(&databaseConnection, config)
 	http.Handle("/", routes)
 	handler := cors.Default().Handler(routes)
 	golog.Info("Server listening at http://localhost:8080")
