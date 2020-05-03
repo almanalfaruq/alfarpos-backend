@@ -10,7 +10,7 @@ import (
 
 	"github.com/kataras/golog"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
+	"github.com/360EntSecGroup-Skylar/excelize/v2"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 )
@@ -144,7 +144,10 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 	if sheetName == "" {
 		sheetName = "Sheet1"
 	}
-	rows := excel.GetRows(sheetName)
+	rows, err := excel.GetRows(sheetName)
+	if err != nil {
+		return err
+	}
 	if len(rows) < 1 {
 		return fmt.Errorf("Rows length < 1")
 	}

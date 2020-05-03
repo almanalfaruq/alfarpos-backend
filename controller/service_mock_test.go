@@ -5,7 +5,7 @@
 package controller
 
 import (
-	excelize "github.com/360EntSecGroup-Skylar/excelize"
+	excelize "github.com/360EntSecGroup-Skylar/excelize/v2"
 	model "github.com/almanalfaruq/alfarpos-backend/model"
 	gomock "github.com/golang/mock/gomock"
 	gofpdf "github.com/jung-kurt/gofpdf"
@@ -698,19 +698,19 @@ func (mr *MockproductServiceIfaceMockRecorder) GetProductsByUnitName(unitName in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsByUnitName", reflect.TypeOf((*MockproductServiceIface)(nil).GetProductsByUnitName), unitName)
 }
 
-// ExportAllProductToExcel mocks base method
-func (m *MockproductServiceIface) ExportAllProductToExcel() (*excelize.File, error) {
+// ExportAllProductsToExcel mocks base method
+func (m *MockproductServiceIface) ExportAllProductsToExcel() (*excelize.File, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExportAllProductToExcel")
+	ret := m.ctrl.Call(m, "ExportAllProductsToExcel")
 	ret0, _ := ret[0].(*excelize.File)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ExportAllProductToExcel indicates an expected call of ExportAllProductToExcel
-func (mr *MockproductServiceIfaceMockRecorder) ExportAllProductToExcel() *gomock.Call {
+// ExportAllProductsToExcel indicates an expected call of ExportAllProductsToExcel
+func (mr *MockproductServiceIfaceMockRecorder) ExportAllProductsToExcel() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportAllProductToExcel", reflect.TypeOf((*MockproductServiceIface)(nil).ExportAllProductToExcel))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportAllProductsToExcel", reflect.TypeOf((*MockproductServiceIface)(nil).ExportAllProductsToExcel))
 }
 
 // NewProduct mocks base method

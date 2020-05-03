@@ -3,7 +3,7 @@ package controller
 import (
 	"io"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
+	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/jung-kurt/gofpdf"
 )
