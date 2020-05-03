@@ -25,7 +25,7 @@ func (dbConn *DBConn) Open(config Config) *gorm.DB {
 	var err error
 	dbConn.DB, err = gorm.Open("postgres", url)
 	if err != nil {
-		panic("Cannot connect to the database")
+		golog.Fatalf("Cannot connect to the database: %v", err)
 	}
 	return dbConn.DB
 }
