@@ -1,15 +1,15 @@
 env: dev
 secret-key: secret
 database:
-  host: localhost
+  host: ec2-18-215-99-63.compute-1.amazonaws.com
   port: 5432
-  username: almanalfaruq
-  password: ''
-  dbname: alfarpos
+  username: kylriulhaieucb
+  password: e92c466271ea9fc5fe672ae7c5d6182c4cb4c2ed32da25fa73cf0d7ec4b22d15
+  dbname: d2f0nol60rnn4d
   dbname-test: alfarpos_test
 shop-profile:
-  name: 'Toko Alfar'
-  description: 'Toko Serba Ada'
-  address: 'Ketaon RT 7 RW 1, Banyudono, Boyolali 57373'
-  phone: '(0276) 3283720'
-  npwp: '192810982901809'
+  name: "Toko Alfar"
+  description: "Toko Serba Ada"
+  address: "Ketaon RT 7 RW 1, Banyudono, Boyolali 57373"
+  phone: "(0276) 3283720"
+  npwp: "192810982901809"
