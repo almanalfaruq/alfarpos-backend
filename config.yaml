@@ -1,11 +1,11 @@
 env: dev
 secret-key: secret
 database:
-  host: ec2-18-215-99-63.compute-1.amazonaws.com
+  host: localhost
   port: 5432
-  username: kylriulhaieucb
-  password: e92c466271ea9fc5fe672ae7c5d6182c4cb4c2ed32da25fa73cf0d7ec4b22d15
-  dbname: d2f0nol60rnn4d
+  username: almanalfaruq
+  password: ""
+  dbname: alfarpos
   dbname-test: alfarpos_test
 shop-profile:
   name: "Toko Alfar"
