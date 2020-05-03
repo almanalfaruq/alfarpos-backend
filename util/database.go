@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/jinzhu/gorm"
@@ -13,8 +14,8 @@ type DBConn struct {
 }
 
 func (dbConn *DBConn) Open(config Config) *gorm.DB {
-	var url string
-	if config.Env == "test" {
+	url := os.Getenv("DB_URL")
+	if url == "" && config.Env == "test" {
 		golog.Infof("Connecting to database: %v", config.Database.DBTestName)
 		url = fmt.Sprintf("host=%v port=%v user=%v password=\"%v\" dbname=%v sslmode=disable", config.Database.Host, config.Database.Port, config.Database.Username, config.Database.Password, config.Database.DBTestName)
 	} else {
