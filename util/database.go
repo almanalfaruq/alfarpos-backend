@@ -18,7 +18,7 @@ func (dbConn *DBConn) Open(config Config) *gorm.DB {
 	if url == "" && config.Env == "test" {
 		golog.Infof("Connecting to database: %v", config.Database.DBTestName)
 		url = fmt.Sprintf("host=%v port=%v user=%v password=\"%v\" dbname=%v sslmode=disable", config.Database.Host, config.Database.Port, config.Database.Username, config.Database.Password, config.Database.DBTestName)
-	} else {
+	} else if url == "" {
 		golog.Infof("Connecting to database: %v", config.Database.DBName)
 		password := config.Database.Password
 		if password == "" {
