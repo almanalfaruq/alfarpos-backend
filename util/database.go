@@ -13,14 +13,25 @@ type DBConn struct {
 }
 
 func (dbConn *DBConn) Open(config Config) *gorm.DB {
-	var url string
+	var (
+		dbName   string
+		password string
+		url      string
+	)
 	if config.Env == "test" {
+		dbName = config.Database.DBTestName
 		golog.Infof("Connecting to database: %v", config.Database.DBTestName)
-		url = fmt.Sprintf("host=%v port=%v user=%v password=\"%v\" dbname=%v sslmode=disable", config.Database.Host, config.Database.Port, config.Database.Username, config.Database.Password, config.Database.DBTestName)
 	} else {
+		dbName = config.Database.DBName
 		golog.Infof("Connecting to database: %v", config.Database.DBName)
-		url = fmt.Sprintf("host=%v port=%v user=%v password=\"%v\" dbname=%v sslmode=disable", config.Database.Host, config.Database.Port, config.Database.Username, config.Database.Password, config.Database.DBName)
 	}
+	if config.Database.Password == "" {
+		password = `""`
+	} else {
+		password = config.Database.Password
+	}
+	url = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.Database.Host, config.Database.Port,
+		config.Database.Username, password, dbName)
 	golog.Infof("URL Database: %s", url)
 	var err error
 	dbConn.DB, err = gorm.Open("postgres", url)
