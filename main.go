@@ -56,15 +56,19 @@ func initMigration(shouldDropDB bool) {
 		golog.Warn("Dropping database...")
 		databaseConnection.DropDb()
 		golog.Info("Dropped!")
-		golog.Info("Populating first data for payment and customer...")
-		populateFirstData()
-		golog.Info("Done populating data")
 	}
 
 	// Database Migration
 	golog.Warn("Migrating database...")
 	databaseConnection.MigrateDb()
 	golog.Info("Migrated!")
+
+	// Populate data for payment and customer
+	if shouldDropDB {
+		golog.Info("Populating first data for payment and customer...")
+		populateFirstData()
+		golog.Info("Done populating data")
+	}
 }
 
 func initRouter() {
