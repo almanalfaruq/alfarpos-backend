@@ -65,7 +65,7 @@ type productServiceIface interface {
 	GetProductsByUnitName(unitName string) ([]model.Product, error)
 	ExportAllProductsToExcel() (*excelize.File, error)
 	NewProduct(productData string) (model.Product, error)
-	NewProductUsingExcel(sheetName string, excelFile io.Reader) error
+	NewProductUsingExcel(sheetName string, excelFile io.Reader) (int, error)
 	UpdateProduct(productData string) (model.Product, error)
 	DeleteProduct(id int64) (model.Product, error)
 }
