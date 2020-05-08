@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/kataras/golog"
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
@@ -223,6 +224,9 @@ func (s *ProductService) parseExcelRowsToProduct(rows [][]string) []model.Produc
 	// skip index 0 - Header
 	for _, row := range rows[1:] {
 		code := row[0]
+		if code == "" {
+			code = uuid.New().String()
+		}
 		name := row[1]
 		sellPrice, err := strconv.ParseInt(row[2], 10, 64)
 		if err != nil {

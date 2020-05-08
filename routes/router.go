@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"net/http"
+
 	. "github.com/almanalfaruq/alfarpos-backend/dependency_injection"
 	_ "github.com/almanalfaruq/alfarpos-backend/docs"
 	"github.com/almanalfaruq/alfarpos-backend/util"
@@ -58,6 +60,8 @@ func GetAllRoutes(database *util.DBConn, config util.Config) *mux.Router {
 
 	printController := InjectPrintController(database, config)
 	routesApi.HandleFunc("/print/order/{invoice}", printController.OrderByInvoiceToPdfHandler).Methods("GET")
+
+	routes.PathPrefix("/").Handler(http.FileServer(http.Dir("./public")))
 
 	return routes
 }

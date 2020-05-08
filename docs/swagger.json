@@ -14,6 +14,107 @@
     "host": "localhost:8080",
     "basePath": "/api/",
     "paths": {
+        "/orders": {
+            "post": {
+                "description": "New order is used for creating a new order by sent an invoice with order details per product",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "order"
+                ],
+                "summary": "New order",
+                "parameters": [
+                    {
+                        "description": "Order with order detail",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/model.Order"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Return array of product",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.ResponseMapper"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Order"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Return error with message",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.ResponseMapper"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Return error with message",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.ResponseMapper"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/print/order": {
+            "post": {
+                "description": "Print order bill by its invoice",
+                "produces": [
+                    "application/pdf"
+                ],
+                "tags": [
+                    "print"
+                ],
+                "summary": "Print order bill by its invoice",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order invoice",
+                        "name": "invoice",
+                        "in": "path"
+                    }
+                ]
+            }
+        },
         "/products": {
             "get": {
                 "description": "Get Products based on query",
@@ -36,6 +137,85 @@
                         "description": "If this empty, it will fetch all products",
                         "name": "query",
                         "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Return array of product",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.ResponseMapper"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Product"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Return error with message",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.ResponseMapper"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Return error with message",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.ResponseMapper"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/products/upload_excel": {
+            "post": {
+                "description": "Upload products from excel file (*.xlsx). First row should be the header with these column in order:\nCode (Barcode), Product Name, Sell Price, Quantity, Category Name, Buy Price, and Unit Name (pcs, bottle, etc.)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "product"
+                ],
+                "summary": "Upload products from excel file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the sheet",
+                        "name": "sheetName",
+                        "in": "path"
                     }
                 ],
                 "responses": {
@@ -123,6 +303,176 @@
                 }
             }
         },
+        "model.Customer": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "Pengging, Banyudono, Boyolali"
+                },
+                "code": {
+                    "type": "string",
+                    "example": "code-1"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Customer"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "081234567890"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Order": {
+            "type": "object",
+            "properties": {
+                "amount_paid": {
+                    "type": "integer",
+                    "example": 150000
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "customer": {
+                    "type": "object",
+                    "$ref": "#/definitions/model.Customer"
+                },
+                "customer_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "discount": {
+                    "type": "number",
+                    "example": 0
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "invoice": {
+                    "type": "string",
+                    "example": "5-9-2020-000001"
+                },
+                "order_details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.OrderDetail"
+                    }
+                },
+                "payment": {
+                    "type": "object",
+                    "$ref": "#/definitions/model.Payment"
+                },
+                "payment_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "ppn": {
+                    "type": "integer",
+                    "example": 13000
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 130000
+                },
+                "total_change": {
+                    "type": "integer",
+                    "example": 20000
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "object",
+                    "$ref": "#/definitions/model.User"
+                },
+                "user_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "model.OrderDetail": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "order": {
+                    "type": "object",
+                    "$ref": "#/definitions/model.Order"
+                },
+                "order_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "product": {
+                    "type": "object",
+                    "$ref": "#/definitions/model.Product"
+                },
+                "product_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "sub_total": {
+                    "type": "integer",
+                    "example": 5000
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Payment": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Cash"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "model.Product": {
             "type": "object",
             "properties": {
@@ -204,6 +554,47 @@
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "model.User": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "Ketaon, Banyudono, Boyolali"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string",
+                    "example": "Cashier Primary"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "0276 3283720"
+                },
+                "role_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "cashier"
                 }
             }
         },

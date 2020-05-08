@@ -15,6 +15,127 @@ definitions:
       updated_at:
         type: string
     type: object
+  model.Customer:
+    properties:
+      address:
+        example: Pengging, Banyudono, Boyolali
+        type: string
+      code:
+        example: code-1
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: Customer
+        type: string
+      phone:
+        example: "081234567890"
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.Order:
+    properties:
+      amount_paid:
+        example: 150000
+        type: integer
+      created_at:
+        type: string
+      customer:
+        $ref: '#/definitions/model.Customer'
+        type: object
+      customer_id:
+        example: 1
+        type: integer
+      deleted_at:
+        type: string
+      discount:
+        example: 0
+        type: number
+      id:
+        example: 1
+        type: integer
+      invoice:
+        example: 5-9-2020-000001
+        type: string
+      order_details:
+        items:
+          $ref: '#/definitions/model.OrderDetail'
+        type: array
+      payment:
+        $ref: '#/definitions/model.Payment'
+        type: object
+      payment_id:
+        example: 1
+        type: integer
+      ppn:
+        example: 13000
+        type: integer
+      total:
+        example: 130000
+        type: integer
+      total_change:
+        example: 20000
+        type: integer
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+        type: object
+      user_id:
+        example: 1
+        type: integer
+    type: object
+  model.OrderDetail:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        example: 1
+        type: integer
+      order:
+        $ref: '#/definitions/model.Order'
+        type: object
+      order_id:
+        example: 1
+        type: integer
+      product:
+        $ref: '#/definitions/model.Product'
+        type: object
+      product_id:
+        example: 1
+        type: integer
+      quantity:
+        example: 2
+        type: integer
+      sub_total:
+        example: 5000
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  model.Payment:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: Cash
+        type: string
+      updated_at:
+        type: string
+    type: object
   model.Product:
     properties:
       buy_price:
@@ -75,6 +196,35 @@ definitions:
       updated_at:
         type: string
     type: object
+  model.User:
+    properties:
+      address:
+        example: Ketaon, Banyudono, Boyolali
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      full_name:
+        example: Cashier Primary
+        type: string
+      id:
+        example: 1
+        type: integer
+      password:
+        type: string
+      phone:
+        example: 0276 3283720
+        type: string
+      role_id:
+        example: 1
+        type: integer
+      updated_at:
+        type: string
+      username:
+        example: cashier
+        type: string
+    type: object
   response.ResponseMapper:
     properties:
       code:
@@ -97,6 +247,64 @@ info:
   title: AlfarPOS BackEnd
   version: "1.0"
 paths:
+  /orders:
+    post:
+      consumes:
+      - application/json
+      description: New order is used for creating a new order by sent an invoice with
+        order details per product
+      parameters:
+      - description: Order with order detail
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/model.Order'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Return array of product
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ResponseMapper'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Order'
+              type: object
+        "404":
+          description: Return error with message
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ResponseMapper'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Return error with message
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ResponseMapper'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: New order
+      tags:
+      - order
+  /print/order:
+    post:
+      description: Print order bill by its invoice
+      parameters:
+      - description: Order invoice
+        in: path
+        name: invoice
+        type: string
+      produces:
+      - application/pdf
+      summary: Print order bill by its invoice
+      tags:
+      - print
   /products:
     get:
       description: Get Products based on query
@@ -142,6 +350,51 @@ paths:
                   type: string
               type: object
       summary: Get Products based on query
+      tags:
+      - product
+  /products/upload_excel:
+    post:
+      description: |-
+        Upload products from excel file (*.xlsx). First row should be the header with these column in order:
+        Code (Barcode), Product Name, Sell Price, Quantity, Category Name, Buy Price, and Unit Name (pcs, bottle, etc.)
+      parameters:
+      - description: Name of the sheet
+        in: path
+        name: sheetName
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Return array of product
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ResponseMapper'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Product'
+                  type: array
+              type: object
+        "404":
+          description: Return error with message
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ResponseMapper'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Return error with message
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ResponseMapper'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: Upload products from excel file
       tags:
       - product
 swagger: "2.0"
