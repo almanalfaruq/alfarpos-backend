@@ -69,23 +69,19 @@ func (s *OrderService) GetOrderByUserId(userId int64) ([]model.Order, error) {
 }
 
 func (s *OrderService) NewOrder(order model.Order) (model.Order, error) {
-	var (
-		err         error
-		orderDetail model.OrderDetail
-	)
 	customer := s.customer.FindById(order.CustomerID)
 	order.Customer = customer
 	payment := s.payment.FindById(order.PaymentID)
 	order.Payment = payment
-	order, err = s.order.New(order)
+	order, err := s.order.New(order)
 	if err != nil {
 		return model.Order{}, err
 	}
-	for _, OrderDetail := range order.OrderDetails {
+	for _, orderDetail := range order.OrderDetails {
 		orderDetail.OrderID = int64(order.ID)
 		orderDetail.Order = order
-		orderDetail.Product = s.product.FindById(int64(orderDetail.ProductID))
-		_, err := s.orderDetail.New(OrderDetail)
+		orderDetail.Product = s.product.FindById(orderDetail.ProductID)
+		_, err := s.orderDetail.New(orderDetail)
 		if err != nil {
 			return model.Order{}, err
 		}

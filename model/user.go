@@ -10,12 +10,12 @@ const (
 
 type User struct {
 	Template
-	Username string `gorm:"unique_index" json:"username"`
+	Username string `gorm:"unique_index" json:"username" example:"cashier"`
 	Password string `json:"password,omitempty"`
-	FullName string `json:"full_name"`
-	Address  string `json:"address"`
-	Phone    string `json:"phone"`
-	RoleID   Role   `json:"role_id"`
+	FullName string `json:"full_name" example:"Cashier Primary"`
+	Address  string `json:"address" example:"Ketaon, Banyudono, Boyolali"`
+	Phone    string `json:"phone" example:"0276 3283720"`
+	RoleID   Role   `json:"role_id" example:"1"`
 }
 
 func (u *User) HasRole(roles ...Role) bool {

@@ -174,6 +174,17 @@ func (c *ProductController) ExportAllProductsToExcelHandler(w http.ResponseWrite
 	}
 }
 
+// UploadExcelProduct godoc
+// @Summary Upload products from excel file
+// @Description Upload products from excel file (*.xlsx). First row should be the header with these column in order:
+// @Description Code (Barcode), Product Name, Sell Price, Quantity, Category Name, Buy Price, and Unit Name (pcs, bottle, etc.)
+// @Tags product
+// @Produce json
+// @Param sheetName path string false "Name of the sheet"
+// @Success 200 {object} response.ResponseMapper{data=[]model.Product} "Return array of product"
+// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Router /products/upload_excel [post]
 func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")

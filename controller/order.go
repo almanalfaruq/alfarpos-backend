@@ -48,6 +48,17 @@ func (c *OrderController) GetAllOrderHandler(w http.ResponseWriter, r *http.Requ
 	renderJSONSuccess(w, http.StatusOK, orders, "Success getting all orders")
 }
 
+// NewOrder godoc
+// @Summary New order
+// @Description New order is used for creating a new order by sent an invoice with order details per product
+// @Tags order
+// @Accept json
+// @Produce json
+// @Param body body model.Order false "Order with order detail"
+// @Success 200 {object} response.ResponseMapper{data=model.Order} "Return array of product"
+// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Router /orders [post]
 func (c *OrderController) NewOrderHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")

@@ -21,6 +21,13 @@ func NewPrintController(printService printServiceIface) *PrintController {
 	}
 }
 
+// PrintOrderBill godoc
+// @Summary Print order bill by its invoice
+// @Description Print order bill by its invoice
+// @Tags print
+// @Produce application/pdf
+// @Param invoice path string false "Order invoice"
+// @Router /print/order [post]
 func (c *PrintController) OrderByInvoiceToPdfHandler(w http.ResponseWriter, r *http.Request) {
 	buffer := new(bytes.Buffer)
 	vars := mux.Vars(r)
