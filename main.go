@@ -6,6 +6,8 @@ import (
 
 	"github.com/rs/cors"
 
+	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/repository"
 	"github.com/almanalfaruq/alfarpos-backend/routes"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 
@@ -53,6 +55,9 @@ func initMigration(shouldDropDB bool) {
 		golog.Warn("Dropping database...")
 		databaseConnection.DropDb()
 		golog.Info("Dropped!")
+		golog.Info("Populating first data for payment and customer...")
+		populateFirstData()
+		golog.Info("Done populating data")
 	}
 
 	// Database Migration
@@ -71,4 +76,18 @@ func initRouter() {
 		golog.Fatal(err)
 		panic(err)
 	}
+}
+
+func populateFirstData() {
+	payment := model.Payment{
+		Name: "Cash",
+	}
+	paymentRepo := repository.NewPaymentRepo(&databaseConnection)
+	paymentRepo.New(payment)
+
+	customer := model.Customer{
+		Name: "Customer",
+	}
+	customerRepo := repository.NewCustomerRepo(&databaseConnection)
+	customerRepo.New(customer)
 }
