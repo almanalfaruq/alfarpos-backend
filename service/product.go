@@ -122,10 +122,10 @@ func (s *ProductService) ExportAllProductsToExcel() (*excelize.File, error) {
 	for i, product := range products {
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("A%d", i+2), product.Code)
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("B%d", i+2), product.Name)
-		xlsx.SetCellValue(sheetName, fmt.Sprintf("C%d", i+2), product.SellPrice)
-		xlsx.SetCellValue(sheetName, fmt.Sprintf("D%d", i+2), product.Quantity)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("C%d", i+2), *product.SellPrice)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("D%d", i+2), *product.Quantity)
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("E%d", i+2), product.Category.Name)
-		xlsx.SetCellValue(sheetName, fmt.Sprintf("F%d", i+2), product.BuyPrice)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("F%d", i+2), *product.BuyPrice)
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("G%d", i+2), product.Unit.Name)
 	}
 
