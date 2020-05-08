@@ -129,7 +129,7 @@ func (s *ProductService) ExportAllProductsToExcel() (*excelize.File, error) {
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("G%d", i+2), product.Unit.Name)
 	}
 
-	err := xlsx.SaveAs("../public/exported-product.xlsx")
+	err := xlsx.SaveAs("./exported-product.xlsx")
 	if err != nil {
 		return nil, err
 	}
@@ -154,53 +154,55 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 	}
 	products := s.parseExcelRowsToProduct(rows)
 	productCounter := 0
-	for _, product := range products {
-		golog.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", product.Name, *product.Quantity, *product.SellPrice, *product.BuyPrice)
-		categories := s.category.FindByName(product.Category.Name)
-		var category model.Category
-		if len(categories) == 0 {
-			category = model.Category{Name: product.Category.Name}
-			category, err = s.category.New(category)
-			if err != nil {
-				continue
+	go func() {
+		for _, product := range products {
+			golog.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", product.Name, *product.Quantity, *product.SellPrice, *product.BuyPrice)
+			categories := s.category.FindByName(product.Category.Name)
+			var category model.Category
+			if len(categories) == 0 {
+				category = model.Category{Name: product.Category.Name}
+				category, err = s.category.New(category)
+				if err != nil {
+					continue
+				}
+			} else {
+				category = categories[0]
 			}
-		} else {
-			category = categories[0]
+			product.CategoryID = int64(category.ID)
+			product.Category.ID = category.ID
+			units := s.unit.FindByName(product.Unit.Name)
+			var unit model.Unit
+			if len(units) == 0 {
+				unit = model.Unit{Name: product.Unit.Name}
+				unit = s.unit.New(unit)
+			} else {
+				unit = units[0]
+			}
+			product.UnitID = int64(unit.ID)
+			product.Unit.ID = unit.ID
+			oldProducts := s.product.FindByCode(product.Code)
+			if len(oldProducts) < 1 {
+				product = s.product.New(product)
+				golog.Infof("%#v created!", product)
+			} else {
+				product.ID = oldProducts[0].ID
+				product = s.product.Update(product)
+				golog.Infof("%#v updated!", product)
+			}
+			stock := model.Stock{
+				ProductID: int64(product.ID),
+				Product:   product,
+				Quantity:  0,
+			}
+			s.stock.New(stock)
+			productCounter++
 		}
-		product.CategoryID = int64(category.ID)
-		product.Category.ID = category.ID
-		units := s.unit.FindByName(product.Unit.Name)
-		var unit model.Unit
-		if len(units) == 0 {
-			unit = model.Unit{Name: product.Unit.Name}
-			unit = s.unit.New(unit)
-		} else {
-			unit = units[0]
+		if productCounter != len(rows)-1 {
+			warnText := fmt.Sprintf("There are %v rows, but only %v products were created", len(rows)-1, productCounter)
+			golog.Warn(warnText)
 		}
-		product.UnitID = int64(unit.ID)
-		product.Unit.ID = unit.ID
-		oldProducts := s.product.FindByCode(product.Code)
-		if len(oldProducts) < 1 {
-			product = s.product.New(product)
-			golog.Infof("%#v created!", product)
-		} else {
-			product.ID = oldProducts[0].ID
-			product = s.product.Update(product)
-			golog.Infof("%#v updated!", product)
-		}
-		stock := model.Stock{
-			ProductID: int64(product.ID),
-			Product:   product,
-			Quantity:  0,
-		}
-		s.stock.New(stock)
-		productCounter++
-	}
-	if productCounter != len(rows)-1 {
-		warnText := fmt.Sprintf("There are %v rows, but only %v products were created", len(rows)-1, productCounter)
-		golog.Warn(warnText)
-	}
-	golog.Infof("%v products imported!", productCounter)
+		golog.Infof("%v products imported!", productCounter)
+	}()
 	return nil
 }
 
