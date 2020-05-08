@@ -219,13 +219,7 @@ func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *
 	}
 	defer file.Close()
 
-	err = c.product.NewProductUsingExcel(sheetName, file)
-	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
-		return
-	}
-
-	products, err := c.product.GetAllProduct()
+	rowsLength, err := c.product.NewProductUsingExcel(sheetName, file)
 	if err != nil {
 		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
 		return
@@ -234,7 +228,8 @@ func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	renderJSONSuccess(w, http.StatusCreated, products, fmt.Sprintf("Success improting %d data from excel", len(products)))
+	message := fmt.Sprintf("In progress for improting %d data from excel", rowsLength)
+	renderJSONSuccess(w, http.StatusCreated, message, message)
 }
 
 func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.Request) {

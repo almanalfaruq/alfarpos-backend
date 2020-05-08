@@ -136,21 +136,21 @@ func (s *ProductService) ExportAllProductsToExcel() (*excelize.File, error) {
 	return xlsx, nil
 }
 
-func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Reader) error {
+func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Reader) (int, error) {
 	golog.Info("Starting excel import...")
 	excel, err := excelize.OpenReader(excelFile)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if sheetName == "" {
 		sheetName = "Sheet1"
 	}
 	rows, err := excel.GetRows(sheetName)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if len(rows) < 1 {
-		return fmt.Errorf("Rows length < 1")
+		return 0, fmt.Errorf("Rows length < 1")
 	}
 	products, errIndex := s.parseExcelRowsToProduct(rows)
 	var (
@@ -203,12 +203,12 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 		if productCounter != len(rows)-1 {
 			warnText := fmt.Sprintf("There are %v rows, but only %v products were created.", len(rows)-1, productCounter)
 			golog.Warn(warnText)
-			warnText = fmt.Sprintf("These are the name of products of unimported rows: %v", errIndex)
+			warnText = fmt.Sprintf("These are the name of products of unimported rows: %s", strings.Join(errIndex, ", "))
 			golog.Warn(warnText)
 		}
 		golog.Infof("%v products imported!", productCounter)
 	}()
-	return nil
+	return len(products), nil
 }
 
 func (service *ProductService) UpdateProduct(productData string) (model.Product, error) {
