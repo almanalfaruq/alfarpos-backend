@@ -152,8 +152,10 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 	if len(rows) < 1 {
 		return fmt.Errorf("Rows length < 1")
 	}
-	products := s.parseExcelRowsToProduct(rows)
-	productCounter := 0
+	products, errIndex := s.parseExcelRowsToProduct(rows)
+	var (
+		productCounter = 0
+	)
 	go func() {
 		for _, product := range products {
 			golog.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", product.Name, *product.Quantity, *product.SellPrice, *product.BuyPrice)
@@ -163,6 +165,7 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 				category = model.Category{Name: product.Category.Name}
 				category, err = s.category.New(category)
 				if err != nil {
+					errIndex = append(errIndex, product.Name)
 					continue
 				}
 			} else {
@@ -198,7 +201,9 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 			productCounter++
 		}
 		if productCounter != len(rows)-1 {
-			warnText := fmt.Sprintf("There are %v rows, but only %v products were created", len(rows)-1, productCounter)
+			warnText := fmt.Sprintf("There are %v rows, but only %v products were created.", len(rows)-1, productCounter)
+			golog.Warn(warnText)
+			warnText = fmt.Sprintf("These are the name of products of unimported rows: %v", errIndex)
 			golog.Warn(warnText)
 		}
 		golog.Infof("%v products imported!", productCounter)
@@ -221,8 +226,11 @@ func (service *ProductService) DeleteProduct(id int64) (model.Product, error) {
 	return service.product.Delete(id)
 }
 
-func (s *ProductService) parseExcelRowsToProduct(rows [][]string) []model.Product {
-	var products []model.Product
+func (s *ProductService) parseExcelRowsToProduct(rows [][]string) ([]model.Product, []string) {
+	var (
+		products []model.Product
+		errIndex []string
+	)
 	// skip index 0 - Header
 	for _, row := range rows[1:] {
 		code := row[0]
@@ -232,19 +240,23 @@ func (s *ProductService) parseExcelRowsToProduct(rows [][]string) []model.Produc
 		name := row[1]
 		sellPrice, err := strconv.ParseInt(row[2], 10, 64)
 		if err != nil {
+			errIndex = append(errIndex, name)
 			continue
 		}
 		quantity, err := strconv.ParseInt(row[3], 10, 64)
 		if err != nil {
+			errIndex = append(errIndex, name)
 			continue
 		}
 		categoryName := row[4]
 		buyPrice, err := strconv.ParseInt(row[5], 10, 64)
 		if err != nil {
+			errIndex = append(errIndex, name)
 			continue
 		}
 		unitName := row[6]
 		if code == "" || name == "" {
+			errIndex = append(errIndex, name)
 			continue
 		}
 
@@ -264,5 +276,5 @@ func (s *ProductService) parseExcelRowsToProduct(rows [][]string) []model.Produc
 
 		products = append(products, product)
 	}
-	return products
+	return products, errIndex
 }
