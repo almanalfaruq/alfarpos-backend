@@ -26,7 +26,7 @@ func NewProductController(conf util.Config, productService productServiceIface) 
 	}
 }
 
-// GetProducts godoc
+// GetProductsByQuery godoc
 // @Summary Get Products based on query
 // @Description Get Products based on query
 // @Tags product
@@ -87,6 +87,16 @@ func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Re
 	renderJSONSuccess(w, http.StatusOK, products, "Success getting products")
 }
 
+// GetProductsByID godoc
+// @Summary Get Product based on id
+// @Description Get Product based on id
+// @Tags product
+// @Produce json
+// @Param id path integer false "id of the product"
+// @Success 200 {object} response.ResponseMapper{data=model.Product} "Return a product"
+// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Router /products/id/{id} [get]
 func (c *ProductController) GetProductByIdHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -103,6 +113,16 @@ func (c *ProductController) GetProductByIdHandler(w http.ResponseWriter, r *http
 	renderJSONSuccess(w, http.StatusOK, product, fmt.Sprintf("Success getting product with id: %d", id))
 }
 
+// GetProductsByCode godoc
+// @Summary Get Product based on code
+// @Description Get Product based on code
+// @Tags product
+// @Produce json
+// @Param coded path string false "code of the product"
+// @Success 200 {object} response.ResponseMapper{data=model.Product} "Return a product"
+// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Router /products/code/{code} [get]
 func (c *ProductController) GetProductByCodeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
