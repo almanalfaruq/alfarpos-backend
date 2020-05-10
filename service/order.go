@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 )
@@ -73,6 +74,8 @@ func (s *OrderService) NewOrder(order model.Order) (model.Order, error) {
 	order.Customer = customer
 	payment := s.payment.FindById(order.PaymentID)
 	order.Payment = payment
+	now := time.Now()
+	order.Invoice = fmt.Sprintf("INV/%s/%d", now.Format("20060201"), now.Unix())
 	order, err := s.order.New(order)
 	if err != nil {
 		return model.Order{}, err
