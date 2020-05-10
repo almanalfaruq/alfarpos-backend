@@ -195,7 +195,7 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 		sheetName, excelFile := tt.args()
 		expectedResult := tt.mock()
 		t.Run(tt.testName, func(t *testing.T) {
-			actualResult := s.NewProductUsingExcel(sheetName, excelFile)
+			_, actualResult := s.NewProductUsingExcel(sheetName, excelFile)
 			assert.Equal(t, expectedResult, actualResult)
 		})
 		excelFile.Close()

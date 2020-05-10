@@ -251,12 +251,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: New order is used for creating a new order by sent an invoice with
-        order details per product
+      description: |-
+        New order is used for creating a new order by the order details per product.
+        Order only need to specify the primitive data like the product_id, user_id, etc. without having to specify its object.
       parameters:
       - description: Order with order detail
         in: body
         name: body
+        required: true
         schema:
           $ref: '#/definitions/model.Order'
       produces:
@@ -479,4 +481,92 @@ paths:
       summary: Upload products from excel file
       tags:
       - product
+  /users/login:
+    post:
+      description: Endpoint for getting the token for the logged in user
+      parameters:
+      - description: 'These field must be present: username, password'
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Return a jwt token to be used for other requests
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ResponseMapper'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "404":
+          description: Return error with message
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ResponseMapper'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Return error with message
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ResponseMapper'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: Login user
+      tags:
+      - user
+  /users/register:
+    post:
+      description: 'Register new user (TODO: API caller should be a Manager or an
+        Admin)'
+      parameters:
+      - description: 'These field must be present: username, password, fullname, address,
+          phone, and role_id (1 = Admin; 2 = Manager; 3 = Cashier)'
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Return the new registered user
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ResponseMapper'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "404":
+          description: Return error with message
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ResponseMapper'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Return error with message
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ResponseMapper'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: Register new user
+      tags:
+      - user
 swagger: "2.0"

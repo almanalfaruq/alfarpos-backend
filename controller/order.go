@@ -50,11 +50,12 @@ func (c *OrderController) GetAllOrderHandler(w http.ResponseWriter, r *http.Requ
 
 // NewOrder godoc
 // @Summary New order
-// @Description New order is used for creating a new order by sent an invoice with order details per product
+// @Description New order is used for creating a new order by the order details per product.
+// @Description Order only need to specify the primitive data like the product_id, user_id, etc. without having to specify its object.
 // @Tags order
 // @Accept json
 // @Produce json
-// @Param body body model.Order false "Order with order detail"
+// @Param body body model.Order true "Order with order detail"
 // @Success 200 {object} response.ResponseMapper{data=model.Order} "Return array of product"
 // @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
 // @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"

@@ -31,7 +31,7 @@ var doc = `{
     "paths": {
         "/orders": {
             "post": {
-                "description": "New order is used for creating a new order by sent an invoice with order details per product",
+                "description": "New order is used for creating a new order by the order details per product.\nOrder only need to specify the primitive data like the product_id, user_id, etc. without having to specify its object.",
                 "consumes": [
                     "application/json"
                 ],
@@ -47,6 +47,7 @@ var doc = `{
                         "description": "Order with order detail",
                         "name": "body",
                         "in": "body",
+                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/model.Order"
                         }
@@ -401,6 +402,164 @@ var doc = `{
                                             "items": {
                                                 "$ref": "#/definitions/model.Product"
                                             }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Return error with message",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.ResponseMapper"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Return error with message",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.ResponseMapper"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/users/login": {
+            "post": {
+                "description": "Endpoint for getting the token for the logged in user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Login user",
+                "parameters": [
+                    {
+                        "description": "These field must be present: username, password",
+                        "name": "json",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Return a jwt token to be used for other requests",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.ResponseMapper"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Return error with message",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.ResponseMapper"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Return error with message",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.ResponseMapper"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/users/register": {
+            "post": {
+                "description": "Register new user (TODO: API caller should be a Manager or an Admin)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Register new user",
+                "parameters": [
+                    {
+                        "description": "These field must be present: username, password, fullname, address, phone, and role_id (1 = Admin; 2 = Manager; 3 = Cashier)",
+                        "name": "json",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Return the new registered user",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.ResponseMapper"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.User"
                                         }
                                     }
                                 }
