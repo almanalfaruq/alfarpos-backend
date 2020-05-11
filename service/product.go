@@ -46,11 +46,12 @@ func (service *ProductService) GetOneProduct(id int64) (model.Product, error) {
 }
 
 func (service *ProductService) GetOneProductByCode(code string) (model.Product, error) {
-	products := service.product.FindByCode(code)
-	if products[0].ID == 0 {
-		return products[0], errors.New("Product not found")
+	code = strings.ToLower(code)
+	product := service.product.FindByExactCode(code)
+	if product.ID == 0 {
+		return model.Product{}, errors.New("Product not found")
 	}
-	return products[0], nil
+	return product, nil
 }
 
 func (service *ProductService) GetProductsByCode(productCode string) ([]model.Product, error) {
@@ -183,12 +184,12 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 			}
 			product.UnitID = int64(unit.ID)
 			product.Unit.ID = unit.ID
-			oldProducts := s.product.FindByCode(product.Code)
-			if len(oldProducts) < 1 {
+			oldProduct := s.product.FindByExactCode(product.Code)
+			if product.ID == 0 {
 				product = s.product.New(product)
 				golog.Infof("%#v created!", product)
 			} else {
-				product.ID = oldProducts[0].ID
+				product.ID = oldProduct.ID
 				product = s.product.Update(product)
 				golog.Infof("%#v updated!", product)
 			}
