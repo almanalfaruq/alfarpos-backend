@@ -50,6 +50,7 @@ type paymentRepositoryIface interface {
 type productRepositoryIface interface {
 	FindAll() []model.Product
 	FindById(id int64) model.Product
+	FindByExactCode(code string) model.Product
 	FindByCode(code string) []model.Product
 	FindByName(name string) []model.Product
 	FindByCategoryName(name string) []model.Product

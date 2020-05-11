@@ -30,6 +30,13 @@ func (repo *ProductRepository) FindById(id int64) model.Product {
 	return product
 }
 
+func (repo *ProductRepository) FindByExactCode(code string) model.Product {
+	var product model.Product
+	db := repo.db.GetDb()
+	db.Set("gorm:auto_preload", true).Where("LOWER(code) = ?", code).First(&product)
+	return product
+}
+
 func (repo *ProductRepository) FindByCode(code string) []model.Product {
 	var products []model.Product
 	db := repo.db.GetDb()

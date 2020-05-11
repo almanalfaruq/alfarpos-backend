@@ -410,11 +410,12 @@ func (mr *MockorderRepositoryIfaceMockRecorder) New(order interface{}) *gomock.C
 }
 
 // Update mocks base method
-func (m *MockorderRepositoryIface) Update(order model.Order) model.Order {
+func (m *MockorderRepositoryIface) Update(order model.Order) (model.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", order)
 	ret0, _ := ret[0].(model.Order)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update
@@ -595,6 +596,20 @@ func (m *MockproductRepositoryIface) FindById(id int64) model.Product {
 func (mr *MockproductRepositoryIfaceMockRecorder) FindById(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindById", reflect.TypeOf((*MockproductRepositoryIface)(nil).FindById), id)
+}
+
+// FindByExactCode mocks base method
+func (m *MockproductRepositoryIface) FindByExactCode(code string) model.Product {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByExactCode", code)
+	ret0, _ := ret[0].(model.Product)
+	return ret0
+}
+
+// FindByExactCode indicates an expected call of FindByExactCode
+func (mr *MockproductRepositoryIfaceMockRecorder) FindByExactCode(code interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByExactCode", reflect.TypeOf((*MockproductRepositoryIface)(nil).FindByExactCode), code)
 }
 
 // FindByCode mocks base method
