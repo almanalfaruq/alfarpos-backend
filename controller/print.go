@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/almanalfaruq/alfarpos-backend/util/response"
 	"github.com/kataras/golog"
 
 	"github.com/gorilla/mux"
@@ -37,21 +38,19 @@ func (c *PrintController) OrderByInvoiceToPdfHandler(w http.ResponseWriter, r *h
 
 	pdf, err := c.print.OrderByInvoiceToPdf(invoice)
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 	}
 
 	err = pdf.Output(buffer)
 	if err != nil {
-		message := fmt.Sprintf("GET - Printer: OrderByInvoiceToPdfHandler (/print/order/%s)", invoice)
-		renderJSONError(w, http.StatusInternalServerError, err, message)
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 	pdf.Close()
 
 	_, err = buffer.WriteTo(w)
 	if err != nil {
-		message := fmt.Sprintf("GET - Printer: OrderByInvoiceToPdfHandler (/print/order/%s)", invoice)
-		renderJSONError(w, http.StatusInternalServerError, err, message)
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 

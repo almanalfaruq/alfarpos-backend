@@ -8,6 +8,8 @@ const (
 	RoleCashier
 )
 
+const CTX_USER = "user"
+
 type User struct {
 	Template
 	Username string `gorm:"unique_index" json:"username" example:"cashier"`
