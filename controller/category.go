@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/almanalfaruq/alfarpos-backend/util"
+	"github.com/almanalfaruq/alfarpos-backend/util/response"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 )
@@ -37,22 +39,21 @@ func (c *CategoryController) GetCategoriesHandler(w http.ResponseWriter, r *http
 		golog.Info("GET - Category: GetAllCategoryHandler (/categories)")
 		categories, err = c.category.GetAllCategory()
 		if err != nil {
-			errMessage := "Cannot get all categories"
-			renderJSONError(w, http.StatusInternalServerError, err, errMessage)
+			golog.Error(err)
+			response.RenderJSONError(w, http.StatusInternalServerError, err)
 			return
 		}
 	} else {
 		golog.Infof("GET - Product: GetCategoriesByNameHandler (/categories?query=%s)", query)
 		categories, err = c.category.GetCategoriesByName(query)
 		if err != nil {
-			errMessage := "Cannot get categories by name"
-			renderJSONError(w, http.StatusNotFound, err, errMessage)
+			response.RenderJSONError(w, http.StatusNotFound, err)
 			return
 		}
 	}
 
 	message := "Success getting categories"
-	renderJSONSuccess(w, http.StatusOK, categories, message)
+	response.RenderJSONSuccess(w, http.StatusOK, categories, message)
 }
 
 func (c *CategoryController) GetCategoryByIdHandler(w http.ResponseWriter, r *http.Request) {
@@ -64,13 +65,12 @@ func (c *CategoryController) GetCategoryByIdHandler(w http.ResponseWriter, r *ht
 	golog.Infof("GET - Product: GetCategoryByIdHandler (/categories/id/%v)", id)
 	category, err := c.category.GetOneCategory(id)
 	if err != nil {
-		errMessage := fmt.Sprintf("Cannot find category with id: %v", id)
-		renderJSONError(w, http.StatusNotFound, err, errMessage)
+		response.RenderJSONError(w, http.StatusNotFound, err)
 		return
 	}
 
 	message := fmt.Sprintf("Success getting category with id: %v", id)
-	renderJSONSuccess(w, http.StatusOK, category, message)
+	response.RenderJSONSuccess(w, http.StatusOK, category, message)
 }
 
 func (c *CategoryController) NewCategoryHandler(w http.ResponseWriter, r *http.Request) {
@@ -79,40 +79,39 @@ func (c *CategoryController) NewCategoryHandler(w http.ResponseWriter, r *http.R
 
 	golog.Info("POST - Category: NewCategoryHandler (/categories)")
 
-	authHeader := r.Header.Get("Authorization")
-	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
-
-	if err != nil {
-		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
+	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	if !ok {
+		err := errors.New("Cannot parse user context")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
+		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, "Cannot read request body")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	var data model.Category
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, "Cannot unmarshal JSON")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 	category, err := c.category.NewCategory(data.Name)
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusCreated, category, "Category created")
+	response.RenderJSONSuccess(w, http.StatusCreated, category, "Category created")
 }
 
 func (c *CategoryController) UpdateCategoryHandler(w http.ResponseWriter, r *http.Request) {
@@ -123,41 +122,40 @@ func (c *CategoryController) UpdateCategoryHandler(w http.ResponseWriter, r *htt
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
 	golog.Infof("PUT - Category: UpdateCategoryHandler (/categories/%v)", id)
 
-	authHeader := r.Header.Get("Authorization")
-	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
-
-	if err != nil {
-		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
+	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	if !ok {
+		err := errors.New("Cannot parse user context")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
+		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, "Cannot read request body")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	var data model.Category
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, "Cannot unmarshal JSON")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	category, err := c.category.UpdateCategory(data)
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusCreated, category, "Category updated")
+	response.RenderJSONSuccess(w, http.StatusCreated, category, "Category updated")
 }
 
 func (c *CategoryController) DeleteCategoryHandler(w http.ResponseWriter, r *http.Request) {
@@ -168,25 +166,24 @@ func (c *CategoryController) DeleteCategoryHandler(w http.ResponseWriter, r *htt
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
 	golog.Infof("DELETE - Category: DeleteCategoryHandler (/categories/%v)", id)
 
-	authHeader := r.Header.Get("Authorization")
-	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
-
-	if err != nil {
-		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
+	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	if !ok {
+		err := errors.New("Cannot parse user context")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
+		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
 	}
 
 	category, err := c.category.DeleteCategory(id)
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusCreated, category, "Category updated")
+	response.RenderJSONSuccess(w, http.StatusCreated, category, "Category updated")
 }

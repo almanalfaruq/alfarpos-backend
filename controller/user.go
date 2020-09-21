@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/almanalfaruq/alfarpos-backend/util/response"
 	"github.com/kataras/golog"
 )
 
@@ -35,17 +36,17 @@ func (c *UserController) RegisterHandler(w http.ResponseWriter, r *http.Request)
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, "Cannot read request body")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	user, err := c.user.NewUser(string(body))
 	if err != nil {
-		renderJSONError(w, http.StatusUnprocessableEntity, err, "Cannot create user")
+		response.RenderJSONError(w, http.StatusUnprocessableEntity, err)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusCreated, user, "User created")
+	response.RenderJSONSuccess(w, http.StatusCreated, user, "User created")
 }
 
 // LoginUser godoc
@@ -66,15 +67,15 @@ func (c *UserController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, "Cannot read request body")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	token, err := c.user.LoginUser(string(body))
 	if err != nil {
-		renderJSONError(w, http.StatusUnauthorized, err, "Cannot login user")
+		response.RenderJSONError(w, http.StatusUnauthorized, err)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusOK, token, "User logged in")
+	response.RenderJSONSuccess(w, http.StatusOK, token, "User logged in")
 }
