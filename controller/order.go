@@ -2,12 +2,14 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/almanalfaruq/alfarpos-backend/util"
+	"github.com/almanalfaruq/alfarpos-backend/util/response"
 )
 
 type OrderController struct {
@@ -26,26 +28,26 @@ func (c *OrderController) GetAllOrderHandler(w http.ResponseWriter, r *http.Requ
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	authHeader := r.Header.Get("Authorization")
-	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
-	if err != nil {
-		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
+	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	if !ok {
+		err := errors.New("Cannot parse user context")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
+		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
 	}
 
 	orders, err := c.order.GetAllOrder()
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, "Cannot get all orders")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusOK, orders, "Success getting all orders")
+	response.RenderJSONSuccess(w, http.StatusOK, orders, "Success getting all orders")
 }
 
 // NewOrder godoc
@@ -64,39 +66,38 @@ func (c *OrderController) NewOrderHandler(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	authHeader := r.Header.Get("Authorization")
-	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
-
-	if err != nil {
-		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
+	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	if !ok {
+		err := errors.New("Cannot parse user context")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if user.ID == 0 {
-		err = fmt.Errorf("User must logged in!")
-		renderJSONError(w, http.StatusForbidden, err, err.Error())
+		err := fmt.Errorf("User must logged in!")
+		response.RenderJSONError(w, http.StatusForbidden, err)
 		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, "Cannot read body")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	var data model.Order
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	order, err := c.order.NewOrder(data)
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, "Cannot create a new order")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusOK, order, "Success creating a new order")
+	response.RenderJSONSuccess(w, http.StatusOK, order, "Success creating a new order")
 }

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/almanalfaruq/alfarpos-backend/util"
+	"github.com/almanalfaruq/alfarpos-backend/util/response"
 	"github.com/kataras/golog"
 )
 
@@ -50,7 +52,7 @@ func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Re
 		golog.Info("GET - Product: GetProductsHandler (/products)")
 		products, err = c.product.GetAllProduct()
 		if err != nil {
-			renderJSONError(w, http.StatusInternalServerError, err, "Cannot get all products")
+			response.RenderJSONError(w, http.StatusInternalServerError, err)
 			return
 		}
 	} else {
@@ -58,25 +60,25 @@ func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Re
 		if searchBy == "" || searchBy == "name" {
 			products, err = c.product.GetProductsByName(query)
 			if err != nil {
-				renderJSONError(w, http.StatusNotFound, err, "Cannot get products by name")
+				response.RenderJSONError(w, http.StatusNotFound, err)
 				return
 			}
 		} else if searchBy == "unit" {
 			products, err = c.product.GetProductsByUnitName(query)
 			if err != nil {
-				renderJSONError(w, http.StatusNotFound, err, "Cannot get products by unit")
+				response.RenderJSONError(w, http.StatusNotFound, err)
 				return
 			}
 		} else if searchBy == "category" {
 			products, err = c.product.GetProductsByCategoryName(query)
 			if err != nil {
-				renderJSONError(w, http.StatusNotFound, err, "Cannot get products by category")
+				response.RenderJSONError(w, http.StatusNotFound, err)
 				return
 			}
 		} else if searchBy == "code" {
 			products, err = c.product.GetProductsByCode(query)
 			if err != nil {
-				renderJSONError(w, http.StatusNotFound, err, "Cannot get products by code")
+				response.RenderJSONError(w, http.StatusNotFound, err)
 				return
 			}
 		} else {
@@ -84,7 +86,7 @@ func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Re
 		}
 	}
 
-	renderJSONSuccess(w, http.StatusOK, products, "Success getting products")
+	response.RenderJSONSuccess(w, http.StatusOK, products, "Success getting products")
 }
 
 // GetProductsByID godoc
@@ -106,11 +108,11 @@ func (c *ProductController) GetProductByIdHandler(w http.ResponseWriter, r *http
 	golog.Infof("GET - Product: GetProductByIdHandler (/products/id/%d)", id)
 	product, err := c.product.GetOneProduct(id)
 	if err != nil {
-		renderJSONError(w, http.StatusNotFound, err, fmt.Sprintf("Cannot find product with id: %d", id))
+		response.RenderJSONError(w, http.StatusNotFound, err)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusOK, product, fmt.Sprintf("Success getting product with id: %d", id))
+	response.RenderJSONSuccess(w, http.StatusOK, product, fmt.Sprintf("Success getting product with id: %d", id))
 }
 
 // GetProductsByCode godoc
@@ -132,11 +134,11 @@ func (c *ProductController) GetProductByCodeHandler(w http.ResponseWriter, r *ht
 	golog.Infof("GET - Product: GetProductByCodeHandler (/products/code/%s)", code)
 	product, err := c.product.GetOneProductByCode(code)
 	if err != nil {
-		renderJSONError(w, http.StatusNotFound, err, fmt.Sprintf("Cannot find product with code: %s", code))
+		response.RenderJSONError(w, http.StatusNotFound, err)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusOK, product, fmt.Sprintf("Success getting product with code: %s", code))
+	response.RenderJSONSuccess(w, http.StatusOK, product, fmt.Sprintf("Success getting product with code: %s", code))
 }
 
 func (c *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Request) {
@@ -145,40 +147,39 @@ func (c *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Req
 
 	golog.Info("POST - Product: NewProductHandler (/products)")
 
-	authHeader := r.Header.Get("Authorization")
-	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
-
-	if err != nil {
-		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
+	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	if !ok {
+		err := errors.New("Cannot parse user context")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
+		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, "Cannot read request body")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	product, err := c.product.NewProduct(string(body))
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusCreated, product, "Product created")
+	response.RenderJSONSuccess(w, http.StatusCreated, product, "Product created")
 }
 
 func (c *ProductController) ExportAllProductsToExcelHandler(w http.ResponseWriter, r *http.Request) {
 	excel, err := c.product.ExportAllProductsToExcel()
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, "Cannot export all products to excel")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -190,7 +191,7 @@ func (c *ProductController) ExportAllProductsToExcelHandler(w http.ResponseWrite
 	w.Header().Set("Expires", "0")
 	err = excel.Write(w)
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, "Cannot export all products to excel")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 	}
 }
 
@@ -213,35 +214,34 @@ func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *
 	sheetName := vars["sheetName"]
 	golog.Infof("POST - Product: UploadExcelProductHandler (/products/upload_excel/%s)", sheetName)
 
-	authHeader := r.Header.Get("Authorization")
-	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
-
-	if err != nil {
-		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
+	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	if !ok {
+		err := errors.New("Cannot parse user context")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
+		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
 	}
 
-	err = r.ParseMultipartForm(20 << 20)
+	err := r.ParseMultipartForm(20 << 20)
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 	file, _, err := r.FormFile("file")
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 	defer file.Close()
 
 	rowsLength, err := c.product.NewProductUsingExcel(sheetName, file)
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -249,7 +249,7 @@ func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	message := fmt.Sprintf("In progress for improting %d data from excel", rowsLength)
-	renderJSONSuccess(w, http.StatusCreated, message, message)
+	response.RenderJSONSuccess(w, http.StatusCreated, message, message)
 }
 
 func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
@@ -260,34 +260,33 @@ func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
 	golog.Infof("PUT - Product: UpdateProductHandler (/products/%d)", id)
 
-	authHeader := r.Header.Get("Authorization")
-	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
-
-	if err != nil {
-		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
+	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	if !ok {
+		err := errors.New("Cannot parse user context")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
+		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, "Cannot read request body")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	product, err := c.product.UpdateProduct(string(body))
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusOK, product, "Product updated")
+	response.RenderJSONSuccess(w, http.StatusOK, product, "Product updated")
 }
 
 func (c *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
@@ -298,27 +297,26 @@ func (c *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
 	golog.Infof("DELETE - Product: DeleteProductHandler (/products/%d)", id)
 
-	authHeader := r.Header.Get("Authorization")
-	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
-
-	if err != nil {
-		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
+	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	if !ok {
+		err := errors.New("Cannot parse user context")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
+		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
 	}
 
 	product, err := c.product.DeleteProduct(id)
 	if err != nil {
-		renderJSONError(w, http.StatusBadRequest, err, err.Error())
+		response.RenderJSONError(w, http.StatusBadRequest, err)
 		golog.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusOK, product, "Product deleted")
+	response.RenderJSONSuccess(w, http.StatusOK, product, "Product deleted")
 }

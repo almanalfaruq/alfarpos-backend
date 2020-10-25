@@ -9,8 +9,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
-	"github.com/almanalfaruq/alfarpos-backend/model/response"
 	"github.com/almanalfaruq/alfarpos-backend/util"
+	"github.com/almanalfaruq/alfarpos-backend/util/auth"
 )
 
 type UserService struct {
@@ -47,7 +47,7 @@ func (service *UserService) LoginUser(userData string) (string, error) {
 		return "", errors.New("Username or Password mismatch")
 	}
 	user = userFromDb
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, response.TokenResponse{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, auth.TokenData{
 		User: user,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Duration(24) * time.Hour).Unix(),

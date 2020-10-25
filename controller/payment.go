@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/almanalfaruq/alfarpos-backend/util"
+	"github.com/almanalfaruq/alfarpos-backend/util/response"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 )
@@ -36,19 +38,19 @@ func (c *PaymentController) GetPaymentsHandler(w http.ResponseWriter, r *http.Re
 		golog.Info("GET - Payment: GetAllPaymentHandler (/payments)")
 		payments, err = c.payment.GetAllPayment()
 		if err != nil {
-			renderJSONError(w, http.StatusInternalServerError, err, "Cannot get all payments")
+			response.RenderJSONError(w, http.StatusInternalServerError, err)
 			return
 		}
 	} else {
 		golog.Infof("GET - Product: GetPaymentsByNameHandler (/payments?query=%s)", query)
 		payments, err = c.payment.GetPaymentsByName(query)
 		if err != nil {
-			renderJSONError(w, http.StatusNotFound, err, "Cannot get payments by name")
+			response.RenderJSONError(w, http.StatusNotFound, err)
 			return
 		}
 	}
 
-	renderJSONSuccess(w, http.StatusOK, payments, "Success getting payments")
+	response.RenderJSONSuccess(w, http.StatusOK, payments, "Success getting payments")
 }
 
 func (c *PaymentController) GetPaymentByIdHandler(w http.ResponseWriter, r *http.Request) {
@@ -61,13 +63,12 @@ func (c *PaymentController) GetPaymentByIdHandler(w http.ResponseWriter, r *http
 	golog.Infof("GET - Product: GetPaymentByIdHandler (/payments/id/%d)", id)
 	payment, err := c.payment.GetOnePayment(id)
 	if err != nil {
-		message := fmt.Sprintf("Cannot find payment with id: %v", id)
-		renderJSONError(w, http.StatusNotFound, err, message)
+		response.RenderJSONError(w, http.StatusNotFound, err)
 		return
 	}
 
 	message := fmt.Sprintf("Success getting payment with id: %v", id)
-	renderJSONSuccess(w, http.StatusOK, payment, message)
+	response.RenderJSONSuccess(w, http.StatusOK, payment, message)
 }
 
 func (c *PaymentController) NewPaymentHandler(w http.ResponseWriter, r *http.Request) {
@@ -76,34 +77,33 @@ func (c *PaymentController) NewPaymentHandler(w http.ResponseWriter, r *http.Req
 
 	golog.Info("POST - Payment: NewPaymentHandler (/payments)")
 
-	authHeader := r.Header.Get("Authorization")
-	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
-
-	if err != nil {
-		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
+	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	if !ok {
+		err := errors.New("Cannot parse user context")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
+		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, "Cannot read request body")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	payment, err := c.payment.NewPayment(string(body))
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusCreated, payment, "Payment created")
+	response.RenderJSONSuccess(w, http.StatusCreated, payment, "Payment created")
 }
 
 func (c *PaymentController) UpdatePaymentHandler(w http.ResponseWriter, r *http.Request) {
@@ -114,34 +114,33 @@ func (c *PaymentController) UpdatePaymentHandler(w http.ResponseWriter, r *http.
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
 	golog.Infof("PUT - Payment: UpdatePaymentHandler (/payments/%v)", id)
 
-	authHeader := r.Header.Get("Authorization")
-	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
-
-	if err != nil {
-		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
+	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	if !ok {
+		err := errors.New("Cannot parse user context")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
+		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, "Cannot read request body")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	payment, err := c.payment.UpdatePayment(string(body))
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusOK, payment, "Payment updated")
+	response.RenderJSONSuccess(w, http.StatusOK, payment, "Payment updated")
 }
 
 func (c *PaymentController) DeletePaymentHandler(w http.ResponseWriter, r *http.Request) {
@@ -152,25 +151,24 @@ func (c *PaymentController) DeletePaymentHandler(w http.ResponseWriter, r *http.
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
 	golog.Infof("DELETE - Payment: DeletePaymentHandler (/payments/%d)", id)
 
-	authHeader := r.Header.Get("Authorization")
-	user, err := parseJwtToUser(authHeader, c.conf.SecretKey)
-
-	if err != nil {
-		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
+	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	if !ok {
+		err := errors.New("Cannot parse user context")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
+		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
 	}
 
 	payment, err := c.payment.DeletePayment(id)
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, err.Error())
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusOK, payment, "Payment deleted")
+	response.RenderJSONSuccess(w, http.StatusOK, payment, "Payment deleted")
 }
