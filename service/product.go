@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/kataras/golog"
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
@@ -123,10 +123,10 @@ func (s *ProductService) ExportAllProductsToExcel() (*excelize.File, error) {
 	for i, product := range products {
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("A%d", i+2), product.Code)
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("B%d", i+2), product.Name)
-		xlsx.SetCellValue(sheetName, fmt.Sprintf("C%d", i+2), *product.SellPrice)
-		xlsx.SetCellValue(sheetName, fmt.Sprintf("D%d", i+2), *product.Quantity)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("C%d", i+2), product.SellPrice.Int64)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("D%d", i+2), product.Quantity.Int32)
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("E%d", i+2), product.Category.Name)
-		xlsx.SetCellValue(sheetName, fmt.Sprintf("F%d", i+2), *product.BuyPrice)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("F%d", i+2), product.BuyPrice.Int64)
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("G%d", i+2), product.Unit.Name)
 	}
 
@@ -159,7 +159,7 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 	)
 	go func() {
 		for _, product := range products {
-			golog.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", product.Name, *product.Quantity, *product.SellPrice, *product.BuyPrice)
+			golog.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", product.Name, product.Quantity.Int32, product.SellPrice.Int64, product.BuyPrice.Int64)
 			categories := s.category.FindByName(product.Category.Name)
 			var category model.Category
 			if len(categories) == 0 {
@@ -184,7 +184,7 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 			}
 			product.UnitID = int64(unit.ID)
 			product.Unit.ID = unit.ID
-			oldProduct := s.product.FindByExactCode(product.Code)
+			oldProduct := s.product.FindByExactCode(product.Code.String)
 			if product.ID == 0 {
 				product = s.product.New(product)
 				golog.Infof("%#v created!", product)
@@ -234,9 +234,13 @@ func (s *ProductService) parseExcelRowsToProduct(rows [][]string) ([]model.Produ
 	)
 	// skip index 0 - Header
 	for _, row := range rows[1:] {
-		code := row[0]
-		if code == "" {
-			code = uuid.New().String()
+		code := sql.NullString{}
+		codeString := row[0]
+		if codeString != "" {
+			code = sql.NullString{
+				String: codeString,
+				Valid:  true,
+			}
 		}
 		name := row[1]
 		sellPrice, err := strconv.ParseInt(row[2], 10, 64)
@@ -256,20 +260,29 @@ func (s *ProductService) parseExcelRowsToProduct(rows [][]string) ([]model.Produ
 			continue
 		}
 		unitName := row[6]
-		if code == "" || name == "" {
+		if codeString == "" || name == "" {
 			errIndex = append(errIndex, name)
 			continue
 		}
 
 		product := model.Product{
-			Code:      code,
-			Name:      name,
-			SellPrice: &sellPrice,
-			Quantity:  &quantity,
+			Code: code,
+			Name: name,
+			SellPrice: sql.NullInt64{
+				Int64: sellPrice,
+				Valid: true,
+			},
+			Quantity: sql.NullInt32{
+				Int32: int32(quantity),
+				Valid: true,
+			},
 			Category: model.Category{
 				Name: categoryName,
 			},
-			BuyPrice: &buyPrice,
+			BuyPrice: sql.NullInt64{
+				Int64: buyPrice,
+				Valid: true,
+			},
 			Unit: model.Unit{
 				Name: unitName,
 			},

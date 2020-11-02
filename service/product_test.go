@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"io"
@@ -8,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
-	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -33,16 +33,31 @@ func TestProductUpdateProduct(t *testing.T) {
 		Template: model.Template{
 			ID: uint(1),
 		},
-		Name:      "Product1",
-		Code:      "Product1",
-		BuyPrice:  util.ToInt64(int64(10000)),
-		SellPrice: util.ToInt64(int64(1500)),
-		Quantity:  util.ToInt64(int64(10)),
-		Category:  category,
-		Unit:      unit,
+		Name: "Product1",
+		Code: sql.NullString{
+			String: "Product1",
+			Valid:  true,
+		},
+		BuyPrice: sql.NullInt64{
+			Int64: 10000,
+			Valid: true,
+		},
+		SellPrice: sql.NullInt64{
+			Int64: 1500,
+			Valid: true,
+		},
+		Quantity: sql.NullInt32{
+			Int32: 10,
+			Valid: true,
+		},
+		Category: category,
+		Unit:     unit,
 	}
 	productStub := product
-	productStub.SellPrice = util.ToInt64(55000)
+	productStub.SellPrice = sql.NullInt64{
+		Int64: 55000,
+		Valid: true,
+	}
 
 	productRepository := NewMockproductRepositoryIface(ctrl)
 	productRepository.EXPECT().Update(productStub).Return(productStub)
@@ -162,11 +177,23 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 					Template: model.Template{
 						ID: uint(1),
 					},
-					Name:       "Product1",
-					Code:       "Product1",
-					BuyPrice:   util.ToInt64(int64(10000)),
-					SellPrice:  util.ToInt64(int64(1500)),
-					Quantity:   util.ToInt64(int64(10)),
+					Name: "Product1",
+					Code: sql.NullString{
+						String: "Product1",
+						Valid:  true,
+					},
+					BuyPrice: sql.NullInt64{
+						Int64: 10000,
+						Valid: true,
+					},
+					SellPrice: sql.NullInt64{
+						Int64: 1500,
+						Valid: true,
+					},
+					Quantity: sql.NullInt32{
+						Int32: 10,
+						Valid: true,
+					},
 					Category:   category,
 					CategoryID: int64(category.ID),
 					Unit:       unit,
@@ -180,7 +207,7 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 						ID: uint(1),
 					},
 					ProductID: int64(1),
-					Quantity:  int64(10),
+					Quantity:  10,
 				}
 				stockStub := stock
 				stockStub.ID = 0
