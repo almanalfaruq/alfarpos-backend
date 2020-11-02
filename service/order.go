@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
@@ -89,9 +90,12 @@ func (s *OrderService) NewOrder(order model.Order) (model.Order, error) {
 			return model.Order{}, err
 		}
 		product := orderDetail.Product
-		productQty := *product.Quantity
-		stockQty := productQty - int64(orderDetail.Quantity)
-		product.Quantity = &stockQty
+		productQty := product.Quantity.Int32
+		stockQty := productQty - orderDetail.Quantity
+		product.Quantity = sql.NullInt32{
+			Int32: stockQty,
+			Valid: true,
+		}
 		s.product.Update(product)
 	}
 	return order, nil

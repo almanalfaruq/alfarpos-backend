@@ -56,7 +56,7 @@ func (service *PrintService) OrderByInvoiceToPdf(invoice string) (*gofpdf.Fpdf, 
 		pdf.CellFormat(0, 5, orderDetail.Product.Name, "", 1, "LM", false, 0, "")
 		textQty := fmt.Sprintf("%d %s x", orderDetail.Quantity, orderDetail.Product.Unit.Name)
 		pdf.CellFormat(22, 5, textQty, "", 0, "RM", false, 0, "")
-		textPrice := fmt.Sprintf("%d =", orderDetail.Product.SellPrice)
+		textPrice := fmt.Sprintf("%d = ", orderDetail.Product.SellPrice.Int64)
 		pdf.CellFormat(22, 5, textPrice, "", 0, "LM", false, 0, "")
 		textSubTotal := fmt.Sprintf("%d", orderDetail.SubTotal)
 		pdf.CellFormat(22, 5, textSubTotal, "", 1, "RM", false, 0, "")
