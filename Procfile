@@ -1,1 +1,1 @@
-web: bin/alfarpos-backend --drop
+web: bin/alfarpos-backend
