@@ -8,6 +8,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -60,7 +61,7 @@ func TestProductUpdateProduct(t *testing.T) {
 	}
 
 	productRepository := NewMockproductRepositoryIface(ctrl)
-	productRepository.EXPECT().Update(productStub).Return(productStub)
+	productRepository.EXPECT().Update(productStub).Return(productStub, nil)
 
 	testTable := []struct {
 		testName string
@@ -138,7 +139,9 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 				return "abcde", file
 			},
 			mock: func() error {
-				return errors.New("Rows length < 1")
+				return excelize.ErrSheetNotExist{
+					SheetName: "abcde",
+				}
 			},
 		},
 		{
@@ -164,15 +167,15 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 					},
 					Name: "Category1",
 				}
-				categoryRepository.EXPECT().FindByName("Category1").Return([]model.Category{category})
+				categoryRepository.EXPECT().FindByName("Category1").Return([]model.Category{category}, nil)
 				unit := model.Unit{
 					Template: model.Template{
 						ID: uint(5),
 					},
 					Name: "Unit1",
 				}
-				unitRepository.EXPECT().FindByName("Unit1").Return([]model.Unit{unit})
-				productRepository.EXPECT().FindByCode("Product1").Return([]model.Product{})
+				unitRepository.EXPECT().FindByName("Unit1").Return([]model.Unit{unit}, nil)
+				productRepository.EXPECT().FindByCode("Product1").Return([]model.Product{}, nil)
 				product := model.Product{
 					Template: model.Template{
 						ID: uint(1),
@@ -201,7 +204,7 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 				}
 				productStub := product
 				productStub.ID = uint(0)
-				productRepository.EXPECT().New(productStub).Return(product)
+				productRepository.EXPECT().New(productStub).Return(product, nil)
 				stock := model.Stock{
 					Template: model.Template{
 						ID: uint(1),
@@ -212,7 +215,7 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 				stockStub := stock
 				stockStub.ID = 0
 				stockStub.Quantity = 0
-				stockRepository.EXPECT().New(stockStub).Return(stock)
+				stockRepository.EXPECT().New(stockStub).Return(stock, nil)
 				return nil
 			},
 		},

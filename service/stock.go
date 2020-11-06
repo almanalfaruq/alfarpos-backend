@@ -23,10 +23,16 @@ func (service *StockService) GetByProduct(stockData string) (model.Stock, error)
 	stockDataByte := []byte(stockData)
 	err := json.Unmarshal(stockDataByte, &stock)
 	if err != nil {
-		return stock, err
+		return model.Stock{}, err
 	}
-	product := service.product.FindById(stock.ProductID)
-	stock = service.stock.FindByProduct(product)
+	product, err := service.product.FindById(stock.ProductID)
+	if err != nil {
+		return model.Stock{}, err
+	}
+	stock, err = service.stock.FindByProduct(product)
+	if err != nil {
+		return model.Stock{}, err
+	}
 	return stock, nil
 }
 
@@ -37,6 +43,5 @@ func (service *StockService) UpdateStock(stockData string) (model.Stock, error) 
 	if err != nil {
 		return stock, err
 	}
-	stock = service.stock.Update(stock)
-	return stock, nil
+	return service.stock.Update(stock)
 }

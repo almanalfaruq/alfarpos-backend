@@ -84,7 +84,10 @@ func (s *OrderService) NewOrder(order model.Order) (model.Order, error) {
 	for _, orderDetail := range order.OrderDetails {
 		orderDetail.OrderID = int64(order.ID)
 		orderDetail.Order = order
-		orderDetail.Product = s.product.FindById(orderDetail.ProductID)
+		orderDetail.Product, err = s.product.FindById(orderDetail.ProductID)
+		if err != nil {
+			return model.Order{}, err
+		}
 		_, err := s.orderDetail.New(orderDetail)
 		if err != nil {
 			return model.Order{}, err
@@ -96,6 +99,7 @@ func (s *OrderService) NewOrder(order model.Order) (model.Order, error) {
 			Int32: stockQty,
 			Valid: true,
 		}
+		// update product stock
 		s.product.Update(product)
 	}
 	return order, nil

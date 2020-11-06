@@ -16,11 +16,10 @@ func NewCategoryRepo(db dbIface) *CategoryRepository {
 	}
 }
 
-func (repo *CategoryRepository) FindAll() []model.Category {
+func (repo *CategoryRepository) FindAll() ([]model.Category, error) {
 	var categories []model.Category
 	db := repo.db.GetDb()
-	db.Find(&categories)
-	return categories
+	return categories, db.Find(&categories).Error
 }
 
 func (repo *CategoryRepository) FindById(id int64) (model.Category, error) {
@@ -30,11 +29,10 @@ func (repo *CategoryRepository) FindById(id int64) (model.Category, error) {
 	return category, err
 }
 
-func (repo *CategoryRepository) FindByName(name string) []model.Category {
+func (repo *CategoryRepository) FindByName(name string) ([]model.Category, error) {
 	var categories []model.Category
 	db := repo.db.GetDb()
-	db.Where("LOWER(name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&categories)
-	return categories
+	return categories, db.Where("LOWER(name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&categories).Error
 }
 
 func (repo *CategoryRepository) New(category model.Category) (model.Category, error) {

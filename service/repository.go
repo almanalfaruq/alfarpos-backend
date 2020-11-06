@@ -4,9 +4,9 @@ import "github.com/almanalfaruq/alfarpos-backend/model"
 
 //go:generate mockgen -source=repository.go -package=service -destination=repository_mock_test.go
 type categoryRepositoryIface interface {
-	FindAll() []model.Category
+	FindAll() ([]model.Category, error)
 	FindById(id int64) (model.Category, error)
-	FindByName(name string) []model.Category
+	FindByName(name string) ([]model.Category, error)
 	New(category model.Category) (model.Category, error)
 	Update(category model.Category) (model.Category, error)
 	Delete(id int64) (model.Category, error)
@@ -48,34 +48,34 @@ type paymentRepositoryIface interface {
 }
 
 type productRepositoryIface interface {
-	FindAll() []model.Product
-	FindById(id int64) model.Product
-	FindByExactCode(code string) model.Product
-	FindByCode(code string) []model.Product
-	FindByName(name string) []model.Product
-	FindByCategoryName(name string) []model.Product
-	FindByUnitName(name string) []model.Product
-	New(product model.Product) model.Product
-	Update(product model.Product) model.Product
+	FindAll() ([]model.Product, error)
+	FindById(id int64) (model.Product, error)
+	FindByExactCode(code string) (model.Product, error)
+	FindByCode(code string) ([]model.Product, error)
+	FindByName(name string) ([]model.Product, error)
+	FindByCategoryName(name string) ([]model.Product, error)
+	FindByUnitName(name string) ([]model.Product, error)
+	New(product model.Product) (model.Product, error)
+	Update(product model.Product) (model.Product, error)
 	Delete(id int64) (model.Product, error)
-	DeleteAll() int64
+	DeleteAll() (int64, error)
 }
 
 type stockRepositoryIface interface {
-	FindAll() []model.Stock
-	FindByProduct(product model.Product) model.Stock
-	New(stock model.Stock) model.Stock
-	Update(stock model.Stock) model.Stock
+	FindAll() ([]model.Stock, error)
+	FindByProduct(product model.Product) (model.Stock, error)
+	New(stock model.Stock) (model.Stock, error)
+	Update(stock model.Stock) (model.Stock, error)
 	Delete(id int64) (model.Stock, error)
-	DeleteAll() int64
+	DeleteAll() (int64, error)
 }
 
 type unitRepositoryIface interface {
-	FindAll() []model.Unit
-	FindById(id int64) model.Unit
-	FindByName(name string) []model.Unit
-	New(unit model.Unit) model.Unit
-	Update(unit model.Unit) model.Unit
+	FindAll() ([]model.Unit, error)
+	FindById(id int64) (model.Unit, error)
+	FindByName(name string) ([]model.Unit, error)
+	New(unit model.Unit) (model.Unit, error)
+	Update(unit model.Unit) (model.Unit, error)
 	Delete(id int64) (model.Unit, error)
 }
 
