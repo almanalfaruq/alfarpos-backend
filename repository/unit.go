@@ -35,13 +35,8 @@ func (repo *UnitRepository) FindByName(name string) ([]model.Unit, error) {
 }
 
 func (repo *UnitRepository) New(unit model.Unit) (model.Unit, error) {
-	var err error
 	db := repo.db.GetDb()
-	isNotExist := db.NewRecord(unit)
-	if isNotExist {
-		err = db.Create(&unit).Error
-	}
-	return unit, err
+	return unit, db.Create(&unit).Error
 }
 
 func (repo *UnitRepository) Update(unit model.Unit) (model.Unit, error) {

@@ -37,12 +37,7 @@ func (repo *CategoryRepository) FindByName(name string) ([]model.Category, error
 
 func (repo *CategoryRepository) New(category model.Category) (model.Category, error) {
 	db := repo.db.GetDb()
-	isNotExist := db.NewRecord(category)
-	if !isNotExist {
-		return category, fmt.Errorf("Category is exists")
-	}
-	db.Create(&category)
-	return category, nil
+	return category, db.Create(&category).Error
 }
 
 func (repo *CategoryRepository) Update(category model.Category) (model.Category, error) {

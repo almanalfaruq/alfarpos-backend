@@ -17,9 +17,9 @@ func NewProductRepo(db dbIface) *ProductRepository {
 }
 
 func (repo *ProductRepository) FindAll() ([]model.Product, error) {
-	var categories []model.Product
+	var products []model.Product
 	db := repo.db.GetDb()
-	return categories, db.Set("gorm:auto_preload", true).Find(&categories).Error
+	return products, db.Set("gorm:auto_preload", true).Find(&products).Error
 }
 
 func (repo *ProductRepository) FindById(id int64) (model.Product, error) {
@@ -62,12 +62,9 @@ func (repo *ProductRepository) FindByUnitName(name string) ([]model.Product, err
 
 func (repo *ProductRepository) New(product model.Product) (model.Product, error) {
 	db := repo.db.GetDb()
-	isNotExist := db.NewRecord(product)
-	if isNotExist {
-		err := db.Create(&product).Error
-		if err != nil {
-			return product, err
-		}
+	err := db.Create(&product).Error
+	if err != nil {
+		return product, err
 	}
 	return product, db.Set("gorm:auto_preload", true).Where("id = ?", product.ID).First(&product).Error
 }

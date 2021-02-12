@@ -47,8 +47,8 @@ func TestProductUpdateProduct(t *testing.T) {
 			Int64: 1500,
 			Valid: true,
 		},
-		Quantity: sql.NullInt32{
-			Int32: 10,
+		Quantity: sql.NullInt64{
+			Int64: 10,
 			Valid: true,
 		},
 		Category: category,
@@ -193,8 +193,8 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 						Int64: 1500,
 						Valid: true,
 					},
-					Quantity: sql.NullInt32{
-						Int32: 10,
+					Quantity: sql.NullInt64{
+						Int64: 10,
 						Valid: true,
 					},
 					Category:   category,

@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/almanalfaruq/alfarpos-backend/util"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type dbIface interface {

@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
+	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
 	"github.com/gorilla/mux"
@@ -72,19 +73,20 @@ func (c *PaymentController) GetPaymentByIdHandler(w http.ResponseWriter, r *http
 }
 
 func (c *PaymentController) NewPaymentHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	golog.Info("POST - Payment: NewPaymentHandler (/payments)")
 
-	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
@@ -107,6 +109,7 @@ func (c *PaymentController) NewPaymentHandler(w http.ResponseWriter, r *http.Req
 }
 
 func (c *PaymentController) UpdatePaymentHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -114,14 +117,14 @@ func (c *PaymentController) UpdatePaymentHandler(w http.ResponseWriter, r *http.
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
 	golog.Infof("PUT - Payment: UpdatePaymentHandler (/payments/%v)", id)
 
-	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
@@ -144,6 +147,7 @@ func (c *PaymentController) UpdatePaymentHandler(w http.ResponseWriter, r *http.
 }
 
 func (c *PaymentController) DeletePaymentHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -151,14 +155,14 @@ func (c *PaymentController) DeletePaymentHandler(w http.ResponseWriter, r *http.
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
 	golog.Infof("DELETE - Payment: DeletePaymentHandler (/payments/%d)", id)
 
-	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -37,31 +38,93 @@ func (service *ProductService) GetAllProduct() ([]model.Product, error) {
 }
 
 func (service *ProductService) GetOneProduct(id int64) (model.Product, error) {
-	return service.product.FindById(id)
+	product, err := service.product.FindById(id)
+	if err != nil {
+		return model.Product{}, err
+	}
+	if len(product.ProductPrices) > 0 {
+		sort.Slice(product.ProductPrices, func(i, j int) bool {
+			return product.ProductPrices[i].QuantityMultiplier > product.ProductPrices[j].QuantityMultiplier
+		})
+	}
+	return product, nil
 }
 
 func (service *ProductService) GetOneProductByCode(code string) (model.Product, error) {
 	code = strings.ToLower(code)
-	return service.product.FindByExactCode(code)
+	product, err := service.product.FindByExactCode(code)
+	if err != nil {
+		return model.Product{}, err
+	}
+	if len(product.ProductPrices) > 0 {
+		sort.Slice(product.ProductPrices, func(i, j int) bool {
+			return product.ProductPrices[i].QuantityMultiplier > product.ProductPrices[j].QuantityMultiplier
+		})
+	}
+	return product, nil
 }
 
 func (service *ProductService) GetProductsByCode(productCode string) ([]model.Product, error) {
-	return service.product.FindByCode(productCode)
+	products, err := service.product.FindByCode(productCode)
+	if err != nil {
+		return nil, err
+	}
+	for _, product := range products {
+		if len(product.ProductPrices) > 0 {
+			sort.Slice(product.ProductPrices, func(i, j int) bool {
+				return product.ProductPrices[i].QuantityMultiplier > product.ProductPrices[j].QuantityMultiplier
+			})
+		}
+	}
+	return products, nil
 }
 
 func (service *ProductService) GetProductsByName(productName string) ([]model.Product, error) {
 	productName = strings.ToLower(productName)
-	return service.product.FindByName(productName)
+	products, err := service.product.FindByName(productName)
+	if err != nil {
+		return nil, err
+	}
+	for _, product := range products {
+		if len(product.ProductPrices) > 0 {
+			sort.Slice(product.ProductPrices, func(i, j int) bool {
+				return product.ProductPrices[i].QuantityMultiplier > product.ProductPrices[j].QuantityMultiplier
+			})
+		}
+	}
+	return products, nil
 }
 
 func (service *ProductService) GetProductsByCategoryName(categoryName string) ([]model.Product, error) {
 	categoryName = strings.ToLower(categoryName)
-	return service.product.FindByCategoryName(categoryName)
+	products, err := service.product.FindByCategoryName(categoryName)
+	if err != nil {
+		return nil, err
+	}
+	for _, product := range products {
+		if len(product.ProductPrices) > 0 {
+			sort.Slice(product.ProductPrices, func(i, j int) bool {
+				return product.ProductPrices[i].QuantityMultiplier > product.ProductPrices[j].QuantityMultiplier
+			})
+		}
+	}
+	return products, nil
 }
 
 func (service *ProductService) GetProductsByUnitName(unitName string) ([]model.Product, error) {
 	unitName = strings.ToLower(unitName)
-	return service.product.FindByUnitName(unitName)
+	products, err := service.product.FindByUnitName(unitName)
+	if err != nil {
+		return nil, err
+	}
+	for _, product := range products {
+		if len(product.ProductPrices) > 0 {
+			sort.Slice(product.ProductPrices, func(i, j int) bool {
+				return product.ProductPrices[i].QuantityMultiplier > product.ProductPrices[j].QuantityMultiplier
+			})
+		}
+	}
+	return products, nil
 }
 
 func (service *ProductService) NewProduct(productData string) (model.Product, error) {
@@ -117,7 +180,7 @@ func (s *ProductService) ExportAllProductsToExcel() (*excelize.File, error) {
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("A%d", i+2), product.Code)
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("B%d", i+2), product.Name)
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("C%d", i+2), product.SellPrice.Int64)
-		xlsx.SetCellValue(sheetName, fmt.Sprintf("D%d", i+2), product.Quantity.Int32)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("D%d", i+2), product.Quantity.Int64)
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("E%d", i+2), product.Category.Name)
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("F%d", i+2), product.BuyPrice.Int64)
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("G%d", i+2), product.Unit.Name)
@@ -152,7 +215,7 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 	)
 	go func() {
 		for _, product := range products {
-			golog.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", product.Name, product.Quantity.Int32, product.SellPrice.Int64, product.BuyPrice.Int64)
+			golog.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", product.Name, product.Quantity.Int64, product.SellPrice.Int64, product.BuyPrice.Int64)
 			categories, err := s.category.FindByName(strings.ToLower(product.Category.Name))
 			var category model.Category
 			if err != nil || len(categories) == 0 {
@@ -170,7 +233,7 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 			units, err := s.unit.FindByName(strings.ToLower(product.Unit.Name))
 			var unit model.Unit
 			if err != nil || len(units) == 0 {
-				unit = model.Unit{Name: product.Unit.Name}
+				unit = product.Unit
 				unit, err = s.unit.New(unit)
 				if err != nil {
 					errIndex = append(errIndex, product.Name)
@@ -185,15 +248,6 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 			if err != nil {
 				errIndex = append(errIndex, product.Name)
 				continue
-			}
-			stock := model.Stock{
-				ProductID: int64(product.ID),
-				Product:   product,
-				Quantity:  0,
-			}
-			_, err = s.stock.New(stock)
-			if err != nil {
-				golog.Errorf("Error create imported product stock: %v", err)
 			}
 			productCounter++
 		}
@@ -238,6 +292,11 @@ func (s *ProductService) parseExcelRowsToProduct(rows [][]string) ([]model.Produ
 			}
 		}
 		name := row[1]
+		if name == "" {
+			errIndex = append(errIndex, name)
+			continue
+		}
+
 		sellPrice, err := strconv.ParseInt(row[2], 10, 64)
 		if err != nil {
 			errIndex = append(errIndex, name)
@@ -254,11 +313,22 @@ func (s *ProductService) parseExcelRowsToProduct(rows [][]string) ([]model.Produ
 			errIndex = append(errIndex, name)
 			continue
 		}
+
 		unitName := row[6]
-		if codeString == "" || name == "" {
-			errIndex = append(errIndex, name)
-			continue
+		unitCode := row[7]
+		unitTotalPcs, err := strconv.ParseInt(row[8], 10, 64)
+		if err != nil {
+			unitTotalPcs = 1
 		}
+
+		unit := model.Unit{
+			Name:     unitName,
+			Code:     unitCode,
+			TotalPcs: int32(unitTotalPcs),
+		}
+
+		var productPrices model.ProductPrices
+		productPrices = productPrices.FromStringJson(row[9])
 
 		product := model.Product{
 			Code: code,
@@ -267,8 +337,8 @@ func (s *ProductService) parseExcelRowsToProduct(rows [][]string) ([]model.Produ
 				Int64: sellPrice,
 				Valid: true,
 			},
-			Quantity: sql.NullInt32{
-				Int32: int32(quantity),
+			Quantity: sql.NullInt64{
+				Int64: quantity,
 				Valid: true,
 			},
 			Category: model.Category{
@@ -278,9 +348,8 @@ func (s *ProductService) parseExcelRowsToProduct(rows [][]string) ([]model.Produ
 				Int64: buyPrice,
 				Valid: true,
 			},
-			Unit: model.Unit{
-				Name: unitName,
-			},
+			Unit:          unit,
+			ProductPrices: productPrices,
 		}
 
 		products = append(products, product)

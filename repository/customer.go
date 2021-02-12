@@ -14,42 +14,37 @@ func NewCustomerRepo(db dbIface) *CustomerRepository {
 	}
 }
 
-func (repo *CustomerRepository) FindAll() []model.Customer {
+func (repo *CustomerRepository) FindAll() ([]model.Customer, error) {
 	var customers []model.Customer
 	db := repo.db.GetDb()
-	db.Find(&customers)
-	return customers
+	return customers, db.Find(&customers).Error
 }
 
-func (repo *CustomerRepository) FindById(id int64) model.Customer {
+func (repo *CustomerRepository) FindById(id int64) (model.Customer, error) {
 	var customer model.Customer
 	db := repo.db.GetDb()
-	db.Where("id = ?", id).First(&customer)
-	return customer
+	return customer, db.Where("id = ?", id).First(&customer).Error
 }
 
-func (repo *CustomerRepository) New(customer model.Customer) model.Customer {
+func (repo *CustomerRepository) New(customer model.Customer) (model.Customer, error) {
 	db := repo.db.GetDb()
-	isNotExists := db.NewRecord(customer)
-	if isNotExists {
-		db.Create(&customer)
-	}
-	return customer
+	return customer, db.Create(&customer).Error
 }
 
-func (repo *CustomerRepository) Update(customer model.Customer) model.Customer {
+func (repo *CustomerRepository) Update(customer model.Customer) (model.Customer, error) {
 	var oldCustomer model.Customer
 	db := repo.db.GetDb()
 	db.Where("id = ?", customer.ID).First(&oldCustomer)
 	oldCustomer = customer
-	db.Save(&oldCustomer)
-	return customer
+	return customer, db.Save(&oldCustomer).Error
 }
 
-func (repo *CustomerRepository) Delete(id int64) model.Customer {
+func (repo *CustomerRepository) Delete(id int64) (model.Customer, error) {
 	var customer model.Customer
 	db := repo.db.GetDb()
-	db.Where("id = ?", id).First(&customer)
-	db.Delete(&customer)
-	return customer
+	err := db.Where("id = ?", id).First(&customer).Error
+	if err != nil {
+		return customer, err
+	}
+	return customer, db.Delete(&customer).Error
 }

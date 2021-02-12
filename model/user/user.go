@@ -1,4 +1,8 @@
-package model
+package user
+
+import (
+	"github.com/almanalfaruq/alfarpos-backend/model"
+)
 
 type Role int
 
@@ -11,7 +15,7 @@ const (
 const CTX_USER = "user"
 
 type User struct {
-	Template
+	model.Template
 	Username string `gorm:"unique_index" json:"username" example:"cashier"`
 	Password string `json:"password,omitempty"`
 	FullName string `json:"full_name" example:"Cashier Primary"`
@@ -27,4 +31,9 @@ func (u *User) HasRole(roles ...Role) bool {
 		}
 	}
 	return false
+}
+
+type UserResponse struct {
+	Token string `json:"token"`
+	User  User   `json:"user"`
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
+	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
 	"github.com/kataras/golog"
@@ -142,19 +143,20 @@ func (c *ProductController) GetProductByCodeHandler(w http.ResponseWriter, r *ht
 }
 
 func (c *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	golog.Info("POST - Product: NewProductHandler (/products)")
 
-	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
@@ -207,6 +209,7 @@ func (c *ProductController) ExportAllProductsToExcelHandler(w http.ResponseWrite
 // @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
 // @Router /products/upload_excel [post]
 func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -214,20 +217,20 @@ func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *
 	sheetName := vars["sheetName"]
 	golog.Infof("POST - Product: UploadExcelProductHandler (/products/upload_excel/%s)", sheetName)
 
-	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
 	}
 
-	err := r.ParseMultipartForm(20 << 20)
+	err = r.ParseMultipartForm(20 << 20)
 	if err != nil {
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
@@ -253,6 +256,7 @@ func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *
 }
 
 func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -260,14 +264,14 @@ func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
 	golog.Infof("PUT - Product: UpdateProductHandler (/products/%d)", id)
 
-	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
@@ -290,6 +294,7 @@ func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.
 }
 
 func (c *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -297,14 +302,14 @@ func (c *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
 	golog.Infof("DELETE - Product: DeleteProductHandler (/products/%d)", id)
 
-	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return

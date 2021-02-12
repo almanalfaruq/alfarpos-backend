@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"errors"
 	"strings"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
@@ -19,24 +18,16 @@ func NewPaymentService(paymentRepo paymentRepositoryIface) *PaymentService {
 }
 
 func (service *PaymentService) GetAllPayment() ([]model.Payment, error) {
-	return service.payment.FindAll(), nil
+	return service.payment.FindAll()
 }
 
 func (service *PaymentService) GetOnePayment(id int64) (model.Payment, error) {
-	payment := service.payment.FindById(id)
-	if payment.ID == 0 {
-		return payment, errors.New("Payment not found")
-	}
-	return payment, nil
+	return service.payment.FindById(id)
 }
 
 func (service *PaymentService) GetPaymentsByName(name string) ([]model.Payment, error) {
 	name = strings.ToLower(name)
-	payments := service.payment.FindByName(name)
-	if len(payments) == 0 {
-		return payments, errors.New("Payments not found")
-	}
-	return payments, nil
+	return service.payment.FindByName(name)
 }
 
 func (service *PaymentService) NewPayment(paymentData string) (model.Payment, error) {
@@ -46,7 +37,7 @@ func (service *PaymentService) NewPayment(paymentData string) (model.Payment, er
 	if err != nil {
 		return payment, err
 	}
-	return service.payment.New(payment), nil
+	return service.payment.New(payment)
 }
 
 func (service *PaymentService) UpdatePayment(paymentData string) (model.Payment, error) {
@@ -56,8 +47,7 @@ func (service *PaymentService) UpdatePayment(paymentData string) (model.Payment,
 	if err != nil {
 		return payment, err
 	}
-	payment = service.payment.Update(payment)
-	return payment, nil
+	return service.payment.Update(payment)
 }
 
 func (service *PaymentService) DeletePayment(id int64) (model.Payment, error) {

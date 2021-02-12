@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
+	orderentity "github.com/almanalfaruq/alfarpos-backend/model/order"
 )
 
 type OrderDetailService struct {
@@ -21,7 +22,7 @@ func NewOrderDetailService(orderRepo orderRepositoryIface, orderDetailRepo order
 }
 
 func (service *OrderDetailService) GetOrderDetailByOrder(orderDetailData string) ([]model.OrderDetail, error) {
-	var order model.Order
+	var order orderentity.Order
 	orderDetailDataByte := []byte(orderDetailData)
 	err := json.Unmarshal(orderDetailDataByte, &order)
 	if err != nil {

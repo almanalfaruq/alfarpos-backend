@@ -49,13 +49,13 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Order"
+                            "$ref": "#/definitions/order.Order"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Return array of product",
+                        "description": "Return order data",
                         "schema": {
                             "allOf": [
                                 {
@@ -65,7 +65,7 @@ var doc = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/model.Order"
+                                            "$ref": "#/definitions/order.Order"
                                         }
                                     }
                                 }
@@ -464,7 +464,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.User"
+                            "$ref": "#/definitions/user.User"
                         }
                     }
                 ],
@@ -543,7 +543,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.User"
+                            "$ref": "#/definitions/user.User"
                         }
                     }
                 ],
@@ -559,7 +559,7 @@ var doc = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/model.User"
+                                            "$ref": "#/definitions/user.User"
                                         }
                                     }
                                 }
@@ -663,78 +663,6 @@ var doc = `{
                 }
             }
         },
-        "model.Order": {
-            "type": "object",
-            "properties": {
-                "amount_paid": {
-                    "type": "integer",
-                    "example": 150000
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "customer": {
-                    "type": "object",
-                    "$ref": "#/definitions/model.Customer"
-                },
-                "customer_id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "deleted_at": {
-                    "type": "string"
-                },
-                "discount": {
-                    "type": "number",
-                    "example": 0
-                },
-                "id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "invoice": {
-                    "type": "string",
-                    "example": "5-9-2020-000001"
-                },
-                "order_details": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.OrderDetail"
-                    }
-                },
-                "payment": {
-                    "type": "object",
-                    "$ref": "#/definitions/model.Payment"
-                },
-                "payment_id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "ppn": {
-                    "type": "integer",
-                    "example": 13000
-                },
-                "total": {
-                    "type": "integer",
-                    "example": 130000
-                },
-                "total_change": {
-                    "type": "integer",
-                    "example": 20000
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user": {
-                    "type": "object",
-                    "$ref": "#/definitions/model.User"
-                },
-                "user_id": {
-                    "type": "integer",
-                    "example": 1
-                }
-            }
-        },
         "model.OrderDetail": {
             "type": "object",
             "properties": {
@@ -748,10 +676,6 @@ var doc = `{
                     "type": "integer",
                     "example": 1
                 },
-                "order": {
-                    "type": "object",
-                    "$ref": "#/definitions/model.Order"
-                },
                 "order_id": {
                     "type": "integer",
                     "example": 1
@@ -761,12 +685,15 @@ var doc = `{
                     "$ref": "#/definitions/model.Product"
                 },
                 "product_id": {
-                    "type": "integer",
-                    "example": 1
+                    "type": "integer"
                 },
                 "quantity": {
                     "type": "integer",
                     "example": 2
+                },
+                "sell_price": {
+                    "type": "integer",
+                    "example": 15000
                 },
                 "sub_total": {
                     "type": "integer",
@@ -803,8 +730,8 @@ var doc = `{
             "type": "object",
             "properties": {
                 "buy_price": {
-                    "type": "integer",
-                    "example": 10000
+                    "type": "string",
+                    "example": "10000"
                 },
                 "category": {
                     "type": "object",
@@ -816,7 +743,7 @@ var doc = `{
                 },
                 "code": {
                     "type": "string",
-                    "example": "unique-code"
+                    "example": "81921872917"
                 },
                 "created_at": {
                     "type": "string"
@@ -840,13 +767,19 @@ var doc = `{
                     "type": "string",
                     "example": "product name"
                 },
+                "product_prices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ProductPrice"
+                    }
+                },
                 "quantity": {
-                    "type": "integer",
-                    "example": 10
+                    "type": "string",
+                    "example": "10"
                 },
                 "sell_price": {
-                    "type": "integer",
-                    "example": 15000
+                    "type": "string",
+                    "example": "15000"
                 },
                 "unit": {
                     "type": "object",
@@ -861,9 +794,42 @@ var doc = `{
                 }
             }
         },
+        "model.ProductPrice": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "product_id": {
+                    "type": "integer"
+                },
+                "quantity_multiplier": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "sell_price": {
+                    "type": "integer",
+                    "example": 15000
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "model.Unit": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "KRT40"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -878,12 +844,111 @@ var doc = `{
                     "type": "string",
                     "example": "Unit"
                 },
+                "total_pcs": {
+                    "type": "integer",
+                    "example": 1
+                },
                 "updated_at": {
                     "type": "string"
                 }
             }
         },
-        "model.User": {
+        "order.Order": {
+            "type": "object",
+            "properties": {
+                "amount_paid": {
+                    "type": "integer",
+                    "example": 150000
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "customer": {
+                    "type": "object",
+                    "$ref": "#/definitions/model.Customer"
+                },
+                "customer_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "discount": {
+                    "type": "number",
+                    "example": 0
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "invoice": {
+                    "type": "string",
+                    "example": "5-9-2020-000001"
+                },
+                "note": {
+                    "type": "string",
+                    "example": "This was a pending transaction for specific customer"
+                },
+                "order_details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.OrderDetail"
+                    }
+                },
+                "payment": {
+                    "type": "object",
+                    "$ref": "#/definitions/model.Payment"
+                },
+                "payment_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "ppn": {
+                    "type": "integer",
+                    "example": 13000
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 130000
+                },
+                "total_change": {
+                    "type": "integer",
+                    "example": 20000
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "object",
+                    "$ref": "#/definitions/user.User"
+                },
+                "user_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "response.ResponseMapper": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "data": {
+                    "type": "object"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Success getting all products"
+                }
+            }
+        },
+        "user.User": {
             "type": "object",
             "properties": {
                 "address": {
@@ -921,22 +986,6 @@ var doc = `{
                 "username": {
                     "type": "string",
                     "example": "cashier"
-                }
-            }
-        },
-        "response.ResponseMapper": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer",
-                    "example": 200
-                },
-                "data": {
-                    "type": "object"
-                },
-                "message": {
-                    "type": "string",
-                    "example": "Success getting all products"
                 }
             }
         }

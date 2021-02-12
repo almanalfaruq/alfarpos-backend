@@ -23,16 +23,12 @@ func (repo *StockRepository) FindAll() ([]model.Stock, error) {
 func (repo *StockRepository) FindByProduct(product model.Product) (model.Stock, error) {
 	var stock model.Stock
 	db := repo.db.GetDb()
-	return stock, db.Set("gorm:auto_preload", true).Model(&product).Related(&stock).Error
+	return stock, db.Set("gorm:auto_preload", true).Model(&product).Error
 }
 
 func (repo *StockRepository) New(stock model.Stock) (model.Stock, error) {
 	db := repo.db.GetDb()
-	isNotExist := db.NewRecord(stock)
-	if isNotExist {
-		return stock, db.Create(&stock).Error
-	}
-	return stock, nil
+	return stock, db.Create(&stock).Error
 }
 
 func (repo *StockRepository) Update(stock model.Stock) (model.Stock, error) {

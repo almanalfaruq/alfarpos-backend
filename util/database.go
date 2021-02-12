@@ -4,8 +4,11 @@ import (
 	"fmt"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
-	"github.com/jinzhu/gorm"
+	orderentity "github.com/almanalfaruq/alfarpos-backend/model/order"
+	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/kataras/golog"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 type DBConn struct {
@@ -34,7 +37,7 @@ func (dbConn *DBConn) Open(config Config) *gorm.DB {
 		config.Database.Username, password, dbName)
 	golog.Infof("URL Database: %s", url)
 	var err error
-	dbConn.DB, err = gorm.Open("postgres", url)
+	dbConn.DB, err = gorm.Open(postgres.Open(url), &gorm.Config{})
 	if err != nil {
 		panic("Cannot connect to the database")
 	}
@@ -46,13 +49,17 @@ func (dbConn *DBConn) GetDb() *gorm.DB {
 }
 
 func (dbConn *DBConn) MigrateDb() {
-	dbConn.DB.AutoMigrate(&model.Category{}, &model.Customer{}, &model.OrderDetail{}, &model.Order{}, &model.Payment{}, &model.Product{}, &model.Stock{}, &model.Unit{}, &model.User{})
+	err := dbConn.DB.AutoMigrate(&model.Category{}, &model.Customer{}, &model.OrderDetail{}, &orderentity.Order{}, &model.Payment{}, &model.Product{}, &model.ProductPrice{}, &model.Stock{}, &model.Unit{}, &userentity.User{})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (dbConn *DBConn) DropDb() {
-	dbConn.DB.DropTable(&model.Category{}, &model.Customer{}, &model.OrderDetail{}, &model.Order{}, &model.Payment{}, &model.Product{}, &model.Stock{}, &model.Unit{}, &model.User{})
+	dbConn.DB.Migrator().DropTable(&model.Category{}, &model.Customer{}, &model.OrderDetail{}, &orderentity.Order{}, &model.Payment{}, &model.Product{}, &model.ProductPrice{}, &model.Stock{}, &model.Unit{}, &userentity.User{})
 }
 
 func (dbConn *DBConn) Close() {
-	dbConn.DB.Close()
+	db, _ := dbConn.DB.DB()
+	db.Close()
 }
