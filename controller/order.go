@@ -113,16 +113,16 @@ func (c *OrderController) GetOrderByIDHandler(w http.ResponseWriter, r *http.Req
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	user, ok := r.Context().Value("user").(userentity.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
-		err = errors.New("Cannot parse token")
-		renderJSONError(w, http.StatusBadRequest, err, "Cannot parse token")
+		err := errors.New("Cannot parse user context")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
-		message := "User must be Admin or Manager"
-		renderJSONError(w, http.StatusForbidden, fmt.Errorf(message), message)
+		err := errors.New("User must be Admin or Manager")
+		response.RenderJSONError(w, http.StatusForbidden, err)
 		return
 	}
 
@@ -130,9 +130,9 @@ func (c *OrderController) GetOrderByIDHandler(w http.ResponseWriter, r *http.Req
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
 	orders, err := c.order.GetOneOrder(id)
 	if err != nil {
-		renderJSONError(w, http.StatusInternalServerError, err, fmt.Sprintf("Cannot get order by id: %d", id))
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	renderJSONSuccess(w, http.StatusOK, orders, fmt.Sprintf("Success getting order by id: %d", id))
+	response.RenderJSONSuccess(w, http.StatusOK, orders, fmt.Sprintf("Success getting order by id: %d", id))
 }

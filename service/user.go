@@ -9,14 +9,9 @@ import (
 	"github.com/kataras/golog"
 	"golang.org/x/crypto/bcrypt"
 
-<<<<<<< HEAD
-	"github.com/almanalfaruq/alfarpos-backend/model"
-=======
-	"github.com/almanalfaruq/alfarpos-backend/model/response"
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
->>>>>>> Major Changes
 	"github.com/almanalfaruq/alfarpos-backend/util"
-	"github.com/almanalfaruq/alfarpos-backend/util/auth"
+	"github.com/almanalfaruq/alfarpos-backend/util/response"
 )
 
 type UserService struct {
@@ -57,7 +52,7 @@ func (service *UserService) LoginUser(userData string) (userentity.UserResponse,
 		return userentity.UserResponse{}, errors.New("Username or Password mismatch")
 	}
 	user = userFromDb
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, auth.TokenData{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, response.TokenData{
 		User: user,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Duration(24) * time.Hour).Unix(),
