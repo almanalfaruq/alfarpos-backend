@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"errors"
 	"strings"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
@@ -19,24 +18,16 @@ func NewUnitService(unitRepo unitRepositoryIface) *UnitService {
 }
 
 func (service *UnitService) GetAllUnit() ([]model.Unit, error) {
-	return service.unit.FindAll(), nil
+	return service.unit.FindAll()
 }
 
 func (service *UnitService) GetOneUnit(id int64) (model.Unit, error) {
-	unit := service.unit.FindById(id)
-	if unit.ID == 0 {
-		return unit, errors.New("Unit not found")
-	}
-	return unit, nil
+	return service.unit.FindById(id)
 }
 
 func (service *UnitService) GetUnitsByName(name string) ([]model.Unit, error) {
 	name = strings.ToLower(name)
-	units := service.unit.FindByName(name)
-	if len(units) == 0 {
-		return units, errors.New("Units not found")
-	}
-	return units, nil
+	return service.unit.FindByName(name)
 }
 
 func (service *UnitService) NewUnit(unitData string) (model.Unit, error) {
@@ -44,9 +35,9 @@ func (service *UnitService) NewUnit(unitData string) (model.Unit, error) {
 	unitDataByte := []byte(unitData)
 	err := json.Unmarshal(unitDataByte, &unit)
 	if err != nil {
-		return unit, err
+		return model.Unit{}, err
 	}
-	return service.unit.New(unit), nil
+	return service.unit.New(unit)
 }
 
 func (service *UnitService) UpdateUnit(unitData string) (model.Unit, error) {
@@ -56,8 +47,7 @@ func (service *UnitService) UpdateUnit(unitData string) (model.Unit, error) {
 	if err != nil {
 		return unit, err
 	}
-	unit = service.unit.Update(unit)
-	return unit, nil
+	return service.unit.Update(unit)
 }
 
 func (service *UnitService) DeleteUnit(id int64) (model.Unit, error) {

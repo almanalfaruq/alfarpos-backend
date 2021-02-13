@@ -12,7 +12,6 @@ import (
 	"github.com/almanalfaruq/alfarpos-backend/util"
 
 	_ "github.com/almanalfaruq/alfarpos-backend/docs"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/kataras/golog"
 )
 
@@ -87,11 +86,17 @@ func populateFirstData() {
 		Name: "Cash",
 	}
 	paymentRepo := repository.NewPaymentRepo(&databaseConnection)
-	paymentRepo.New(payment)
+	_, err := paymentRepo.New(payment)
+	if err != nil {
+		panic(err)
+	}
 
 	customer := model.Customer{
 		Name: "Customer",
 	}
 	customerRepo := repository.NewCustomerRepo(&databaseConnection)
-	customerRepo.New(customer)
+	_, err = customerRepo.New(customer)
+	if err != nil {
+		panic(err)
+	}
 }

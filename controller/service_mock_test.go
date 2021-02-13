@@ -7,6 +7,8 @@ package controller
 import (
 	excelize "github.com/360EntSecGroup-Skylar/excelize/v2"
 	model "github.com/almanalfaruq/alfarpos-backend/model"
+	order "github.com/almanalfaruq/alfarpos-backend/model/order"
+	user "github.com/almanalfaruq/alfarpos-backend/model/user"
 	gomock "github.com/golang/mock/gomock"
 	gofpdf "github.com/jung-kurt/gofpdf"
 	io "io"
@@ -165,11 +167,12 @@ func (mr *MockcustomerServiceIfaceMockRecorder) GetOneCustomer(id interface{}) *
 }
 
 // GetAllCustomer mocks base method
-func (m *MockcustomerServiceIface) GetAllCustomer() []model.Customer {
+func (m *MockcustomerServiceIface) GetAllCustomer() ([]model.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllCustomer")
 	ret0, _ := ret[0].([]model.Customer)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetAllCustomer indicates an expected call of GetAllCustomer
@@ -315,10 +318,10 @@ func (m *MockorderServiceIface) EXPECT() *MockorderServiceIfaceMockRecorder {
 }
 
 // GetAllOrder mocks base method
-func (m *MockorderServiceIface) GetAllOrder() ([]model.Order, error) {
+func (m *MockorderServiceIface) GetAllOrder() ([]order.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllOrder")
-	ret0, _ := ret[0].([]model.Order)
+	ret0, _ := ret[0].([]order.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -330,10 +333,10 @@ func (mr *MockorderServiceIfaceMockRecorder) GetAllOrder() *gomock.Call {
 }
 
 // GetOneOrder mocks base method
-func (m *MockorderServiceIface) GetOneOrder(id int64) (model.Order, error) {
+func (m *MockorderServiceIface) GetOneOrder(id int64) (order.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOneOrder", id)
-	ret0, _ := ret[0].(model.Order)
+	ret0, _ := ret[0].(order.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -345,10 +348,10 @@ func (mr *MockorderServiceIfaceMockRecorder) GetOneOrder(id interface{}) *gomock
 }
 
 // GetOrderByInvoice mocks base method
-func (m *MockorderServiceIface) GetOrderByInvoice(invoice string) (model.Order, error) {
+func (m *MockorderServiceIface) GetOrderByInvoice(invoice string) (order.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOrderByInvoice", invoice)
-	ret0, _ := ret[0].(model.Order)
+	ret0, _ := ret[0].(order.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -360,10 +363,10 @@ func (mr *MockorderServiceIfaceMockRecorder) GetOrderByInvoice(invoice interface
 }
 
 // GetOrderByUserId mocks base method
-func (m *MockorderServiceIface) GetOrderByUserId(userId int64) ([]model.Order, error) {
+func (m *MockorderServiceIface) GetOrderByUserId(userId int64) ([]order.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOrderByUserId", userId)
-	ret0, _ := ret[0].([]model.Order)
+	ret0, _ := ret[0].([]order.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -375,40 +378,40 @@ func (mr *MockorderServiceIfaceMockRecorder) GetOrderByUserId(userId interface{}
 }
 
 // NewOrder mocks base method
-func (m *MockorderServiceIface) NewOrder(order model.Order) (model.Order, error) {
+func (m *MockorderServiceIface) NewOrder(orderData order.Order) (order.Order, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewOrder", order)
-	ret0, _ := ret[0].(model.Order)
+	ret := m.ctrl.Call(m, "NewOrder", orderData)
+	ret0, _ := ret[0].(order.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NewOrder indicates an expected call of NewOrder
-func (mr *MockorderServiceIfaceMockRecorder) NewOrder(order interface{}) *gomock.Call {
+func (mr *MockorderServiceIfaceMockRecorder) NewOrder(orderData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewOrder", reflect.TypeOf((*MockorderServiceIface)(nil).NewOrder), order)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewOrder", reflect.TypeOf((*MockorderServiceIface)(nil).NewOrder), orderData)
 }
 
 // UpdateOrder mocks base method
-func (m *MockorderServiceIface) UpdateOrder(order model.Order) (model.Order, error) {
+func (m *MockorderServiceIface) UpdateOrder(orderData order.Order) (order.Order, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateOrder", order)
-	ret0, _ := ret[0].(model.Order)
+	ret := m.ctrl.Call(m, "UpdateOrder", orderData)
+	ret0, _ := ret[0].(order.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateOrder indicates an expected call of UpdateOrder
-func (mr *MockorderServiceIfaceMockRecorder) UpdateOrder(order interface{}) *gomock.Call {
+func (mr *MockorderServiceIfaceMockRecorder) UpdateOrder(orderData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrder", reflect.TypeOf((*MockorderServiceIface)(nil).UpdateOrder), order)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrder", reflect.TypeOf((*MockorderServiceIface)(nil).UpdateOrder), orderData)
 }
 
 // DeleteOrder mocks base method
-func (m *MockorderServiceIface) DeleteOrder(id int64) (model.Order, error) {
+func (m *MockorderServiceIface) DeleteOrder(id int64) (order.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteOrder", id)
-	ret0, _ := ret[0].(model.Order)
+	ret0, _ := ret[0].(order.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -963,10 +966,10 @@ func (m *MockuserServiceIface) EXPECT() *MockuserServiceIfaceMockRecorder {
 }
 
 // GetOneUser mocks base method
-func (m *MockuserServiceIface) GetOneUser(id int64) (model.User, error) {
+func (m *MockuserServiceIface) GetOneUser(id int64) (user.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOneUser", id)
-	ret0, _ := ret[0].(model.User)
+	ret0, _ := ret[0].(user.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -978,11 +981,12 @@ func (mr *MockuserServiceIfaceMockRecorder) GetOneUser(id interface{}) *gomock.C
 }
 
 // GetAllUser mocks base method
-func (m *MockuserServiceIface) GetAllUser() []model.User {
+func (m *MockuserServiceIface) GetAllUser() ([]user.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllUser")
-	ret0, _ := ret[0].([]model.User)
-	return ret0
+	ret0, _ := ret[0].([]user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetAllUser indicates an expected call of GetAllUser
@@ -992,10 +996,10 @@ func (mr *MockuserServiceIfaceMockRecorder) GetAllUser() *gomock.Call {
 }
 
 // LoginUser mocks base method
-func (m *MockuserServiceIface) LoginUser(userData string) (string, error) {
+func (m *MockuserServiceIface) LoginUser(userData string) (user.UserResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LoginUser", userData)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(user.UserResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1007,10 +1011,10 @@ func (mr *MockuserServiceIfaceMockRecorder) LoginUser(userData interface{}) *gom
 }
 
 // NewUser mocks base method
-func (m *MockuserServiceIface) NewUser(userData string) (model.User, error) {
+func (m *MockuserServiceIface) NewUser(userData string) (user.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewUser", userData)
-	ret0, _ := ret[0].(model.User)
+	ret0, _ := ret[0].(user.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1022,10 +1026,10 @@ func (mr *MockuserServiceIfaceMockRecorder) NewUser(userData interface{}) *gomoc
 }
 
 // UpdateUser mocks base method
-func (m *MockuserServiceIface) UpdateUser(userData string) (model.User, error) {
+func (m *MockuserServiceIface) UpdateUser(userData string) (user.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateUser", userData)
-	ret0, _ := ret[0].(model.User)
+	ret0, _ := ret[0].(user.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -1037,10 +1041,10 @@ func (mr *MockuserServiceIfaceMockRecorder) UpdateUser(userData interface{}) *go
 }
 
 // DeleteUser mocks base method
-func (m *MockuserServiceIface) DeleteUser(id int64) (model.User, error) {
+func (m *MockuserServiceIface) DeleteUser(id int64) (user.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteUser", id)
-	ret0, _ := ret[0].(model.User)
+	ret0, _ := ret[0].(user.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

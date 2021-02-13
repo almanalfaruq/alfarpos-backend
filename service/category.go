@@ -18,7 +18,7 @@ func NewCategoryService(categoryRepo categoryRepositoryIface) *CategoryService {
 }
 
 func (service *CategoryService) GetAllCategory() ([]model.Category, error) {
-	return service.category.FindAll(), nil
+	return service.category.FindAll()
 }
 
 func (service *CategoryService) GetOneCategory(id int64) (model.Category, error) {
@@ -37,9 +37,12 @@ func (service *CategoryService) GetOneCategory(id int64) (model.Category, error)
 
 func (service *CategoryService) GetCategoriesByName(name string) ([]model.Category, error) {
 	name = strings.ToLower(name)
-	categories := service.category.FindByName(name)
+	categories, err := service.category.FindByName(name)
+	if err != nil {
+		return nil, err
+	}
 	if len(categories) == 0 {
-		return categories, errors.New("Categories not found")
+		return nil, errors.New("Categories not found")
 	}
 	return categories, nil
 }

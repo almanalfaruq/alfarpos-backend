@@ -16,49 +16,47 @@ func NewUnitRepo(db dbIface) *UnitRepository {
 	}
 }
 
-func (repo *UnitRepository) FindAll() []model.Unit {
+func (repo *UnitRepository) FindAll() ([]model.Unit, error) {
 	var categories []model.Unit
 	db := repo.db.GetDb()
-	db.Find(&categories)
-	return categories
+	return categories, db.Find(&categories).Error
 }
 
-func (repo *UnitRepository) FindById(id int64) model.Unit {
+func (repo *UnitRepository) FindById(id int64) (model.Unit, error) {
 	var unit model.Unit
 	db := repo.db.GetDb()
-	db.Where("id = ?", id).First(&unit)
-	return unit
+	return unit, db.Where("id = ?", id).First(&unit).Error
 }
 
-func (repo *UnitRepository) FindByName(name string) []model.Unit {
+func (repo *UnitRepository) FindByName(name string) ([]model.Unit, error) {
 	var units []model.Unit
 	db := repo.db.GetDb()
-	db.Where("LOWER(name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&units)
-	return units
+	return units, db.Where("LOWER(name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&units).Error
 }
 
-func (repo *UnitRepository) New(unit model.Unit) model.Unit {
+func (repo *UnitRepository) New(unit model.Unit) (model.Unit, error) {
 	db := repo.db.GetDb()
-	isNotExist := db.NewRecord(unit)
-	if isNotExist {
-		db.Create(&unit)
-	}
-	return unit
+	return unit, db.Create(&unit).Error
 }
 
-func (repo *UnitRepository) Update(unit model.Unit) model.Unit {
+func (repo *UnitRepository) Update(unit model.Unit) (model.Unit, error) {
 	var oldUnit model.Unit
 	db := repo.db.GetDb()
-	db.Where("id = ?", unit.ID).First(&oldUnit)
+	err := db.Where("id = ?", unit.ID).First(&oldUnit).Error
+	if err != nil {
+		return unit, err
+	}
 	oldUnit = unit
-	db.Save(&oldUnit)
-	return unit
+	return unit, db.Save(&oldUnit).Error
 }
 
 func (repo *UnitRepository) Delete(id int64) (model.Unit, error) {
 	var unit model.Unit
 	db := repo.db.GetDb()
-	db.Where("id = ?", id).First(&unit)
-	err := db.Delete(&unit).Error
+	err := db.Where("id = ?", id).First(&unit).Error
+	if err != nil {
+		return unit, err
+	}
+	err = db.Delete(&unit).Error
 	return unit, err
 }

@@ -1,14 +1,15 @@
 package service
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"io"
 	"os"
 	"testing"
 
+	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/almanalfaruq/alfarpos-backend/model"
-	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -33,19 +34,34 @@ func TestProductUpdateProduct(t *testing.T) {
 		Template: model.Template{
 			ID: uint(1),
 		},
-		Name:      "Product1",
-		Code:      "Product1",
-		BuyPrice:  util.ToInt64(int64(10000)),
-		SellPrice: util.ToInt64(int64(1500)),
-		Quantity:  util.ToInt64(int64(10)),
-		Category:  category,
-		Unit:      unit,
+		Name: "Product1",
+		Code: sql.NullString{
+			String: "Product1",
+			Valid:  true,
+		},
+		BuyPrice: sql.NullInt64{
+			Int64: 10000,
+			Valid: true,
+		},
+		SellPrice: sql.NullInt64{
+			Int64: 1500,
+			Valid: true,
+		},
+		Quantity: sql.NullInt64{
+			Int64: 10,
+			Valid: true,
+		},
+		Category: category,
+		Unit:     unit,
 	}
 	productStub := product
-	productStub.SellPrice = util.ToInt64(55000)
+	productStub.SellPrice = sql.NullInt64{
+		Int64: 55000,
+		Valid: true,
+	}
 
 	productRepository := NewMockproductRepositoryIface(ctrl)
-	productRepository.EXPECT().Update(productStub).Return(productStub)
+	productRepository.EXPECT().Update(productStub).Return(productStub, nil)
 
 	testTable := []struct {
 		testName string
@@ -123,7 +139,9 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 				return "abcde", file
 			},
 			mock: func() error {
-				return errors.New("Rows length < 1")
+				return excelize.ErrSheetNotExist{
+					SheetName: "abcde",
+				}
 			},
 		},
 		{
@@ -149,24 +167,36 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 					},
 					Name: "Category1",
 				}
-				categoryRepository.EXPECT().FindByName("Category1").Return([]model.Category{category})
+				categoryRepository.EXPECT().FindByName("Category1").Return([]model.Category{category}, nil)
 				unit := model.Unit{
 					Template: model.Template{
 						ID: uint(5),
 					},
 					Name: "Unit1",
 				}
-				unitRepository.EXPECT().FindByName("Unit1").Return([]model.Unit{unit})
-				productRepository.EXPECT().FindByCode("Product1").Return([]model.Product{})
+				unitRepository.EXPECT().FindByName("Unit1").Return([]model.Unit{unit}, nil)
+				productRepository.EXPECT().FindByCode("Product1").Return([]model.Product{}, nil)
 				product := model.Product{
 					Template: model.Template{
 						ID: uint(1),
 					},
-					Name:       "Product1",
-					Code:       "Product1",
-					BuyPrice:   util.ToInt64(int64(10000)),
-					SellPrice:  util.ToInt64(int64(1500)),
-					Quantity:   util.ToInt64(int64(10)),
+					Name: "Product1",
+					Code: sql.NullString{
+						String: "Product1",
+						Valid:  true,
+					},
+					BuyPrice: sql.NullInt64{
+						Int64: 10000,
+						Valid: true,
+					},
+					SellPrice: sql.NullInt64{
+						Int64: 1500,
+						Valid: true,
+					},
+					Quantity: sql.NullInt64{
+						Int64: 10,
+						Valid: true,
+					},
 					Category:   category,
 					CategoryID: int64(category.ID),
 					Unit:       unit,
@@ -174,18 +204,18 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 				}
 				productStub := product
 				productStub.ID = uint(0)
-				productRepository.EXPECT().New(productStub).Return(product)
+				productRepository.EXPECT().New(productStub).Return(product, nil)
 				stock := model.Stock{
 					Template: model.Template{
 						ID: uint(1),
 					},
 					ProductID: int64(1),
-					Quantity:  int64(10),
+					Quantity:  10,
 				}
 				stockStub := stock
 				stockStub.ID = 0
 				stockStub.Quantity = 0
-				stockRepository.EXPECT().New(stockStub).Return(stock)
+				stockRepository.EXPECT().New(stockStub).Return(stock, nil)
 				return nil
 			},
 		},
