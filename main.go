@@ -73,8 +73,8 @@ func initRouter() {
 	routes := routes.GetAllRoutes(&databaseConnection, config)
 	http.Handle("/", routes)
 	handler := cors.Default().Handler(routes)
-	golog.Info("Server listening at http://localhost:8080")
-	err := http.ListenAndServe(":8080", handler)
+	golog.Info("Server listening at http://localhost:8000")
+	err := http.ListenAndServe(":8000", handler)
 	if err != nil {
 		golog.Fatal(err)
 		panic(err)

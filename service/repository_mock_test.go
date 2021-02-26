@@ -599,6 +599,21 @@ func (mr *MockproductRepositoryIfaceMockRecorder) FindAll() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockproductRepositoryIface)(nil).FindAll))
 }
 
+// FindAllWithLimit mocks base method
+func (m *MockproductRepositoryIface) FindAllWithLimit(limit, offset int) ([]model.Product, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAllWithLimit", limit, offset)
+	ret0, _ := ret[0].([]model.Product)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAllWithLimit indicates an expected call of FindAllWithLimit
+func (mr *MockproductRepositoryIfaceMockRecorder) FindAllWithLimit(limit, offset interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAllWithLimit", reflect.TypeOf((*MockproductRepositoryIface)(nil).FindAllWithLimit), limit, offset)
+}
+
 // FindById mocks base method
 func (m *MockproductRepositoryIface) FindById(id int64) (model.Product, error) {
 	m.ctrl.T.Helper()
@@ -614,6 +629,21 @@ func (mr *MockproductRepositoryIfaceMockRecorder) FindById(id interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindById", reflect.TypeOf((*MockproductRepositoryIface)(nil).FindById), id)
 }
 
+// FindByIDs mocks base method
+func (m *MockproductRepositoryIface) FindByIDs(IDs []int64) ([]model.Product, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByIDs", IDs)
+	ret0, _ := ret[0].([]model.Product)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByIDs indicates an expected call of FindByIDs
+func (mr *MockproductRepositoryIfaceMockRecorder) FindByIDs(IDs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByIDs", reflect.TypeOf((*MockproductRepositoryIface)(nil).FindByIDs), IDs)
+}
+
 // FindByExactCode mocks base method
 func (m *MockproductRepositoryIface) FindByExactCode(code string) (model.Product, error) {
 	m.ctrl.T.Helper()
@@ -627,6 +657,36 @@ func (m *MockproductRepositoryIface) FindByExactCode(code string) (model.Product
 func (mr *MockproductRepositoryIfaceMockRecorder) FindByExactCode(code interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByExactCode", reflect.TypeOf((*MockproductRepositoryIface)(nil).FindByExactCode), code)
+}
+
+// GetMultipleProductByExactCode mocks base method
+func (m *MockproductRepositoryIface) GetMultipleProductByExactCode(code string) ([]model.Product, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMultipleProductByExactCode", code)
+	ret0, _ := ret[0].([]model.Product)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMultipleProductByExactCode indicates an expected call of GetMultipleProductByExactCode
+func (mr *MockproductRepositoryIfaceMockRecorder) GetMultipleProductByExactCode(code interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultipleProductByExactCode", reflect.TypeOf((*MockproductRepositoryIface)(nil).GetMultipleProductByExactCode), code)
+}
+
+// SearchBy mocks base method
+func (m *MockproductRepositoryIface) SearchBy(query string, limit, offset int) ([]model.Product, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchBy", query, limit, offset)
+	ret0, _ := ret[0].([]model.Product)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchBy indicates an expected call of SearchBy
+func (mr *MockproductRepositoryIfaceMockRecorder) SearchBy(query, limit, offset interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchBy", reflect.TypeOf((*MockproductRepositoryIface)(nil).SearchBy), query, limit, offset)
 }
 
 // FindByCode mocks base method

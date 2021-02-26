@@ -53,8 +53,12 @@ type paymentRepositoryIface interface {
 
 type productRepositoryIface interface {
 	FindAll() ([]model.Product, error)
+	FindAllWithLimit(limit, offset int) ([]model.Product, error)
 	FindById(id int64) (model.Product, error)
+	FindByIDs(IDs []int64) ([]model.Product, error)
 	FindByExactCode(code string) (model.Product, error)
+	GetMultipleProductByExactCode(code string) ([]model.Product, error)
+	SearchBy(query string, limit, offset int) ([]model.Product, error)
 	FindByCode(code string) ([]model.Product, error)
 	FindByName(name string) ([]model.Product, error)
 	FindByCategoryName(name string) ([]model.Product, error)

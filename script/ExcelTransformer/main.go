@@ -27,6 +27,7 @@ var sheetColumnName = map[string]string{
 	"H1": "Kode Satuan",
 	"I1": "Jumlah Satuan",
 	"J1": "Harga Khusus",
+	"K1": "Harga Terbuka",
 }
 
 func main() {
@@ -78,6 +79,7 @@ func main() {
 			continue
 		}
 		xlsx.SetCellValue(sheetName, fmt.Sprintf("J%d", i+2), strProductPrices)
+		xlsx.SetCellValue(sheetName, fmt.Sprintf("K%d", i+2), product.IsOpenPrice)
 	}
 
 	err = xlsx.SaveAs("./exported-product.xlsx")
@@ -105,6 +107,11 @@ func parseExcelRowsToProduct(rows [][]string) []model.Product {
 		name := row[1]
 		if name == "" {
 			continue
+		}
+
+		var isOpenPrice bool
+		if row[23] == "1" {
+			isOpenPrice = true
 		}
 
 		// for other product price based on its qty
@@ -137,6 +144,7 @@ func parseExcelRowsToProduct(rows [][]string) []model.Product {
 				TotalPcs: 1,
 			},
 			ProductPrices: productPrices,
+			IsOpenPrice:   isOpenPrice,
 		}
 
 		products = append(products, product)
@@ -169,6 +177,7 @@ func parseExcelRowsToProduct(rows [][]string) []model.Product {
 					Code:     strings.ToUpper(unitCode),
 					TotalPcs: int32(totalPcs),
 				},
+				IsOpenPrice: isOpenPrice,
 			}
 
 			products = append(products, product)

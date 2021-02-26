@@ -19,7 +19,7 @@ func NewOrderDetailRepo(db dbIface) *OrderDetailRepository {
 func (repo *OrderDetailRepository) FindByOrder(order order.Order) ([]model.OrderDetail, error) {
 	var orderDetails []model.OrderDetail
 	db := repo.db.GetDb()
-	err := db.Set("gorm:auto_preload", true).Model(&order).Error
+	err := db.Joins("OrderDetail").Joins("Product").Model(&order).Error
 	if err != nil {
 		if gorm.ErrRecordNotFound == err {
 			return []model.OrderDetail{}, model.ErrNotFound
@@ -64,12 +64,12 @@ func (repo *OrderDetailRepository) Delete(id int64) (model.OrderDetail, error) {
 func (repo *OrderDetailRepository) DeleteByOrderId(id int64) (int64, error) {
 	var orderDetailCount int64
 	db := repo.db.GetDb()
-	err := db.Model(&model.OrderDetail{}).Where("product_id = ?", id).Count(&orderDetailCount).Error
+	err := db.Model(&model.OrderDetail{}).Where("order_id = ?", id).Count(&orderDetailCount).Error
 	if err != nil {
 		if gorm.ErrRecordNotFound == err {
 			return 0, model.ErrNotFound
 		}
 		return 0, err
 	}
-	return orderDetailCount, db.Where("product_id = ?", id).Delete(&model.OrderDetail{}).Error
+	return orderDetailCount, db.Where("order_id = ?", id).Delete(&model.OrderDetail{}).Error
 }

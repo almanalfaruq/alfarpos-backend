@@ -20,19 +20,19 @@ func TestProductUpdateProduct(t *testing.T) {
 
 	category := model.Category{
 		Template: model.Template{
-			ID: uint(10),
+			ID: int64(10),
 		},
 		Name: "Category1",
 	}
 	unit := model.Unit{
 		Template: model.Template{
-			ID: uint(5),
+			ID: int64(5),
 		},
 		Name: "Pcs",
 	}
 	product := model.Product{
 		Template: model.Template{
-			ID: uint(1),
+			ID: int64(1),
 		},
 		Name: "Product1",
 		Code: sql.NullString{
@@ -163,14 +163,14 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 			mock: func() error {
 				category := model.Category{
 					Template: model.Template{
-						ID: uint(10),
+						ID: int64(10),
 					},
 					Name: "Category1",
 				}
 				categoryRepository.EXPECT().FindByName("Category1").Return([]model.Category{category}, nil)
 				unit := model.Unit{
 					Template: model.Template{
-						ID: uint(5),
+						ID: int64(5),
 					},
 					Name: "Unit1",
 				}
@@ -178,7 +178,7 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 				productRepository.EXPECT().FindByCode("Product1").Return([]model.Product{}, nil)
 				product := model.Product{
 					Template: model.Template{
-						ID: uint(1),
+						ID: int64(1),
 					},
 					Name: "Product1",
 					Code: sql.NullString{
@@ -203,11 +203,11 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 					UnitID:     int64(unit.ID),
 				}
 				productStub := product
-				productStub.ID = uint(0)
+				productStub.ID = int64(0)
 				productRepository.EXPECT().New(productStub).Return(product, nil)
 				stock := model.Stock{
 					Template: model.Template{
-						ID: uint(1),
+						ID: int64(1),
 					},
 					ProductID: int64(1),
 					Quantity:  10,

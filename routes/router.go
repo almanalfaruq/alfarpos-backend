@@ -30,6 +30,7 @@ func GetAllRoutes(database *util.DBConn, config util.Config) *mux.Router {
 	productController := InjectProductController(database, config)
 	routesApi.HandleFunc("/products", productController.GetProductsHandler).Methods("GET")
 	routesApi.HandleFunc("/products/id/{id}/", productController.GetProductByIdHandler).Methods("GET")
+	routesApi.HandleFunc("/products/ids/{ids}/", productController.GetProductsByIDsHandler).Methods("GET")
 	routesApi.HandleFunc("/products/code/{code}/", productController.GetProductByCodeHandler).Methods("GET")
 	routesApi.HandleFunc("/products", authMw.CheckJWTToken(productController.NewProductHandler)).Methods("POST")
 	routesApi.HandleFunc("/products/export_excel", productController.ExportAllProductsToExcelHandler).Methods("GET")

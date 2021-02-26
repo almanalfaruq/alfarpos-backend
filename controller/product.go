@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -34,7 +35,7 @@ func NewProductController(conf util.Config, productService productServiceIface) 
 // @Description Get Products based on query
 // @Tags product
 // @Produce json
-// @Param searchBy query string false "name, unit, category, or code"
+// @Param searchBy query string false "unit or category"
 // @Param query query string false "If this empty, it will fetch all products"
 // @Success 200 {object} response.ResponseMapper{data=[]model.Product} "Return array of product"
 // @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
@@ -44,22 +45,27 @@ func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Re
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	var products []model.Product
-	var err error
+	var (
+		products []model.Product
+		hasNext  bool
+		err      error
+	)
 	searchBy := r.URL.Query().Get("searchBy")
 	query := r.URL.Query().Get("query")
+	limit, _ := strconv.ParseInt(r.URL.Query().Get("limit"), 10, 64)
+	page, _ := strconv.ParseInt(r.URL.Query().Get("page"), 10, 64)
 
 	if query == "" {
 		golog.Info("GET - Product: GetProductsHandler (/products)")
-		products, err = c.product.GetAllProduct()
+		products, hasNext, err = c.product.GetAllProduct(int(limit), int(page))
 		if err != nil {
 			response.RenderJSONError(w, http.StatusInternalServerError, err)
 			return
 		}
 	} else {
-		golog.Infof("GET - Product: GetProductsByNameHandler (/products?searchBy=%s&query=%s)", searchBy, query)
-		if searchBy == "" || searchBy == "name" {
-			products, err = c.product.GetProductsByName(query)
+		golog.Infof("GET - Product: GetProductsByNameHandler (/products?searchBy=%s&query=%s&limit=%d&page=%d)", searchBy, query, limit, page)
+		if searchBy == "" {
+			products, hasNext, err = c.product.GetProductsBySearchQuery(query, int(limit), int(page))
 			if err != nil {
 				response.RenderJSONError(w, http.StatusNotFound, err)
 				return
@@ -76,18 +82,17 @@ func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Re
 				response.RenderJSONError(w, http.StatusNotFound, err)
 				return
 			}
-		} else if searchBy == "code" {
-			products, err = c.product.GetProductsByCode(query)
-			if err != nil {
-				response.RenderJSONError(w, http.StatusNotFound, err)
-				return
-			}
 		} else {
 			products = []model.Product{}
 		}
 	}
 
-	response.RenderJSONSuccess(w, http.StatusOK, products, "Success getting products")
+	resp := model.ProductResponse{
+		Products: products,
+		HasNext:  hasNext,
+	}
+
+	response.RenderJSONSuccess(w, http.StatusOK, resp, "Success getting products")
 }
 
 // GetProductsByID godoc
@@ -114,6 +119,41 @@ func (c *ProductController) GetProductByIdHandler(w http.ResponseWriter, r *http
 	}
 
 	response.RenderJSONSuccess(w, http.StatusOK, product, fmt.Sprintf("Success getting product with id: %d", id))
+}
+
+// GetProductsByIDs godoc
+// @Summary Get Multiple Product based on ids
+// @Description Get Multiple Product based on id
+// @Tags product
+// @Produce json
+// @Param id path integer false "id of the product"
+// @Success 200 {object} response.ResponseMapper{data=[]model.Product} "Return a product"
+// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Router /products/id/{id} [get]
+func (c *ProductController) GetProductsByIDsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	vars := mux.Vars(r)
+	ids := vars["ids"]
+	splitIDs := strings.Split(ids, ",")
+	golog.Infof("GET - Product: GetProductsByIDsHandler (/products/ids/%s)", ids)
+	var intIDs []int64
+	for _, id := range splitIDs {
+		intID, err := strconv.ParseInt(id, 10, 64)
+		if err != nil || intID == 0 {
+			continue
+		}
+		intIDs = append(intIDs, intID)
+	}
+	products, err := c.product.GetProductsByIDs(intIDs)
+	if err != nil {
+		response.RenderJSONError(w, http.StatusNotFound, err)
+		return
+	}
+
+	response.RenderJSONSuccess(w, http.StatusOK, products, fmt.Sprintf("Success getting products by ids: %s", ids))
 }
 
 // GetProductsByCode godoc
