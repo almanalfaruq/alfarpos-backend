@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"sort"
@@ -197,15 +198,15 @@ func (service *ProductService) NewProduct(productData string) (model.Product, er
 	if err != nil {
 		return model.Product{}, err
 	}
-	stock := model.Stock{
-		ProductID: int64(product.ID),
-		Product:   product,
-		Quantity:  0,
-	}
-	_, err = service.stock.New(stock)
-	if err != nil {
-		golog.Errorf("Error new product stock: %v", err)
-	}
+	// stock := model.Stock{
+	// 	ProductID: int64(product.ID),
+	// 	Product:   product,
+	// 	Quantity:  0,
+	// }
+	// _, err = service.stock.New(stock)
+	// if err != nil {
+	// 	golog.Errorf("Error new product stock: %v", err)
+	// }
 	return product, nil
 }
 
@@ -358,6 +359,9 @@ func (service *ProductService) UpdateProduct(productData string) (model.Product,
 	var product model.Product
 	productDataByte := []byte(productData)
 	err := json.Unmarshal(productDataByte, &product)
+	if product.ID < 1 {
+		return product, errors.New("Empty ID")
+	}
 	if err != nil {
 		return product, err
 	}

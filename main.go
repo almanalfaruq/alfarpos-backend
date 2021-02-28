@@ -72,7 +72,13 @@ func initMigration(shouldDropDB bool) {
 func initRouter() {
 	routes := routes.GetAllRoutes(&databaseConnection, config)
 	http.Handle("/", routes)
-	handler := cors.Default().Handler(routes)
+	handler := cors.New(cors.Options{
+		AllowedMethods:     []string{"OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"},
+		AllowedOrigins:     []string{"*"},
+		AllowCredentials:   true,
+		AllowedHeaders:     []string{"Content-Type", "Bearer", "Bearer ", "content-type", "Origin", "Accept"},
+		OptionsPassthrough: true,
+	}).Handler(routes)
 	golog.Info("Server listening at http://localhost:8000")
 	err := http.ListenAndServe(":8000", handler)
 	if err != nil {

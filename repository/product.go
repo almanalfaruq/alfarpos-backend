@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -117,7 +118,31 @@ func (repo *ProductRepository) New(product model.Product) (model.Product, error)
 func (repo *ProductRepository) Update(product model.Product) (model.Product, error) {
 	var oldProduct model.Product
 	db := repo.db.GetDb()
-	err := db.Where("id = ?", product.ID).First(&oldProduct).Error
+	existingProductPrices, err := repo.FindProductPricesByProductID(product.ID)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return model.Product{}, err
+	}
+	var updatedProductPrice model.ProductPrices
+	for _, pp := range product.ProductPrices {
+		if pp.ID == 0 {
+			continue
+		}
+		updatedProductPrice = append(updatedProductPrice, pp)
+	}
+	diffExistingPP := model.DifferenceProductPrice(updatedProductPrice, existingProductPrices)
+	for _, pp := range diffExistingPP {
+		err = repo.DeleteProductPrice(pp.ID)
+		if err != nil {
+			continue
+		}
+	}
+	for _, pp := range updatedProductPrice {
+		err = repo.UpdateProductPrice(pp)
+		if err != nil {
+			continue
+		}
+	}
+	err = db.Where("id = ?", product.ID).First(&oldProduct).Error
 	if err != nil {
 		return product, err
 	}
@@ -147,4 +172,28 @@ func (repo *ProductRepository) DeleteAll() (int64, error) {
 		return 0, err
 	}
 	return productCount, db.Unscoped().Delete(&product).Error
+}
+
+func (repo *ProductRepository) FindProductPricesByProductID(productID int64) (model.ProductPrices, error) {
+	var productPrices model.ProductPrices
+	db := repo.db.GetDb()
+	return productPrices, db.Where("product_id = ?", productID).Find(&productPrices).Error
+}
+
+func (repo *ProductRepository) UpdateProductPrice(productPrice model.ProductPrice) error {
+	var oldProductPrice model.ProductPrice
+	db := repo.db.GetDb()
+	err := db.Where("id = ?", productPrice.ID).First(&oldProductPrice).Error
+	if err != nil {
+		return err
+	}
+	oldProductPrice = productPrice
+	return db.Save(&oldProductPrice).Error
+}
+
+func (repo *ProductRepository) DeleteProductPrice(id int64) error {
+	var productPrice model.ProductPrice
+	db := repo.db.GetDb()
+	db.Where("id = ?", id).First(&productPrice)
+	return db.Delete(&productPrice).Error
 }

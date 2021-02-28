@@ -28,6 +28,14 @@ func New(cfg AuthConfig) *AuthMiddleware {
 
 func (m *AuthMiddleware) CheckJWTToken(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, PATCH, DELETE")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(200)
+			return
+		}
+
 		authHeader := r.Header.Get("Authorization")
 
 		authHeaderSplit := strings.Split(authHeader, " ")
@@ -62,6 +70,20 @@ func (m *AuthMiddleware) CheckJWTToken(next http.HandlerFunc) http.HandlerFunc {
 		ctxUser := context.WithValue(r.Context(), userentity.CTX_USER, claims.User)
 
 		r = r.WithContext(ctxUser)
+
+		next(w, r)
+	}
+}
+
+func (m *AuthMiddleware) CheckCORS(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(200)
+			return
+		}
 
 		next(w, r)
 	}
