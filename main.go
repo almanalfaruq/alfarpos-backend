@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"net/http"
+	"os"
 
 	"github.com/rs/cors"
 
@@ -70,6 +71,7 @@ func initMigration(shouldDropDB bool) {
 }
 
 func initRouter() {
+	port := os.Getenv("PORT")
 	routes := routes.GetAllRoutes(&databaseConnection, config)
 	http.Handle("/", routes)
 	handler := cors.New(cors.Options{
@@ -79,8 +81,8 @@ func initRouter() {
 		AllowedHeaders:     []string{"Content-Type", "Bearer", "Bearer ", "content-type", "Origin", "Accept"},
 		OptionsPassthrough: true,
 	}).Handler(routes)
-	golog.Info("Server listening at http://localhost:8000")
-	err := http.ListenAndServe(":8000", handler)
+	golog.Infof("Server listening at http://localhost:%s", port)
+	err := http.ListenAndServe(":"+port, handler)
 	if err != nil {
 		golog.Fatal(err)
 		panic(err)

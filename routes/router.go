@@ -6,14 +6,16 @@ import (
 	. "github.com/almanalfaruq/alfarpos-backend/dependency_injection"
 	_ "github.com/almanalfaruq/alfarpos-backend/docs"
 	"github.com/almanalfaruq/alfarpos-backend/util"
+	"github.com/almanalfaruq/alfarpos-backend/util/auth"
 	"github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func GetAllRoutes(database *util.DBConn, config util.Config) *mux.Router {
+	mw := auth.New(config)
 	routes := mux.NewRouter().StrictSlash(true)
 	routes.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
+		httpSwagger.URL("https://alfarpos-backend.herokuapp.com/swagger/doc.json"), //The url pointing to API definition
 		httpSwagger.DeepLinking(true),
 		httpSwagger.DocExpansion("none"),
 		httpSwagger.DomID("#swagger-ui"),

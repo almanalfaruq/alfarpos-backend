@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	orderentity "github.com/almanalfaruq/alfarpos-backend/model/order"
@@ -19,8 +20,8 @@ func (dbConn *DBConn) Open(config Config) *gorm.DB {
 	var (
 		dbName   string
 		password string
-		url      string
 	)
+	url := os.Getenv("DB_URL")
 	if config.Env == "test" {
 		dbName = config.Database.DBTestName
 		golog.Infof("Connecting to database: %v", config.Database.DBTestName)
@@ -33,13 +34,15 @@ func (dbConn *DBConn) Open(config Config) *gorm.DB {
 	} else {
 		password = config.Database.Password
 	}
-	url = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.Database.Host, config.Database.Port,
-		config.Database.Username, password, dbName)
+	if url == "" {
+		url = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.Database.Host, config.Database.Port,
+			config.Database.Username, password, dbName)
+	}
 	golog.Infof("URL Database: %s", url)
 	var err error
 	dbConn.DB, err = gorm.Open(postgres.Open(url), &gorm.Config{})
 	if err != nil {
-		panic("Cannot connect to the database")
+		golog.Fatalf("Cannot connect to the database: %v", err)
 	}
 	return dbConn.DB
 }

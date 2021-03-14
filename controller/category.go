@@ -125,7 +125,11 @@ func (c *CategoryController) UpdateCategoryHandler(w http.ResponseWriter, r *htt
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
 	golog.Infof("PUT - Category: UpdateCategoryHandler (/categories/%v)", id)
 
+<<<<<<< HEAD
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
+=======
+	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+>>>>>>> heroku
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
@@ -170,7 +174,11 @@ func (c *CategoryController) DeleteCategoryHandler(w http.ResponseWriter, r *htt
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
 	golog.Infof("DELETE - Category: DeleteCategoryHandler (/categories/%v)", id)
 
+<<<<<<< HEAD
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
+=======
+	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+>>>>>>> heroku
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)

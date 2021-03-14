@@ -270,7 +270,7 @@ func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *
 		return
 	}
 
-	err = r.ParseMultipartForm(20 << 20)
+	err := r.ParseMultipartForm(20 << 20)
 	if err != nil {
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
