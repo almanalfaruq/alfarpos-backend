@@ -6,11 +6,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
+	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
 	"github.com/kataras/golog"
@@ -33,7 +35,7 @@ func NewProductController(conf util.Config, productService productServiceIface) 
 // @Description Get Products based on query
 // @Tags product
 // @Produce json
-// @Param searchBy query string false "name, unit, category, or code"
+// @Param searchBy query string false "unit or category"
 // @Param query query string false "If this empty, it will fetch all products"
 // @Success 200 {object} response.ResponseMapper{data=[]model.Product} "Return array of product"
 // @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
@@ -43,22 +45,27 @@ func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Re
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	var products []model.Product
-	var err error
+	var (
+		products []model.Product
+		hasNext  bool
+		err      error
+	)
 	searchBy := r.URL.Query().Get("searchBy")
 	query := r.URL.Query().Get("query")
+	limit, _ := strconv.ParseInt(r.URL.Query().Get("limit"), 10, 64)
+	page, _ := strconv.ParseInt(r.URL.Query().Get("page"), 10, 64)
 
 	if query == "" {
 		golog.Info("GET - Product: GetProductsHandler (/products)")
-		products, err = c.product.GetAllProduct()
+		products, hasNext, err = c.product.GetAllProduct(int(limit), int(page))
 		if err != nil {
 			response.RenderJSONError(w, http.StatusInternalServerError, err)
 			return
 		}
 	} else {
-		golog.Infof("GET - Product: GetProductsByNameHandler (/products?searchBy=%s&query=%s)", searchBy, query)
-		if searchBy == "" || searchBy == "name" {
-			products, err = c.product.GetProductsByName(query)
+		golog.Infof("GET - Product: GetProductsByNameHandler (/products?searchBy=%s&query=%s&limit=%d&page=%d)", searchBy, query, limit, page)
+		if searchBy == "" {
+			products, hasNext, err = c.product.GetProductsBySearchQuery(query, int(limit), int(page))
 			if err != nil {
 				response.RenderJSONError(w, http.StatusNotFound, err)
 				return
@@ -75,18 +82,17 @@ func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Re
 				response.RenderJSONError(w, http.StatusNotFound, err)
 				return
 			}
-		} else if searchBy == "code" {
-			products, err = c.product.GetProductsByCode(query)
-			if err != nil {
-				response.RenderJSONError(w, http.StatusNotFound, err)
-				return
-			}
 		} else {
 			products = []model.Product{}
 		}
 	}
 
-	response.RenderJSONSuccess(w, http.StatusOK, products, "Success getting products")
+	resp := model.ProductResponse{
+		Products: products,
+		HasNext:  hasNext,
+	}
+
+	response.RenderJSONSuccess(w, http.StatusOK, resp, "Success getting products")
 }
 
 // GetProductsByID godoc
@@ -113,6 +119,41 @@ func (c *ProductController) GetProductByIdHandler(w http.ResponseWriter, r *http
 	}
 
 	response.RenderJSONSuccess(w, http.StatusOK, product, fmt.Sprintf("Success getting product with id: %d", id))
+}
+
+// GetProductsByIDs godoc
+// @Summary Get Multiple Product based on ids
+// @Description Get Multiple Product based on id
+// @Tags product
+// @Produce json
+// @Param id path integer false "id of the product"
+// @Success 200 {object} response.ResponseMapper{data=[]model.Product} "Return a product"
+// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Router /products/id/{id} [get]
+func (c *ProductController) GetProductsByIDsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	vars := mux.Vars(r)
+	ids := vars["ids"]
+	splitIDs := strings.Split(ids, ",")
+	golog.Infof("GET - Product: GetProductsByIDsHandler (/products/ids/%s)", ids)
+	var intIDs []int64
+	for _, id := range splitIDs {
+		intID, err := strconv.ParseInt(id, 10, 64)
+		if err != nil || intID == 0 {
+			continue
+		}
+		intIDs = append(intIDs, intID)
+	}
+	products, err := c.product.GetProductsByIDs(intIDs)
+	if err != nil {
+		response.RenderJSONError(w, http.StatusNotFound, err)
+		return
+	}
+
+	response.RenderJSONSuccess(w, http.StatusOK, products, fmt.Sprintf("Success getting products by ids: %s", ids))
 }
 
 // GetProductsByCode godoc
@@ -142,19 +183,20 @@ func (c *ProductController) GetProductByCodeHandler(w http.ResponseWriter, r *ht
 }
 
 func (c *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	golog.Info("POST - Product: NewProductHandler (/products)")
 
-	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
@@ -207,6 +249,7 @@ func (c *ProductController) ExportAllProductsToExcelHandler(w http.ResponseWrite
 // @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
 // @Router /products/upload_excel [post]
 func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -214,14 +257,14 @@ func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *
 	sheetName := vars["sheetName"]
 	golog.Infof("POST - Product: UploadExcelProductHandler (/products/upload_excel/%s)", sheetName)
 
-	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
@@ -253,6 +296,7 @@ func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *
 }
 
 func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -260,14 +304,14 @@ func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
 	golog.Infof("PUT - Product: UpdateProductHandler (/products/%d)", id)
 
-	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
@@ -290,6 +334,7 @@ func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.
 }
 
 func (c *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -297,14 +342,14 @@ func (c *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
 	golog.Infof("DELETE - Product: DeleteProductHandler (/products/%d)", id)
 
-	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return

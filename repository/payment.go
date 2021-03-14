@@ -16,49 +16,46 @@ func NewPaymentRepo(db dbIface) *PaymentRepository {
 	}
 }
 
-func (repo *PaymentRepository) FindAll() []model.Payment {
+func (repo *PaymentRepository) FindAll() ([]model.Payment, error) {
 	var categories []model.Payment
 	db := repo.db.GetDb()
-	db.Find(&categories)
-	return categories
+	return categories, db.Find(&categories).Error
 }
 
-func (repo *PaymentRepository) FindById(id int64) model.Payment {
+func (repo *PaymentRepository) FindById(id int64) (model.Payment, error) {
 	var payment model.Payment
 	db := repo.db.GetDb()
-	db.Where("id = ?", id).First(&payment)
-	return payment
+	return payment, db.Where("id = ?", id).First(&payment).Error
 }
 
-func (repo *PaymentRepository) FindByName(name string) []model.Payment {
+func (repo *PaymentRepository) FindByName(name string) ([]model.Payment, error) {
 	var payments []model.Payment
 	db := repo.db.GetDb()
-	db.Where("LOWER(name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&payments)
-	return payments
+	return payments, db.Where("LOWER(name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&payments).Error
 }
 
-func (repo *PaymentRepository) New(payment model.Payment) model.Payment {
+func (repo *PaymentRepository) New(payment model.Payment) (model.Payment, error) {
 	db := repo.db.GetDb()
-	isNotExist := db.NewRecord(payment)
-	if isNotExist {
-		db.Create(&payment)
-	}
-	return payment
+	return payment, db.Create(&payment).Error
 }
 
-func (repo *PaymentRepository) Update(payment model.Payment) model.Payment {
+func (repo *PaymentRepository) Update(payment model.Payment) (model.Payment, error) {
 	var oldPayment model.Payment
 	db := repo.db.GetDb()
-	db.Where("id = ?", payment.ID).First(&oldPayment)
+	err := db.Where("id = ?", payment.ID).First(&oldPayment).Error
+	if err != nil {
+		return payment, err
+	}
 	oldPayment = payment
-	db.Save(&oldPayment)
-	return payment
+	return payment, db.Save(&oldPayment).Error
 }
 
 func (repo *PaymentRepository) Delete(id int64) (model.Payment, error) {
 	var payment model.Payment
 	db := repo.db.GetDb()
-	db.Where("id = ?", id).First(&payment)
-	err := db.Delete(&payment).Error
-	return payment, err
+	err := db.Where("id = ?", id).First(&payment).Error
+	if err != nil {
+		return payment, err
+	}
+	return payment, db.Delete(&payment).Error
 }

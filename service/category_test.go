@@ -32,7 +32,7 @@ func TestCategoryService_GetOneCategory(t *testing.T) {
 			mock: func(args args) {
 				catRepo.EXPECT().FindById(args.id).Return(model.Category{
 					Template: model.Template{
-						ID: uint(args.id),
+						ID: int64(args.id),
 					},
 					Name: "bayi",
 				}, nil)
@@ -42,7 +42,7 @@ func TestCategoryService_GetOneCategory(t *testing.T) {
 			},
 			want: model.Category{
 				Template: model.Template{
-					ID: uint(20),
+					ID: int64(20),
 				},
 				Name: "bayi",
 			},
@@ -52,7 +52,7 @@ func TestCategoryService_GetOneCategory(t *testing.T) {
 			mock: func(args args) {
 				catRepo.EXPECT().FindById(args.id).Return(model.Category{
 					Template: model.Template{
-						ID: uint(0),
+						ID: int64(0),
 					},
 					Name: "bayi",
 				}, nil)
@@ -122,7 +122,7 @@ func TestCategoryService_GetCategoriesByName(t *testing.T) {
 					{
 
 						Template: model.Template{
-							ID: uint(20),
+							ID: int64(20),
 						},
 						Name: "perkantoran",
 					},
@@ -135,7 +135,7 @@ func TestCategoryService_GetCategoriesByName(t *testing.T) {
 				{
 
 					Template: model.Template{
-						ID: uint(20),
+						ID: int64(20),
 					},
 					Name: "perkantoran",
 				},
@@ -190,7 +190,7 @@ func TestCategoryService_NewCategory(t *testing.T) {
 					Name: args.name,
 				}).Return(model.Category{
 					Template: model.Template{
-						ID: uint(10),
+						ID: int64(10),
 					},
 					Name: args.name,
 				}, nil)
@@ -200,7 +200,7 @@ func TestCategoryService_NewCategory(t *testing.T) {
 			},
 			want: model.Category{
 				Template: model.Template{
-					ID: uint(10),
+					ID: int64(10),
 				},
 				Name: "alat tulis",
 			},
@@ -251,7 +251,7 @@ func TestCategoryService_DeleteCategory(t *testing.T) {
 			mock: func(args args) {
 				catRepo.EXPECT().Delete(args.id).Return(model.Category{
 					Template: model.Template{
-						ID: uint(args.id),
+						ID: int64(args.id),
 					},
 					Name: "alat tulis",
 				}, nil)
@@ -261,7 +261,7 @@ func TestCategoryService_DeleteCategory(t *testing.T) {
 			},
 			want: model.Category{
 				Template: model.Template{
-					ID: uint(10),
+					ID: int64(10),
 				},
 				Name: "alat tulis",
 			},

@@ -5,6 +5,8 @@ import (
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/almanalfaruq/alfarpos-backend/model"
+	orderentity "github.com/almanalfaruq/alfarpos-backend/model/order"
+	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/jung-kurt/gofpdf"
 )
 
@@ -20,7 +22,7 @@ type categoryServiceIface interface {
 
 type customerServiceIface interface {
 	GetOneCustomer(id int64) (model.Customer, error)
-	GetAllCustomer() []model.Customer
+	GetAllCustomer() ([]model.Customer, error)
 	NewCustomer(customerData string) (model.Customer, error)
 	UpdateCustomer(customerData string) (model.Customer, error)
 	DeleteCustomer(id int64) (model.Customer, error)
@@ -33,13 +35,13 @@ type orderDetailServiceIface interface {
 }
 
 type orderServiceIface interface {
-	GetAllOrder() ([]model.Order, error)
-	GetOneOrder(id int64) (model.Order, error)
-	GetOrderByInvoice(invoice string) (model.Order, error)
-	GetOrderByUserId(userId int64) ([]model.Order, error)
-	NewOrder(order model.Order) (model.Order, error)
-	UpdateOrder(order model.Order) (model.Order, error)
-	DeleteOrder(id int64) (model.Order, error)
+	GetAllOrder() ([]orderentity.Order, error)
+	GetOneOrder(id int64) (orderentity.Order, error)
+	GetOrderByInvoice(invoice string) (orderentity.Order, error)
+	GetOrderByUserId(userId int64) ([]orderentity.Order, error)
+	NewOrder(orderData orderentity.Order) (orderentity.Order, error)
+	UpdateOrder(orderData orderentity.Order) (orderentity.Order, error)
+	DeleteOrder(id int64) (orderentity.Order, error)
 }
 
 type paymentServiceIface interface {
@@ -56,9 +58,11 @@ type printServiceIface interface {
 }
 
 type productServiceIface interface {
-	GetAllProduct() ([]model.Product, error)
+	GetAllProduct(limit, page int) (products []model.Product, hasNext bool, err error)
 	GetOneProduct(id int64) (model.Product, error)
+	GetProductsByIDs(IDs []int64) ([]model.Product, error)
 	GetOneProductByCode(code string) (model.Product, error)
+	GetProductsBySearchQuery(query string, limit, page int) (products []model.Product, hasNext bool, err error)
 	GetProductsByCode(productCode string) ([]model.Product, error)
 	GetProductsByName(productName string) ([]model.Product, error)
 	GetProductsByCategoryName(categoryName string) ([]model.Product, error)
@@ -85,10 +89,10 @@ type unitServiceIface interface {
 }
 
 type userServiceIface interface {
-	GetOneUser(id int64) (model.User, error)
-	GetAllUser() []model.User
-	LoginUser(userData string) (string, error)
-	NewUser(userData string) (model.User, error)
-	UpdateUser(userData string) (model.User, error)
-	DeleteUser(id int64) (model.User, error)
+	GetOneUser(id int64) (userentity.User, error)
+	GetAllUser() ([]userentity.User, error)
+	LoginUser(userData string) (userentity.UserResponse, error)
+	NewUser(userData string) (userentity.User, error)
+	UpdateUser(userData string) (userentity.User, error)
+	DeleteUser(id int64) (userentity.User, error)
 }

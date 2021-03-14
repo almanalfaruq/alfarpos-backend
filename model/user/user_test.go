@@ -1,9 +1,9 @@
-package model_test
+package user
 
 import (
 	"testing"
 
-	. "github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/model"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -21,7 +21,7 @@ func TestUserModel(t *testing.T) {
 			t.Fatal("Bcrypt error")
 		}
 
-		user := User{Template: Template{ID: 1}, Username: username, Password: string(encryptedPassword), FullName: fullname, Address: address, Phone: phone, RoleID: RoleAdmin}
+		user := User{Template: model.Template{ID: 1}, Username: username, Password: string(encryptedPassword), FullName: fullname, Address: address, Phone: phone, RoleID: RoleAdmin}
 
 		if user.ID != 1 {
 			FatalMessage(t, 1, user.ID)

@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
+	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
 	"github.com/gorilla/mux"
@@ -74,19 +75,20 @@ func (c *CategoryController) GetCategoryByIdHandler(w http.ResponseWriter, r *ht
 }
 
 func (c *CategoryController) NewCategoryHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	golog.Info("POST - Category: NewCategoryHandler (/categories)")
 
-	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
@@ -115,6 +117,7 @@ func (c *CategoryController) NewCategoryHandler(w http.ResponseWriter, r *http.R
 }
 
 func (c *CategoryController) UpdateCategoryHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -122,14 +125,18 @@ func (c *CategoryController) UpdateCategoryHandler(w http.ResponseWriter, r *htt
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
 	golog.Infof("PUT - Category: UpdateCategoryHandler (/categories/%v)", id)
 
+<<<<<<< HEAD
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
+=======
 	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+>>>>>>> heroku
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
@@ -159,6 +166,7 @@ func (c *CategoryController) UpdateCategoryHandler(w http.ResponseWriter, r *htt
 }
 
 func (c *CategoryController) DeleteCategoryHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -166,14 +174,18 @@ func (c *CategoryController) DeleteCategoryHandler(w http.ResponseWriter, r *htt
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
 	golog.Infof("DELETE - Category: DeleteCategoryHandler (/categories/%v)", id)
 
+<<<<<<< HEAD
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
+=======
 	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+>>>>>>> heroku
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return

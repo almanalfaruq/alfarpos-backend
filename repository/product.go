@@ -2,8 +2,12 @@ package repository
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ProductRepository struct {
@@ -16,73 +20,139 @@ func NewProductRepo(db dbIface) *ProductRepository {
 	}
 }
 
-func (repo *ProductRepository) FindAll() []model.Product {
-	var categories []model.Product
+func (repo *ProductRepository) FindAll() ([]model.Product, error) {
+	var products []model.Product
 	db := repo.db.GetDb()
-	db.Set("gorm:auto_preload", true).Find(&categories)
-	return categories
+	return products, db.Preload(clause.Associations).
+		Find(&products).Error
 }
 
-func (repo *ProductRepository) FindById(id int64) model.Product {
+func (repo *ProductRepository) FindAllWithLimit(limit, offset int) ([]model.Product, error) {
+	var products []model.Product
+	db := repo.db.GetDb()
+	return products, db.Preload(clause.Associations).
+		Find(&products).Limit(limit).Offset(offset).Error
+}
+
+func (repo *ProductRepository) FindById(id int64) (model.Product, error) {
 	var product model.Product
 	db := repo.db.GetDb()
-	db.Set("gorm:auto_preload", true).Where("id = ?", id).First(&product)
-	return product
+	return product, db.Preload(clause.Associations).
+		Where("products.id = ?", id).First(&product).Error
 }
 
-func (repo *ProductRepository) FindByExactCode(code string) model.Product {
-	var product model.Product
-	db := repo.db.GetDb()
-	db.Set("gorm:auto_preload", true).Where("LOWER(code) = ?", code).First(&product)
-	return product
-}
-
-func (repo *ProductRepository) FindByCode(code string) []model.Product {
-	var products []model.Product
-	db := repo.db.GetDb()
-	db.Set("gorm:auto_preload", true).Where("LOWER(code) LIKE ?", fmt.Sprintf("%%%s%%", code)).Find(&products)
-	return products
-}
-
-func (repo *ProductRepository) FindByName(name string) []model.Product {
-	var products []model.Product
-	db := repo.db.GetDb()
-	db.Set("gorm:auto_preload", true).Where("LOWER(name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&products)
-	return products
-}
-
-func (repo *ProductRepository) FindByCategoryName(name string) []model.Product {
-	var products []model.Product
-	db := repo.db.GetDb()
-	db.Set("gorm:auto_preload", true).Joins("JOIN categories ON categories.id = products.category_id").Where("LOWER(categories.name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&products)
-	return products
-}
-
-func (repo *ProductRepository) FindByUnitName(name string) []model.Product {
-	var products []model.Product
-	db := repo.db.GetDb()
-	db.Set("gorm:auto_preload", true).Joins("JOIN units ON units.id = products.unit_id").Where("LOWER(units.name) LIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&products)
-	return products
-}
-
-func (repo *ProductRepository) New(product model.Product) model.Product {
-	db := repo.db.GetDb()
-	isNotExist := db.NewRecord(product)
-	if isNotExist {
-		db.Create(&product)
+func (repo *ProductRepository) FindByIDs(IDs []int64) ([]model.Product, error) {
+	var (
+		products []model.Product
+		strIDs   []string
+	)
+	for _, id := range IDs {
+		strID := strconv.FormatInt(id, 10)
+		strIDs = append(strIDs, strID)
 	}
-	db.Set("gorm:auto_preload", true).Where("id = ?", product.ID).First(&product)
-	return product
+	db := repo.db.GetDb()
+	return products, db.Preload(clause.Associations).
+		Where(fmt.Sprintf("products.id IN (%s)", strings.Join(strIDs, ","))).Find(&products).Error
 }
 
-func (repo *ProductRepository) Update(product model.Product) model.Product {
+func (repo *ProductRepository) FindByExactCode(code string) (model.Product, error) {
+	var product model.Product
+	db := repo.db.GetDb()
+	return product, db.Preload(clause.Associations).
+		Where("products.code = ?", code).First(&product).Error
+}
+
+func (repo *ProductRepository) GetMultipleProductByExactCode(code string) ([]model.Product, error) {
+	var products []model.Product
+	db := repo.db.GetDb()
+	return products, db.Where("code = ?", code).Find(&products).Error
+}
+
+func (repo *ProductRepository) FindByCode(code string) ([]model.Product, error) {
+	var products []model.Product
+	db := repo.db.GetDb()
+	return products, db.Preload(clause.Associations).
+		Where("products.code ILIKE ?", fmt.Sprintf("%%%s%%", code)).Find(&products).Error
+}
+
+func (repo *ProductRepository) SearchBy(query string, limit, offset int) ([]model.Product, error) {
+	var products []model.Product
+	db := repo.db.GetDb()
+	// TODO: need to index but for now, just leave it using concat_ws func
+	return products, db.Preload(clause.Associations).
+		Where("concat_ws(' ', products.code, products.name) ILIKE ?", fmt.Sprintf("%%%s%%", query)).
+		Limit(limit).Offset(offset).Find(&products).Error
+}
+
+func (repo *ProductRepository) FindByName(name string) ([]model.Product, error) {
+	var products []model.Product
+	db := repo.db.GetDb()
+	return products, db.Preload(clause.Associations).
+		Find(&products).Error
+}
+
+func (repo *ProductRepository) FindByCategoryName(name string) ([]model.Product, error) {
+	var products []model.Product
+	db := repo.db.GetDb()
+	return products, db.Preload(clause.Associations).
+		Where("categories.name ILIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&products).Error
+}
+
+func (repo *ProductRepository) FindByUnitName(name string) ([]model.Product, error) {
+	var products []model.Product
+	db := repo.db.GetDb()
+	return products, db.Preload(clause.Associations).
+		Where("units.name ILIKE ?", fmt.Sprintf("%%%s%%", name)).Find(&products).Error
+}
+
+func (repo *ProductRepository) New(product model.Product) (model.Product, error) {
+	db := repo.db.GetDb()
+	err := db.Create(&product).Error
+	if err != nil {
+		return product, err
+	}
+	return product, db.Preload(clause.Associations).
+		Where("products.id = ?", product.ID).First(&product).Error
+}
+
+func (repo *ProductRepository) Update(product model.Product) (model.Product, error) {
 	var oldProduct model.Product
 	db := repo.db.GetDb()
-	db.Where("id = ?", product.ID).First(&oldProduct)
+	existingProductPrices, err := repo.FindProductPricesByProductID(product.ID)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return model.Product{}, err
+	}
+	var updatedProductPrice model.ProductPrices
+	for _, pp := range product.ProductPrices {
+		if pp.ID == 0 {
+			continue
+		}
+		updatedProductPrice = append(updatedProductPrice, pp)
+	}
+	diffExistingPP := model.DifferenceProductPrice(updatedProductPrice, existingProductPrices)
+	for _, pp := range diffExistingPP {
+		err = repo.DeleteProductPrice(pp.ID)
+		if err != nil {
+			continue
+		}
+	}
+	for _, pp := range updatedProductPrice {
+		err = repo.UpdateProductPrice(pp)
+		if err != nil {
+			continue
+		}
+	}
+	err = db.Where("id = ?", product.ID).First(&oldProduct).Error
+	if err != nil {
+		return product, err
+	}
 	oldProduct = product
-	db.Save(&oldProduct)
-	db.Set("gorm:auto_preload", true).Where("id = ?", product.ID).First(&product)
-	return product
+	err = db.Save(&oldProduct).Error
+	if err != nil {
+		return product, err
+	}
+	return product, db.Preload(clause.Associations).
+		Where("products.id = ?", product.ID).First(&product).Error
 }
 
 func (repo *ProductRepository) Delete(id int64) (model.Product, error) {
@@ -93,11 +163,37 @@ func (repo *ProductRepository) Delete(id int64) (model.Product, error) {
 	return product, err
 }
 
-func (repo *ProductRepository) DeleteAll() int64 {
+func (repo *ProductRepository) DeleteAll() (int64, error) {
 	var product model.Product
 	var productCount int64
 	db := repo.db.GetDb()
-	db.Model(&product).Count(&productCount)
-	db.Unscoped().Delete(&product)
-	return productCount
+	err := db.Model(&product).Count(&productCount).Error
+	if err != nil {
+		return 0, err
+	}
+	return productCount, db.Unscoped().Delete(&product).Error
+}
+
+func (repo *ProductRepository) FindProductPricesByProductID(productID int64) (model.ProductPrices, error) {
+	var productPrices model.ProductPrices
+	db := repo.db.GetDb()
+	return productPrices, db.Where("product_id = ?", productID).Find(&productPrices).Error
+}
+
+func (repo *ProductRepository) UpdateProductPrice(productPrice model.ProductPrice) error {
+	var oldProductPrice model.ProductPrice
+	db := repo.db.GetDb()
+	err := db.Where("id = ?", productPrice.ID).First(&oldProductPrice).Error
+	if err != nil {
+		return err
+	}
+	oldProductPrice = productPrice
+	return db.Save(&oldProductPrice).Error
+}
+
+func (repo *ProductRepository) DeleteProductPrice(id int64) error {
+	var productPrice model.ProductPrice
+	db := repo.db.GetDb()
+	db.Where("id = ?", id).First(&productPrice)
+	return db.Delete(&productPrice).Error
 }

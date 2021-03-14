@@ -14,36 +14,32 @@ func NewStockRepo(db dbIface) *StockRepository {
 	}
 }
 
-func (repo *StockRepository) FindAll() []model.Stock {
+func (repo *StockRepository) FindAll() ([]model.Stock, error) {
 	var stocks []model.Stock
 	db := repo.db.GetDb()
-	db.Set("gorm:auto_preload", true).Find(&stocks)
-	return stocks
+	return stocks, db.Set("gorm:auto_preload", true).Find(&stocks).Error
 }
 
-func (repo *StockRepository) FindByProduct(product model.Product) model.Stock {
+func (repo *StockRepository) FindByProduct(product model.Product) (model.Stock, error) {
 	var stock model.Stock
 	db := repo.db.GetDb()
-	db.Set("gorm:auto_preload", true).Model(&product).Related(&stock)
-	return stock
+	return stock, db.Set("gorm:auto_preload", true).Model(&product).Error
 }
 
-func (repo *StockRepository) New(stock model.Stock) model.Stock {
+func (repo *StockRepository) New(stock model.Stock) (model.Stock, error) {
 	db := repo.db.GetDb()
-	isNotExist := db.NewRecord(stock)
-	if isNotExist {
-		db.Create(&stock)
-	}
-	return stock
+	return stock, db.Create(&stock).Error
 }
 
-func (repo *StockRepository) Update(stock model.Stock) model.Stock {
+func (repo *StockRepository) Update(stock model.Stock) (model.Stock, error) {
 	var oldStock model.Stock
 	db := repo.db.GetDb()
-	db.Where("id = ?", stock.ID).First(&oldStock)
+	err := db.Where("id = ?", stock.ID).First(&oldStock).Error
+	if err != nil {
+		return stock, err
+	}
 	oldStock = stock
-	db.Save(&oldStock)
-	return stock
+	return stock, db.Save(&oldStock).Error
 }
 
 func (repo *StockRepository) Delete(id int64) (model.Stock, error) {
@@ -54,11 +50,13 @@ func (repo *StockRepository) Delete(id int64) (model.Stock, error) {
 	return stock, err
 }
 
-func (repo *StockRepository) DeleteAll() int64 {
+func (repo *StockRepository) DeleteAll() (int64, error) {
 	var stock model.Stock
 	var stockCount int64
 	db := repo.db.GetDb()
-	db.Model(&stock).Count(&stockCount)
-	db.Unscoped().Delete(&stock)
-	return stockCount
+	err := db.Model(&stock).Count(&stockCount).Error
+	if err != nil {
+		return 0, err
+	}
+	return stockCount, db.Unscoped().Delete(&stock).Error
 }

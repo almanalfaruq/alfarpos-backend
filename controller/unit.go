@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
+	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
 	"github.com/gorilla/mux"
@@ -70,19 +71,20 @@ func (c *UnitController) GetUnitByIdHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (c *UnitController) NewUnitHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	golog.Info("POST - Unit: NewUnitHandler (/units)")
 
-	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
@@ -105,6 +107,7 @@ func (c *UnitController) NewUnitHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 func (c *UnitController) UpdateUnitHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -112,14 +115,14 @@ func (c *UnitController) UpdateUnitHandler(w http.ResponseWriter, r *http.Reques
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
 	golog.Infof("PUT - Unit: UpdateUnitHandler (/units/%d)", id)
 
-	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return
@@ -142,6 +145,7 @@ func (c *UnitController) UpdateUnitHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (c *UnitController) DeleteUnitHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -149,14 +153,14 @@ func (c *UnitController) DeleteUnitHandler(w http.ResponseWriter, r *http.Reques
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
 	golog.Infof("DELETE - Unit: DeleteUnitHandler (/units/%d)", id)
 
-	user, ok := r.Context().Value(model.CTX_USER).(model.User)
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if ok := user.HasRole(model.RoleManager, model.RoleAdmin); !ok {
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
 		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
 		return

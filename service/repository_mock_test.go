@@ -6,6 +6,8 @@ package service
 
 import (
 	model "github.com/almanalfaruq/alfarpos-backend/model"
+	order "github.com/almanalfaruq/alfarpos-backend/model/order"
+	user "github.com/almanalfaruq/alfarpos-backend/model/user"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )
@@ -34,11 +36,12 @@ func (m *MockcategoryRepositoryIface) EXPECT() *MockcategoryRepositoryIfaceMockR
 }
 
 // FindAll mocks base method
-func (m *MockcategoryRepositoryIface) FindAll() []model.Category {
+func (m *MockcategoryRepositoryIface) FindAll() ([]model.Category, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindAll")
 	ret0, _ := ret[0].([]model.Category)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindAll indicates an expected call of FindAll
@@ -63,11 +66,12 @@ func (mr *MockcategoryRepositoryIfaceMockRecorder) FindById(id interface{}) *gom
 }
 
 // FindByName mocks base method
-func (m *MockcategoryRepositoryIface) FindByName(name string) []model.Category {
+func (m *MockcategoryRepositoryIface) FindByName(name string) ([]model.Category, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByName", name)
 	ret0, _ := ret[0].([]model.Category)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindByName indicates an expected call of FindByName
@@ -145,11 +149,12 @@ func (m *MockcustomerRepositoryIface) EXPECT() *MockcustomerRepositoryIfaceMockR
 }
 
 // FindAll mocks base method
-func (m *MockcustomerRepositoryIface) FindAll() []model.Customer {
+func (m *MockcustomerRepositoryIface) FindAll() ([]model.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindAll")
 	ret0, _ := ret[0].([]model.Customer)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindAll indicates an expected call of FindAll
@@ -159,11 +164,12 @@ func (mr *MockcustomerRepositoryIfaceMockRecorder) FindAll() *gomock.Call {
 }
 
 // FindById mocks base method
-func (m *MockcustomerRepositoryIface) FindById(id int64) model.Customer {
+func (m *MockcustomerRepositoryIface) FindById(id int64) (model.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindById", id)
 	ret0, _ := ret[0].(model.Customer)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindById indicates an expected call of FindById
@@ -173,11 +179,12 @@ func (mr *MockcustomerRepositoryIfaceMockRecorder) FindById(id interface{}) *gom
 }
 
 // New mocks base method
-func (m *MockcustomerRepositoryIface) New(customer model.Customer) model.Customer {
+func (m *MockcustomerRepositoryIface) New(customer model.Customer) (model.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "New", customer)
 	ret0, _ := ret[0].(model.Customer)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // New indicates an expected call of New
@@ -187,11 +194,12 @@ func (mr *MockcustomerRepositoryIfaceMockRecorder) New(customer interface{}) *go
 }
 
 // Update mocks base method
-func (m *MockcustomerRepositoryIface) Update(customer model.Customer) model.Customer {
+func (m *MockcustomerRepositoryIface) Update(customer model.Customer) (model.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", customer)
 	ret0, _ := ret[0].(model.Customer)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update
@@ -201,11 +209,12 @@ func (mr *MockcustomerRepositoryIfaceMockRecorder) Update(customer interface{}) 
 }
 
 // Delete mocks base method
-func (m *MockcustomerRepositoryIface) Delete(id int64) model.Customer {
+func (m *MockcustomerRepositoryIface) Delete(id int64) (model.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", id)
 	ret0, _ := ret[0].(model.Customer)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Delete indicates an expected call of Delete
@@ -238,7 +247,7 @@ func (m *MockorderDetailRepositoryIface) EXPECT() *MockorderDetailRepositoryIfac
 }
 
 // FindByOrder mocks base method
-func (m *MockorderDetailRepositoryIface) FindByOrder(order model.Order) ([]model.OrderDetail, error) {
+func (m *MockorderDetailRepositoryIface) FindByOrder(order order.Order) ([]model.OrderDetail, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByOrder", order)
 	ret0, _ := ret[0].([]model.OrderDetail)
@@ -336,10 +345,10 @@ func (m *MockorderRepositoryIface) EXPECT() *MockorderRepositoryIfaceMockRecorde
 }
 
 // FindAll mocks base method
-func (m *MockorderRepositoryIface) FindAll() []model.Order {
+func (m *MockorderRepositoryIface) FindAll() []order.Order {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindAll")
-	ret0, _ := ret[0].([]model.Order)
+	ret0, _ := ret[0].([]order.Order)
 	return ret0
 }
 
@@ -350,10 +359,10 @@ func (mr *MockorderRepositoryIfaceMockRecorder) FindAll() *gomock.Call {
 }
 
 // FindById mocks base method
-func (m *MockorderRepositoryIface) FindById(id int64) (model.Order, error) {
+func (m *MockorderRepositoryIface) FindById(id int64) (order.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindById", id)
-	ret0, _ := ret[0].(model.Order)
+	ret0, _ := ret[0].(order.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -365,10 +374,10 @@ func (mr *MockorderRepositoryIfaceMockRecorder) FindById(id interface{}) *gomock
 }
 
 // FindByInvoice mocks base method
-func (m *MockorderRepositoryIface) FindByInvoice(invoice string) (model.Order, error) {
+func (m *MockorderRepositoryIface) FindByInvoice(invoice string) (order.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByInvoice", invoice)
-	ret0, _ := ret[0].(model.Order)
+	ret0, _ := ret[0].(order.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -380,10 +389,10 @@ func (mr *MockorderRepositoryIfaceMockRecorder) FindByInvoice(invoice interface{
 }
 
 // FindByUserId mocks base method
-func (m *MockorderRepositoryIface) FindByUserId(userId int64) ([]model.Order, error) {
+func (m *MockorderRepositoryIface) FindByUserId(userId int64) ([]order.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByUserId", userId)
-	ret0, _ := ret[0].([]model.Order)
+	ret0, _ := ret[0].([]order.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -395,40 +404,40 @@ func (mr *MockorderRepositoryIfaceMockRecorder) FindByUserId(userId interface{})
 }
 
 // New mocks base method
-func (m *MockorderRepositoryIface) New(order model.Order) (model.Order, error) {
+func (m *MockorderRepositoryIface) New(orderData order.Order) (order.Order, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "New", order)
-	ret0, _ := ret[0].(model.Order)
+	ret := m.ctrl.Call(m, "New", orderData)
+	ret0, _ := ret[0].(order.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // New indicates an expected call of New
-func (mr *MockorderRepositoryIfaceMockRecorder) New(order interface{}) *gomock.Call {
+func (mr *MockorderRepositoryIfaceMockRecorder) New(orderData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "New", reflect.TypeOf((*MockorderRepositoryIface)(nil).New), order)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "New", reflect.TypeOf((*MockorderRepositoryIface)(nil).New), orderData)
 }
 
 // Update mocks base method
-func (m *MockorderRepositoryIface) Update(order model.Order) (model.Order, error) {
+func (m *MockorderRepositoryIface) Update(orderData order.Order) (order.Order, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", order)
-	ret0, _ := ret[0].(model.Order)
+	ret := m.ctrl.Call(m, "Update", orderData)
+	ret0, _ := ret[0].(order.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update
-func (mr *MockorderRepositoryIfaceMockRecorder) Update(order interface{}) *gomock.Call {
+func (mr *MockorderRepositoryIfaceMockRecorder) Update(orderData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockorderRepositoryIface)(nil).Update), order)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockorderRepositoryIface)(nil).Update), orderData)
 }
 
 // Delete mocks base method
-func (m *MockorderRepositoryIface) Delete(id int64) (model.Order, error) {
+func (m *MockorderRepositoryIface) Delete(id int64) (order.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", id)
-	ret0, _ := ret[0].(model.Order)
+	ret0, _ := ret[0].(order.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -463,11 +472,12 @@ func (m *MockpaymentRepositoryIface) EXPECT() *MockpaymentRepositoryIfaceMockRec
 }
 
 // FindAll mocks base method
-func (m *MockpaymentRepositoryIface) FindAll() []model.Payment {
+func (m *MockpaymentRepositoryIface) FindAll() ([]model.Payment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindAll")
 	ret0, _ := ret[0].([]model.Payment)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindAll indicates an expected call of FindAll
@@ -477,11 +487,12 @@ func (mr *MockpaymentRepositoryIfaceMockRecorder) FindAll() *gomock.Call {
 }
 
 // FindById mocks base method
-func (m *MockpaymentRepositoryIface) FindById(id int64) model.Payment {
+func (m *MockpaymentRepositoryIface) FindById(id int64) (model.Payment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindById", id)
 	ret0, _ := ret[0].(model.Payment)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindById indicates an expected call of FindById
@@ -491,11 +502,12 @@ func (mr *MockpaymentRepositoryIfaceMockRecorder) FindById(id interface{}) *gomo
 }
 
 // FindByName mocks base method
-func (m *MockpaymentRepositoryIface) FindByName(name string) []model.Payment {
+func (m *MockpaymentRepositoryIface) FindByName(name string) ([]model.Payment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByName", name)
 	ret0, _ := ret[0].([]model.Payment)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindByName indicates an expected call of FindByName
@@ -505,11 +517,12 @@ func (mr *MockpaymentRepositoryIfaceMockRecorder) FindByName(name interface{}) *
 }
 
 // New mocks base method
-func (m *MockpaymentRepositoryIface) New(payment model.Payment) model.Payment {
+func (m *MockpaymentRepositoryIface) New(payment model.Payment) (model.Payment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "New", payment)
 	ret0, _ := ret[0].(model.Payment)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // New indicates an expected call of New
@@ -519,11 +532,12 @@ func (mr *MockpaymentRepositoryIfaceMockRecorder) New(payment interface{}) *gomo
 }
 
 // Update mocks base method
-func (m *MockpaymentRepositoryIface) Update(payment model.Payment) model.Payment {
+func (m *MockpaymentRepositoryIface) Update(payment model.Payment) (model.Payment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", payment)
 	ret0, _ := ret[0].(model.Payment)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update
@@ -571,11 +585,12 @@ func (m *MockproductRepositoryIface) EXPECT() *MockproductRepositoryIfaceMockRec
 }
 
 // FindAll mocks base method
-func (m *MockproductRepositoryIface) FindAll() []model.Product {
+func (m *MockproductRepositoryIface) FindAll() ([]model.Product, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindAll")
 	ret0, _ := ret[0].([]model.Product)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindAll indicates an expected call of FindAll
@@ -584,12 +599,28 @@ func (mr *MockproductRepositoryIfaceMockRecorder) FindAll() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockproductRepositoryIface)(nil).FindAll))
 }
 
+// FindAllWithLimit mocks base method
+func (m *MockproductRepositoryIface) FindAllWithLimit(limit, offset int) ([]model.Product, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAllWithLimit", limit, offset)
+	ret0, _ := ret[0].([]model.Product)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAllWithLimit indicates an expected call of FindAllWithLimit
+func (mr *MockproductRepositoryIfaceMockRecorder) FindAllWithLimit(limit, offset interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAllWithLimit", reflect.TypeOf((*MockproductRepositoryIface)(nil).FindAllWithLimit), limit, offset)
+}
+
 // FindById mocks base method
-func (m *MockproductRepositoryIface) FindById(id int64) model.Product {
+func (m *MockproductRepositoryIface) FindById(id int64) (model.Product, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindById", id)
 	ret0, _ := ret[0].(model.Product)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindById indicates an expected call of FindById
@@ -598,12 +629,28 @@ func (mr *MockproductRepositoryIfaceMockRecorder) FindById(id interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindById", reflect.TypeOf((*MockproductRepositoryIface)(nil).FindById), id)
 }
 
+// FindByIDs mocks base method
+func (m *MockproductRepositoryIface) FindByIDs(IDs []int64) ([]model.Product, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByIDs", IDs)
+	ret0, _ := ret[0].([]model.Product)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByIDs indicates an expected call of FindByIDs
+func (mr *MockproductRepositoryIfaceMockRecorder) FindByIDs(IDs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByIDs", reflect.TypeOf((*MockproductRepositoryIface)(nil).FindByIDs), IDs)
+}
+
 // FindByExactCode mocks base method
-func (m *MockproductRepositoryIface) FindByExactCode(code string) model.Product {
+func (m *MockproductRepositoryIface) FindByExactCode(code string) (model.Product, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByExactCode", code)
 	ret0, _ := ret[0].(model.Product)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindByExactCode indicates an expected call of FindByExactCode
@@ -612,12 +659,43 @@ func (mr *MockproductRepositoryIfaceMockRecorder) FindByExactCode(code interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByExactCode", reflect.TypeOf((*MockproductRepositoryIface)(nil).FindByExactCode), code)
 }
 
+// GetMultipleProductByExactCode mocks base method
+func (m *MockproductRepositoryIface) GetMultipleProductByExactCode(code string) ([]model.Product, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMultipleProductByExactCode", code)
+	ret0, _ := ret[0].([]model.Product)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMultipleProductByExactCode indicates an expected call of GetMultipleProductByExactCode
+func (mr *MockproductRepositoryIfaceMockRecorder) GetMultipleProductByExactCode(code interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultipleProductByExactCode", reflect.TypeOf((*MockproductRepositoryIface)(nil).GetMultipleProductByExactCode), code)
+}
+
+// SearchBy mocks base method
+func (m *MockproductRepositoryIface) SearchBy(query string, limit, offset int) ([]model.Product, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchBy", query, limit, offset)
+	ret0, _ := ret[0].([]model.Product)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchBy indicates an expected call of SearchBy
+func (mr *MockproductRepositoryIfaceMockRecorder) SearchBy(query, limit, offset interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchBy", reflect.TypeOf((*MockproductRepositoryIface)(nil).SearchBy), query, limit, offset)
+}
+
 // FindByCode mocks base method
-func (m *MockproductRepositoryIface) FindByCode(code string) []model.Product {
+func (m *MockproductRepositoryIface) FindByCode(code string) ([]model.Product, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByCode", code)
 	ret0, _ := ret[0].([]model.Product)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindByCode indicates an expected call of FindByCode
@@ -627,11 +705,12 @@ func (mr *MockproductRepositoryIfaceMockRecorder) FindByCode(code interface{}) *
 }
 
 // FindByName mocks base method
-func (m *MockproductRepositoryIface) FindByName(name string) []model.Product {
+func (m *MockproductRepositoryIface) FindByName(name string) ([]model.Product, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByName", name)
 	ret0, _ := ret[0].([]model.Product)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindByName indicates an expected call of FindByName
@@ -641,11 +720,12 @@ func (mr *MockproductRepositoryIfaceMockRecorder) FindByName(name interface{}) *
 }
 
 // FindByCategoryName mocks base method
-func (m *MockproductRepositoryIface) FindByCategoryName(name string) []model.Product {
+func (m *MockproductRepositoryIface) FindByCategoryName(name string) ([]model.Product, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByCategoryName", name)
 	ret0, _ := ret[0].([]model.Product)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindByCategoryName indicates an expected call of FindByCategoryName
@@ -655,11 +735,12 @@ func (mr *MockproductRepositoryIfaceMockRecorder) FindByCategoryName(name interf
 }
 
 // FindByUnitName mocks base method
-func (m *MockproductRepositoryIface) FindByUnitName(name string) []model.Product {
+func (m *MockproductRepositoryIface) FindByUnitName(name string) ([]model.Product, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByUnitName", name)
 	ret0, _ := ret[0].([]model.Product)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindByUnitName indicates an expected call of FindByUnitName
@@ -669,11 +750,12 @@ func (mr *MockproductRepositoryIfaceMockRecorder) FindByUnitName(name interface{
 }
 
 // New mocks base method
-func (m *MockproductRepositoryIface) New(product model.Product) model.Product {
+func (m *MockproductRepositoryIface) New(product model.Product) (model.Product, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "New", product)
 	ret0, _ := ret[0].(model.Product)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // New indicates an expected call of New
@@ -683,11 +765,12 @@ func (mr *MockproductRepositoryIfaceMockRecorder) New(product interface{}) *gomo
 }
 
 // Update mocks base method
-func (m *MockproductRepositoryIface) Update(product model.Product) model.Product {
+func (m *MockproductRepositoryIface) Update(product model.Product) (model.Product, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", product)
 	ret0, _ := ret[0].(model.Product)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update
@@ -712,11 +795,12 @@ func (mr *MockproductRepositoryIfaceMockRecorder) Delete(id interface{}) *gomock
 }
 
 // DeleteAll mocks base method
-func (m *MockproductRepositoryIface) DeleteAll() int64 {
+func (m *MockproductRepositoryIface) DeleteAll() (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteAll")
 	ret0, _ := ret[0].(int64)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteAll indicates an expected call of DeleteAll
@@ -749,11 +833,12 @@ func (m *MockstockRepositoryIface) EXPECT() *MockstockRepositoryIfaceMockRecorde
 }
 
 // FindAll mocks base method
-func (m *MockstockRepositoryIface) FindAll() []model.Stock {
+func (m *MockstockRepositoryIface) FindAll() ([]model.Stock, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindAll")
 	ret0, _ := ret[0].([]model.Stock)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindAll indicates an expected call of FindAll
@@ -763,11 +848,12 @@ func (mr *MockstockRepositoryIfaceMockRecorder) FindAll() *gomock.Call {
 }
 
 // FindByProduct mocks base method
-func (m *MockstockRepositoryIface) FindByProduct(product model.Product) model.Stock {
+func (m *MockstockRepositoryIface) FindByProduct(product model.Product) (model.Stock, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByProduct", product)
 	ret0, _ := ret[0].(model.Stock)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindByProduct indicates an expected call of FindByProduct
@@ -777,11 +863,12 @@ func (mr *MockstockRepositoryIfaceMockRecorder) FindByProduct(product interface{
 }
 
 // New mocks base method
-func (m *MockstockRepositoryIface) New(stock model.Stock) model.Stock {
+func (m *MockstockRepositoryIface) New(stock model.Stock) (model.Stock, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "New", stock)
 	ret0, _ := ret[0].(model.Stock)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // New indicates an expected call of New
@@ -791,11 +878,12 @@ func (mr *MockstockRepositoryIfaceMockRecorder) New(stock interface{}) *gomock.C
 }
 
 // Update mocks base method
-func (m *MockstockRepositoryIface) Update(stock model.Stock) model.Stock {
+func (m *MockstockRepositoryIface) Update(stock model.Stock) (model.Stock, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", stock)
 	ret0, _ := ret[0].(model.Stock)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update
@@ -820,11 +908,12 @@ func (mr *MockstockRepositoryIfaceMockRecorder) Delete(id interface{}) *gomock.C
 }
 
 // DeleteAll mocks base method
-func (m *MockstockRepositoryIface) DeleteAll() int64 {
+func (m *MockstockRepositoryIface) DeleteAll() (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteAll")
 	ret0, _ := ret[0].(int64)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteAll indicates an expected call of DeleteAll
@@ -857,11 +946,12 @@ func (m *MockunitRepositoryIface) EXPECT() *MockunitRepositoryIfaceMockRecorder 
 }
 
 // FindAll mocks base method
-func (m *MockunitRepositoryIface) FindAll() []model.Unit {
+func (m *MockunitRepositoryIface) FindAll() ([]model.Unit, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindAll")
 	ret0, _ := ret[0].([]model.Unit)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindAll indicates an expected call of FindAll
@@ -871,11 +961,12 @@ func (mr *MockunitRepositoryIfaceMockRecorder) FindAll() *gomock.Call {
 }
 
 // FindById mocks base method
-func (m *MockunitRepositoryIface) FindById(id int64) model.Unit {
+func (m *MockunitRepositoryIface) FindById(id int64) (model.Unit, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindById", id)
 	ret0, _ := ret[0].(model.Unit)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindById indicates an expected call of FindById
@@ -885,11 +976,12 @@ func (mr *MockunitRepositoryIfaceMockRecorder) FindById(id interface{}) *gomock.
 }
 
 // FindByName mocks base method
-func (m *MockunitRepositoryIface) FindByName(name string) []model.Unit {
+func (m *MockunitRepositoryIface) FindByName(name string) ([]model.Unit, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByName", name)
 	ret0, _ := ret[0].([]model.Unit)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindByName indicates an expected call of FindByName
@@ -899,11 +991,12 @@ func (mr *MockunitRepositoryIfaceMockRecorder) FindByName(name interface{}) *gom
 }
 
 // New mocks base method
-func (m *MockunitRepositoryIface) New(unit model.Unit) model.Unit {
+func (m *MockunitRepositoryIface) New(unit model.Unit) (model.Unit, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "New", unit)
 	ret0, _ := ret[0].(model.Unit)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // New indicates an expected call of New
@@ -913,11 +1006,12 @@ func (mr *MockunitRepositoryIfaceMockRecorder) New(unit interface{}) *gomock.Cal
 }
 
 // Update mocks base method
-func (m *MockunitRepositoryIface) Update(unit model.Unit) model.Unit {
+func (m *MockunitRepositoryIface) Update(unit model.Unit) (model.Unit, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", unit)
 	ret0, _ := ret[0].(model.Unit)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update
@@ -965,11 +1059,12 @@ func (m *MockuserRepositoryIface) EXPECT() *MockuserRepositoryIfaceMockRecorder 
 }
 
 // FindAll mocks base method
-func (m *MockuserRepositoryIface) FindAll() []model.User {
+func (m *MockuserRepositoryIface) FindAll() ([]user.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindAll")
-	ret0, _ := ret[0].([]model.User)
-	return ret0
+	ret0, _ := ret[0].([]user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindAll indicates an expected call of FindAll
@@ -979,11 +1074,12 @@ func (mr *MockuserRepositoryIfaceMockRecorder) FindAll() *gomock.Call {
 }
 
 // FindById mocks base method
-func (m *MockuserRepositoryIface) FindById(id int64) model.User {
+func (m *MockuserRepositoryIface) FindById(id int64) (user.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindById", id)
-	ret0, _ := ret[0].(model.User)
-	return ret0
+	ret0, _ := ret[0].(user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindById indicates an expected call of FindById
@@ -993,11 +1089,12 @@ func (mr *MockuserRepositoryIfaceMockRecorder) FindById(id interface{}) *gomock.
 }
 
 // FindByUsername mocks base method
-func (m *MockuserRepositoryIface) FindByUsername(username string) model.User {
+func (m *MockuserRepositoryIface) FindByUsername(username string) (user.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByUsername", username)
-	ret0, _ := ret[0].(model.User)
-	return ret0
+	ret0, _ := ret[0].(user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindByUsername indicates an expected call of FindByUsername
@@ -1006,41 +1103,58 @@ func (mr *MockuserRepositoryIfaceMockRecorder) FindByUsername(username interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByUsername", reflect.TypeOf((*MockuserRepositoryIface)(nil).FindByUsername), username)
 }
 
-// New mocks base method
-func (m *MockuserRepositoryIface) New(user model.User) (model.User, error) {
+// FindByUsernameForLogin mocks base method
+func (m *MockuserRepositoryIface) FindByUsernameForLogin(username string) (user.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "New", user)
-	ret0, _ := ret[0].(model.User)
+	ret := m.ctrl.Call(m, "FindByUsernameForLogin", username)
+	ret0, _ := ret[0].(user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByUsernameForLogin indicates an expected call of FindByUsernameForLogin
+func (mr *MockuserRepositoryIfaceMockRecorder) FindByUsernameForLogin(username interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByUsernameForLogin", reflect.TypeOf((*MockuserRepositoryIface)(nil).FindByUsernameForLogin), username)
+}
+
+// New mocks base method
+func (m *MockuserRepositoryIface) New(userData user.User) (user.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "New", userData)
+	ret0, _ := ret[0].(user.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // New indicates an expected call of New
-func (mr *MockuserRepositoryIfaceMockRecorder) New(user interface{}) *gomock.Call {
+func (mr *MockuserRepositoryIfaceMockRecorder) New(userData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "New", reflect.TypeOf((*MockuserRepositoryIface)(nil).New), user)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "New", reflect.TypeOf((*MockuserRepositoryIface)(nil).New), userData)
 }
 
 // Update mocks base method
-func (m *MockuserRepositoryIface) Update(user model.User) model.User {
+func (m *MockuserRepositoryIface) Update(userData user.User) (user.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", user)
-	ret0, _ := ret[0].(model.User)
-	return ret0
+	ret := m.ctrl.Call(m, "Update", userData)
+	ret0, _ := ret[0].(user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update
-func (mr *MockuserRepositoryIfaceMockRecorder) Update(user interface{}) *gomock.Call {
+func (mr *MockuserRepositoryIfaceMockRecorder) Update(userData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockuserRepositoryIface)(nil).Update), user)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockuserRepositoryIface)(nil).Update), userData)
 }
 
 // Delete mocks base method
-func (m *MockuserRepositoryIface) Delete(id int64) model.User {
+func (m *MockuserRepositoryIface) Delete(id int64) (user.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", id)
-	ret0, _ := ret[0].(model.User)
-	return ret0
+	ret0, _ := ret[0].(user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Delete indicates an expected call of Delete

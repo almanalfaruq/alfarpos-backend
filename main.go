@@ -13,7 +13,6 @@ import (
 	"github.com/almanalfaruq/alfarpos-backend/util"
 
 	_ "github.com/almanalfaruq/alfarpos-backend/docs"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/kataras/golog"
 )
 
@@ -75,8 +74,14 @@ func initRouter() {
 	port := os.Getenv("PORT")
 	routes := routes.GetAllRoutes(&databaseConnection, config)
 	http.Handle("/", routes)
-	handler := cors.Default().Handler(routes)
-	golog.Info("Server listening at http://localhost:8080")
+	handler := cors.New(cors.Options{
+		AllowedMethods:     []string{"OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"},
+		AllowedOrigins:     []string{"*"},
+		AllowCredentials:   true,
+		AllowedHeaders:     []string{"Content-Type", "Bearer", "Bearer ", "content-type", "Origin", "Accept"},
+		OptionsPassthrough: true,
+	}).Handler(routes)
+	golog.Infof("Server listening at http://localhost:%s", port)
 	err := http.ListenAndServe(":"+port, handler)
 	if err != nil {
 		golog.Fatal(err)
@@ -89,11 +94,17 @@ func populateFirstData() {
 		Name: "Cash",
 	}
 	paymentRepo := repository.NewPaymentRepo(&databaseConnection)
-	paymentRepo.New(payment)
+	_, err := paymentRepo.New(payment)
+	if err != nil {
+		panic(err)
+	}
 
 	customer := model.Customer{
 		Name: "Customer",
 	}
 	customerRepo := repository.NewCustomerRepo(&databaseConnection)
-	customerRepo.New(customer)
+	_, err = customerRepo.New(customer)
+	if err != nil {
+		panic(err)
+	}
 }
