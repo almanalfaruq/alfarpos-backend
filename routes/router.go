@@ -24,17 +24,18 @@ func GetAllRoutes(database *util.DBConn, config util.Config) *mux.Router {
 	routesApi := routes.PathPrefix("/api/").Subrouter()
 
 	userController := InjectUserController(database, config)
-	routesApi.HandleFunc("/users/register", userController.RegisterHandler).Methods("POST")
-	routesApi.HandleFunc("/users/login", userController.LoginHandler).Methods("POST")
+	routesApi.HandleFunc("/users/register", authMw.CheckCORS(userController.RegisterHandler)).Methods("POST", "OPTIONS")
+	routesApi.HandleFunc("/users/login", authMw.CheckCORS(userController.LoginHandler)).Methods("POST", "OPTIONS")
 
 	productController := InjectProductController(database, config)
 	routesApi.HandleFunc("/products", productController.GetProductsHandler).Methods("GET")
 	routesApi.HandleFunc("/products/id/{id}/", productController.GetProductByIdHandler).Methods("GET")
+	routesApi.HandleFunc("/products/ids/{ids}/", productController.GetProductsByIDsHandler).Methods("GET")
 	routesApi.HandleFunc("/products/code/{code}/", productController.GetProductByCodeHandler).Methods("GET")
-	routesApi.HandleFunc("/products", authMw.CheckJWTToken(productController.NewProductHandler)).Methods("POST")
+	routesApi.HandleFunc("/products", authMw.CheckJWTToken(productController.NewProductHandler)).Methods("POST", "OPTIONS")
 	routesApi.HandleFunc("/products/export_excel", productController.ExportAllProductsToExcelHandler).Methods("GET")
 	routesApi.HandleFunc("/products/upload_excel/{sheetName}", authMw.CheckJWTToken(productController.UploadExcelProductHandler)).Methods("POST")
-	routesApi.HandleFunc("/products/{id}", authMw.CheckJWTToken(productController.UpdateProductHandler)).Methods("PUT")
+	routesApi.HandleFunc("/products/{id}", authMw.CheckJWTToken(productController.UpdateProductHandler)).Methods("PUT", "OPTIONS")
 
 	categoryController := InjectCategoryController(database, config)
 	routesApi.HandleFunc("/categories", categoryController.GetCategoriesHandler).Methods("GET")

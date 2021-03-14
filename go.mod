@@ -14,6 +14,7 @@ require (
 	github.com/gorilla/mux v1.7.4
 	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/kataras/golog v0.0.13
+	github.com/lib/pq v1.3.0
 	github.com/mailru/easyjson v0.7.1 // indirect
 	github.com/rs/cors v1.7.0
 	github.com/stretchr/testify v1.6.1

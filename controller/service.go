@@ -58,9 +58,11 @@ type printServiceIface interface {
 }
 
 type productServiceIface interface {
-	GetAllProduct() ([]model.Product, error)
+	GetAllProduct(limit, page int) (products []model.Product, hasNext bool, err error)
 	GetOneProduct(id int64) (model.Product, error)
+	GetProductsByIDs(IDs []int64) ([]model.Product, error)
 	GetOneProductByCode(code string) (model.Product, error)
+	GetProductsBySearchQuery(query string, limit, page int) (products []model.Product, hasNext bool, err error)
 	GetProductsByCode(productCode string) ([]model.Product, error)
 	GetProductsByName(productName string) ([]model.Product, error)
 	GetProductsByCategoryName(categoryName string) ([]model.Product, error)

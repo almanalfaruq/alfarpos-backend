@@ -3,22 +3,26 @@ package model
 import (
 	"database/sql"
 	"encoding/json"
+
+	"github.com/lib/pq"
 )
 
 type Product struct {
 	Template
-	Code          sql.NullString  `gorm:"index" json:"code" example:"81921872917"`
-	Name          string          `json:"name" example:"product name"`
-	BuyPrice      sql.NullInt64   `json:"buy_price" example:"10000"`
-	SellPrice     sql.NullInt64   `json:"sell_price" example:"15000"`
-	Quantity      sql.NullInt64   `json:"quantity" example:"10"`
-	CategoryID    int64           `json:"category_id" example:"1"`
-	Category      Category        `gorm:"foreignkey:CategoryID" json:"category"`
-	UnitID        int64           `json:"unit_id" example:"2"`
-	Unit          Unit            `gorm:"foreignkey:UnitID" json:"unit"`
-	ImageUrl      string          `json:"image_url" example:"http://localhost/image/image.jpg"`
-	Discount      sql.NullFloat64 `gorm:"default:0.00" json:"discount" example:"0.1"`
-	ProductPrices ProductPrices   `json:"product_prices"`
+	Code            sql.NullString  `gorm:"index" json:"code" example:"81921872917"`
+	Name            string          `json:"name" example:"product name"`
+	BuyPrice        sql.NullInt64   `json:"buy_price" example:"10000"`
+	SellPrice       sql.NullInt64   `json:"sell_price" example:"15000"`
+	Quantity        sql.NullInt64   `json:"quantity" example:"10"`
+	CategoryID      int64           `json:"category_id" example:"1"`
+	Category        Category        `gorm:"foreignkey:CategoryID" json:"category"`
+	UnitID          int64           `json:"unit_id" example:"2"`
+	Unit            Unit            `gorm:"foreignkey:UnitID" json:"unit"`
+	ImageUrl        string          `json:"image_url" example:"http://localhost/image/image.jpg"`
+	Discount        sql.NullFloat64 `gorm:"default:0.00" json:"discount" example:"0.1"`
+	RelatedProducts pq.Int64Array   `gorm:"type:int8[]" json:"related_products"`
+	ProductPrices   ProductPrices   `json:"product_prices"`
+	IsOpenPrice     bool            `json:"is_open_price"`
 }
 
 type ProductOrder struct {
@@ -76,4 +80,37 @@ func (p ProductPrices) FromStringJson(s string) ProductPrices {
 	}
 
 	return productPrices
+}
+
+type ProductResponse struct {
+	Products []Product `json:"products"`
+	HasNext  bool      `json:"has_next"`
+}
+
+func DifferenceProductPrice(slice1 ProductPrices, slice2 ProductPrices) ProductPrices {
+	var diff ProductPrices
+
+	// Loop two times, first to find slice1 strings not in slice2,
+	// second loop to find slice2 strings not in slice1
+	for i := 0; i < 2; i++ {
+		for _, s1 := range slice1 {
+			found := false
+			for _, s2 := range slice2 {
+				if s1 == s2 {
+					found = true
+					break
+				}
+			}
+			// String not found. We add it to return slice
+			if !found {
+				diff = append(diff, s1)
+			}
+		}
+		// Swap the slices, only if it was the first loop
+		if i == 0 {
+			slice1, slice2 = slice2, slice1
+		}
+	}
+
+	return diff
 }

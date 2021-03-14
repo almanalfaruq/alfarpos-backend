@@ -1,8 +1,10 @@
 package service
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"sort"
@@ -10,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/kataras/golog"
+	"github.com/lib/pq"
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 
@@ -33,8 +36,26 @@ func NewProductService(productRepo productRepositoryIface, categoryRepo category
 	}
 }
 
-func (service *ProductService) GetAllProduct() ([]model.Product, error) {
-	return service.product.FindAll()
+func (service *ProductService) GetAllProduct(limit, page int) (products []model.Product, hasNext bool, err error) {
+	if limit == 0 {
+		products, err = service.product.FindAll()
+		if err != nil {
+			return nil, false, err
+		}
+		return products, false, nil
+	}
+	offset := (page - 1) * limit
+	limitPlusOne := limit + 1
+	products, err = service.product.FindAllWithLimit(limit, offset)
+	if err != nil {
+		return nil, false, err
+	}
+
+	if len(products) == limitPlusOne {
+		products = products[:limit]
+		hasNext = true
+	}
+	return products, hasNext, nil
 }
 
 func (service *ProductService) GetOneProduct(id int64) (model.Product, error) {
@@ -48,6 +69,21 @@ func (service *ProductService) GetOneProduct(id int64) (model.Product, error) {
 		})
 	}
 	return product, nil
+}
+
+func (service *ProductService) GetProductsByIDs(IDs []int64) ([]model.Product, error) {
+	products, err := service.product.FindByIDs(IDs)
+	if err != nil {
+		return []model.Product{}, err
+	}
+	for _, product := range products {
+		if len(product.ProductPrices) > 0 {
+			sort.Slice(product.ProductPrices, func(i, j int) bool {
+				return product.ProductPrices[i].QuantityMultiplier > product.ProductPrices[j].QuantityMultiplier
+			})
+		}
+	}
+	return products, nil
 }
 
 func (service *ProductService) GetOneProductByCode(code string) (model.Product, error) {
@@ -77,6 +113,30 @@ func (service *ProductService) GetProductsByCode(productCode string) ([]model.Pr
 		}
 	}
 	return products, nil
+}
+
+func (service *ProductService) GetProductsBySearchQuery(query string, limit, page int) (products []model.Product, hasNext bool, err error) {
+	if limit == 0 {
+		return []model.Product{}, false, ErrEmptyParam
+	}
+	offset := (page - 1) * limit
+	limitPlusOne := limit + 1
+	products, err = service.product.SearchBy(query, limitPlusOne, offset)
+	if err != nil {
+		return nil, false, err
+	}
+	for _, product := range products {
+		if len(product.ProductPrices) > 0 {
+			sort.Slice(product.ProductPrices, func(i, j int) bool {
+				return product.ProductPrices[i].QuantityMultiplier > product.ProductPrices[j].QuantityMultiplier
+			})
+		}
+	}
+	if len(products) == limitPlusOne {
+		products = products[:limit]
+		hasNext = true
+	}
+	return products, hasNext, nil
 }
 
 func (service *ProductService) GetProductsByName(productName string) ([]model.Product, error) {
@@ -138,15 +198,15 @@ func (service *ProductService) NewProduct(productData string) (model.Product, er
 	if err != nil {
 		return model.Product{}, err
 	}
-	stock := model.Stock{
-		ProductID: int64(product.ID),
-		Product:   product,
-		Quantity:  0,
-	}
-	_, err = service.stock.New(stock)
-	if err != nil {
-		golog.Errorf("Error new product stock: %v", err)
-	}
+	// stock := model.Stock{
+	// 	ProductID: int64(product.ID),
+	// 	Product:   product,
+	// 	Quantity:  0,
+	// }
+	// _, err = service.stock.New(stock)
+	// if err != nil {
+	// 	golog.Errorf("Error new product stock: %v", err)
+	// }
 	return product, nil
 }
 
@@ -210,62 +270,98 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 		return 0, fmt.Errorf("Rows length < 1")
 	}
 	products, errIndex := s.parseExcelRowsToProduct(rows)
-	var (
-		productCounter = 0
-	)
+	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
-		for _, product := range products {
-			golog.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", product.Name, product.Quantity.Int64, product.SellPrice.Int64, product.BuyPrice.Int64)
-			categories, err := s.category.FindByName(strings.ToLower(product.Category.Name))
-			var category model.Category
-			if err != nil || len(categories) == 0 {
-				category = model.Category{Name: product.Category.Name}
-				category, err = s.category.New(category)
-				if err != nil {
-					errIndex = append(errIndex, product.Name)
-					continue
-				}
-			} else {
-				category = categories[0]
+		_, errIndex = s.importProducts(ctx, products)
+		if len(errIndex) == len(products) {
+			golog.Error("The products are not imported")
+			cancel()
+		}
+		allProducts, err := s.product.FindAll()
+		if err != nil {
+			cancel()
+		}
+
+		golog.Info("Starting to compile the products")
+		for _, product := range allProducts {
+			var relatedIDs []int64
+			relatedProducts, err := s.product.GetMultipleProductByExactCode(product.Code.String)
+			if err != nil {
+				continue
 			}
-			product.CategoryID = int64(category.ID)
-			product.Category.ID = category.ID
-			units, err := s.unit.FindByName(strings.ToLower(product.Unit.Name))
-			var unit model.Unit
-			if err != nil || len(units) == 0 {
-				unit = product.Unit
-				unit, err = s.unit.New(unit)
-				if err != nil {
-					errIndex = append(errIndex, product.Name)
-					continue
+			for _, rp := range relatedProducts {
+				if rp.ID != product.ID {
+					relatedIDs = append(relatedIDs, rp.ID)
 				}
-			} else {
-				unit = units[0]
 			}
-			product.UnitID = int64(unit.ID)
-			product.Unit.ID = unit.ID
-			product, err = s.product.New(product)
+			product.RelatedProducts = pq.Int64Array(relatedIDs)
+			_, err = s.product.Update(product)
+			if err != nil {
+				golog.Errorf("Cannot update product; id: %d, err: %v", product.ID, err)
+			}
+		}
+		golog.Info("Compiling product finished")
+	}()
+	return len(products), nil
+}
+
+func (s *ProductService) importProducts(ctx context.Context, products []model.Product) (int, []string) {
+	errIndex := []string{}
+	productCounter := 0
+	for _, product := range products {
+		golog.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", product.Name, product.Quantity.Int64, product.SellPrice.Int64, product.BuyPrice.Int64)
+		categories, err := s.category.FindByName(strings.ToLower(product.Category.Name))
+		var category model.Category
+		if err != nil || len(categories) == 0 {
+			category = model.Category{Name: product.Category.Name}
+			category, err = s.category.New(category)
 			if err != nil {
 				errIndex = append(errIndex, product.Name)
 				continue
 			}
-			productCounter++
+		} else {
+			category = categories[0]
 		}
-		if productCounter != len(rows)-1 {
-			warnText := fmt.Sprintf("There are %v rows, but only %v products were created.", len(rows)-1, productCounter)
-			golog.Warn(warnText)
-			warnText = fmt.Sprintf("These are the name of products of unimported rows: %s", strings.Join(errIndex, ", "))
-			golog.Warn(warnText)
+		product.CategoryID = int64(category.ID)
+		product.Category.ID = category.ID
+		units, err := s.unit.FindByName(strings.ToLower(product.Unit.Name))
+		var unit model.Unit
+		if err != nil || len(units) == 0 {
+			unit = product.Unit
+			unit, err = s.unit.New(unit)
+			if err != nil {
+				errIndex = append(errIndex, product.Name)
+				continue
+			}
+		} else {
+			unit = units[0]
 		}
-		golog.Infof("%v products imported!", productCounter)
-	}()
-	return len(products), nil
+		product.UnitID = int64(unit.ID)
+		product.Unit.ID = unit.ID
+		product, err = s.product.New(product)
+		if err != nil {
+			errIndex = append(errIndex, product.Name)
+			continue
+		}
+		productCounter++
+	}
+	if productCounter != len(products) {
+		warnText := fmt.Sprintf("There are %v rows, but only %v products were created.", len(products), productCounter)
+		golog.Warn(warnText)
+		warnText = fmt.Sprintf("These are the name of products of unimported rows: %s", strings.Join(errIndex, ", "))
+		golog.Warn(warnText)
+	}
+	golog.Infof("%v products imported!", productCounter)
+	return productCounter, errIndex
 }
 
 func (service *ProductService) UpdateProduct(productData string) (model.Product, error) {
 	var product model.Product
 	productDataByte := []byte(productData)
 	err := json.Unmarshal(productDataByte, &product)
+	if product.ID < 1 {
+		return product, errors.New("Empty ID")
+	}
 	if err != nil {
 		return product, err
 	}
@@ -330,6 +426,11 @@ func (s *ProductService) parseExcelRowsToProduct(rows [][]string) ([]model.Produ
 		var productPrices model.ProductPrices
 		productPrices = productPrices.FromStringJson(row[9])
 
+		var isOpenPrice bool
+		if row[10] == "1" {
+			isOpenPrice = true
+		}
+
 		product := model.Product{
 			Code: code,
 			Name: name,
@@ -350,6 +451,7 @@ func (s *ProductService) parseExcelRowsToProduct(rows [][]string) ([]model.Produ
 			},
 			Unit:          unit,
 			ProductPrices: productPrices,
+			IsOpenPrice:   isOpenPrice,
 		}
 
 		products = append(products, product)

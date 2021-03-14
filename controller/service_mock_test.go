@@ -626,6 +626,21 @@ func (mr *MockproductServiceIfaceMockRecorder) GetOneProduct(id interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOneProduct", reflect.TypeOf((*MockproductServiceIface)(nil).GetOneProduct), id)
 }
 
+// GetProductsByIDs mocks base method
+func (m *MockproductServiceIface) GetProductsByIDs(IDs []int64) ([]model.Product, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetProductsByIDs", IDs)
+	ret0, _ := ret[0].([]model.Product)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetProductsByIDs indicates an expected call of GetProductsByIDs
+func (mr *MockproductServiceIfaceMockRecorder) GetProductsByIDs(IDs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsByIDs", reflect.TypeOf((*MockproductServiceIface)(nil).GetProductsByIDs), IDs)
+}
+
 // GetOneProductByCode mocks base method
 func (m *MockproductServiceIface) GetOneProductByCode(code string) (model.Product, error) {
 	m.ctrl.T.Helper()
@@ -639,6 +654,21 @@ func (m *MockproductServiceIface) GetOneProductByCode(code string) (model.Produc
 func (mr *MockproductServiceIfaceMockRecorder) GetOneProductByCode(code interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOneProductByCode", reflect.TypeOf((*MockproductServiceIface)(nil).GetOneProductByCode), code)
+}
+
+// GetProductsBySearchQuery mocks base method
+func (m *MockproductServiceIface) GetProductsBySearchQuery(query string) ([]model.Product, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetProductsBySearchQuery", query)
+	ret0, _ := ret[0].([]model.Product)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetProductsBySearchQuery indicates an expected call of GetProductsBySearchQuery
+func (mr *MockproductServiceIfaceMockRecorder) GetProductsBySearchQuery(query interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsBySearchQuery", reflect.TypeOf((*MockproductServiceIface)(nil).GetProductsBySearchQuery), query)
 }
 
 // GetProductsByCode mocks base method

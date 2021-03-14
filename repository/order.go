@@ -1,9 +1,13 @@
 package repository
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	orderentity "github.com/almanalfaruq/alfarpos-backend/model/order"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type OrderRepository struct {
@@ -19,14 +23,17 @@ func NewOrderRepo(db dbIface) *OrderRepository {
 func (repo *OrderRepository) FindAll() []orderentity.Order {
 	var orders []orderentity.Order
 	db := repo.db.GetDb()
-	db.Set("gorm:auto_preload", true).Find(&orders)
+	db.Preload(clause.Associations).
+		Find(&orders)
 	return orders
 }
 
 func (repo *OrderRepository) FindById(id int64) (orderentity.Order, error) {
 	var order orderentity.Order
 	db := repo.db.GetDb()
-	err := db.Set("gorm:auto_preload", true).Where("id = ?", id).First(&order).Error
+	err := db.Preload(clause.Associations).
+		Where("id = ?", id).
+		First(&order).Error
 	if err != nil {
 		if gorm.ErrRecordNotFound == err {
 			return orderentity.Order{}, model.ErrNotFound
@@ -39,7 +46,9 @@ func (repo *OrderRepository) FindById(id int64) (orderentity.Order, error) {
 func (repo *OrderRepository) FindByInvoice(invoice string) (orderentity.Order, error) {
 	var order orderentity.Order
 	db := repo.db.GetDb()
-	err := db.Set("gorm:auto_preload", true).Where("invoice = ?", invoice).First(&order).Error
+	err := db.Preload(clause.Associations).
+		Where("invoice = ?", invoice).
+		First(&order).Error
 	if err != nil {
 		if gorm.ErrRecordNotFound == err {
 			return orderentity.Order{}, model.ErrNotFound
@@ -52,7 +61,9 @@ func (repo *OrderRepository) FindByInvoice(invoice string) (orderentity.Order, e
 func (repo *OrderRepository) FindByUserId(userId int64) ([]orderentity.Order, error) {
 	var orders []orderentity.Order
 	db := repo.db.GetDb()
-	err := db.Set("gorm:auto_preload", true).Where("user_id = ?", userId).Find(&orders).Error
+	err := db.Preload(clause.Associations).
+		Where("user_id = ?", userId).
+		Find(&orders).Error
 	if err != nil {
 		if gorm.ErrRecordNotFound == err {
 			return []orderentity.Order{}, model.ErrNotFound
@@ -60,6 +71,25 @@ func (repo *OrderRepository) FindByUserId(userId int64) ([]orderentity.Order, er
 		return []orderentity.Order{}, err
 	}
 	return orders, nil
+}
+
+func (repo *OrderRepository) FindByDate(startDate, endDate string) ([]orderentity.Order, error) {
+	var orders []orderentity.Order
+	var whereClauses []string
+	if startDate == endDate {
+		whereClauses = append(whereClauses, fmt.Sprintf("date(orders.created_at) = '%s'", startDate))
+	} else {
+		if startDate != "" {
+			whereClauses = append(whereClauses, fmt.Sprintf("orders.created_at >= '%s'", startDate))
+		}
+		if endDate != "" {
+			whereClauses = append(whereClauses, fmt.Sprintf("orders.created_at <= '%s'", endDate))
+		}
+	}
+	db := repo.db.GetDb()
+	err := db.Preload(clause.Associations).
+		Where(strings.Join(whereClauses, " AND ")).Find(&orders).Error
+	return orders, err
 }
 
 func (repo *OrderRepository) New(order orderentity.Order) (orderentity.Order, error) {
