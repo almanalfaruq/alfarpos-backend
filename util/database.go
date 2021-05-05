@@ -5,6 +5,7 @@ import (
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	orderentity "github.com/almanalfaruq/alfarpos-backend/model/order"
+	"github.com/almanalfaruq/alfarpos-backend/model/transaction"
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/kataras/golog"
 	"gorm.io/driver/postgres"
@@ -49,17 +50,27 @@ func (dbConn *DBConn) GetDb() *gorm.DB {
 }
 
 func (dbConn *DBConn) MigrateDb() {
-	err := dbConn.DB.AutoMigrate(&model.Category{}, &model.Customer{}, &model.OrderDetail{}, &orderentity.Order{}, &model.Payment{}, &model.Product{}, &model.ProductPrice{}, &model.Stock{}, &model.Unit{}, &userentity.User{})
+	err := dbConn.DB.AutoMigrate(&model.Category{}, &model.Customer{}, &model.OrderDetail{}, &orderentity.Order{}, &model.Payment{},
+		&model.Product{}, &model.ProductPrice{}, &model.Stock{}, &model.Unit{}, &userentity.User{}, &transaction.Money{})
 	if err != nil {
 		panic(err)
 	}
 }
 
 func (dbConn *DBConn) DropDb() {
-	dbConn.DB.Migrator().DropTable(&model.Category{}, &model.Customer{}, &model.OrderDetail{}, &orderentity.Order{}, &model.Payment{}, &model.Product{}, &model.ProductPrice{}, &model.Stock{}, &model.Unit{}, &userentity.User{})
+	dbConn.DB.Migrator().DropTable(&model.Category{}, &model.Customer{}, &model.OrderDetail{}, &orderentity.Order{}, &model.Payment{},
+		&model.Product{}, &model.ProductPrice{}, &model.Stock{}, &model.Unit{}, &userentity.User{}, &transaction.Money{})
 }
 
 func (dbConn *DBConn) Close() {
 	db, _ := dbConn.DB.DB()
 	db.Close()
+}
+
+type DBIface interface {
+	Open(config Config) *gorm.DB
+	GetDb() *gorm.DB
+	MigrateDb()
+	DropDb()
+	Close()
 }

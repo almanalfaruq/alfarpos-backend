@@ -2,8 +2,14 @@ package dependency_injection
 
 import (
 	"github.com/almanalfaruq/alfarpos-backend/controller"
+	profilectrl "github.com/almanalfaruq/alfarpos-backend/controller/profile"
+	transactionctrl "github.com/almanalfaruq/alfarpos-backend/controller/transaction"
 	"github.com/almanalfaruq/alfarpos-backend/repository"
+	profilerepo "github.com/almanalfaruq/alfarpos-backend/repository/profile"
+	transactionrepo "github.com/almanalfaruq/alfarpos-backend/repository/transaction"
 	"github.com/almanalfaruq/alfarpos-backend/service"
+	profilesvc "github.com/almanalfaruq/alfarpos-backend/service/profile"
+	transactionsvc "github.com/almanalfaruq/alfarpos-backend/service/transaction"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
@@ -62,4 +68,16 @@ func InjectPrintController(dbConn *util.DBConn, config util.Config) *controller.
 	printService := service.NewPrintService(config, orderRepository)
 	printController := controller.NewPrintController(printService)
 	return printController
+}
+
+func InjectMoneyController(dbConn *util.DBConn, config util.Config) *transactionctrl.MoneyController {
+	moneyRepo := transactionrepo.NewMoney(dbConn)
+	moneyService := transactionsvc.New(moneyRepo)
+	return transactionctrl.NewMoney(moneyService)
+}
+
+func InjectProfileController(dbConn *util.DBConn, config util.Config) *profilectrl.ProfileController {
+	profileRepo := profilerepo.NewProfile(dbConn)
+	profileService := profilesvc.NewProfile(profileRepo)
+	return profilectrl.NewProfile(profileService)
 }

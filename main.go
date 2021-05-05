@@ -7,7 +7,9 @@ import (
 	"github.com/rs/cors"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
+	profileentity "github.com/almanalfaruq/alfarpos-backend/model/profile"
 	"github.com/almanalfaruq/alfarpos-backend/repository"
+	profilerepo "github.com/almanalfaruq/alfarpos-backend/repository/profile"
 	"github.com/almanalfaruq/alfarpos-backend/routes"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 
@@ -102,6 +104,19 @@ func populateFirstData() {
 	}
 	customerRepo := repository.NewCustomerRepo(&databaseConnection)
 	_, err = customerRepo.New(customer)
+	if err != nil {
+		panic(err)
+	}
+
+	profile := profileentity.Profile{
+		Name:            "Toko Alfar",
+		Address:         "Depan Pasar Ketaon, Banyudono, Boyolali",
+		Phone:           "(0276) 3283720",
+		ThankyouMessage: "Terima kasih atas kunjungan anda",
+		FootNote:        "Barang yang sudah dibeli tidak dapat dikembalikan",
+	}
+	profileRepo := profilerepo.NewProfile(&databaseConnection)
+	_, err = profileRepo.New(profile)
 	if err != nil {
 		panic(err)
 	}

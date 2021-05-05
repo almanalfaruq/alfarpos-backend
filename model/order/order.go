@@ -39,6 +39,21 @@ func (o *Order) AfterFind(tx *gorm.DB) (err error) {
 
 // Status for order
 const (
-	StatusPending = 1
-	StatusFinish  = 2
+	StatusCanceled = -1
+	StatusPending  = 1
+	StatusFinish   = 2
 )
+
+// Param for sorting
+const (
+	SortAsc  = "asc"
+	SortDesc = "desc"
+)
+
+type GetOrderUsingFilterParam struct {
+	Statuses  []int32 `json:"statuses"`
+	Invoice   string  `json:"invoice"`
+	StartDate string  `json:"start_date"`
+	EndDate   string  `json:"end_date"`
+	Sort      string  `json:"sort"`
+}

@@ -37,8 +37,10 @@ type orderRepositoryIface interface {
 	FindById(id int64) (orderentity.Order, error)
 	FindByInvoice(invoice string) (orderentity.Order, error)
 	FindByUserId(userId int64) ([]orderentity.Order, error)
+	FindByFilter(status []int32, invoice, startDate, endDate, sort string) ([]orderentity.Order, error)
 	New(orderData orderentity.Order) (orderentity.Order, error)
 	Update(orderData orderentity.Order) (orderentity.Order, error)
+	UpdateStatus(orderID int64, status int32) (orderentity.Order, error)
 	Delete(id int64) (orderentity.Order, error)
 }
 
