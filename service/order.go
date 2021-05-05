@@ -72,6 +72,20 @@ func (s *OrderService) GetOrderByUserId(userId int64) ([]orderentity.Order, erro
 	return orders, nil
 }
 
+func (s *OrderService) GetOrderUsingFilter(param orderentity.GetOrderUsingFilterParam) ([]orderentity.Order, error) {
+	orders, err := s.order.FindByFilter(param.Statuses, param.Invoice, param.StartDate, param.EndDate, param.Sort)
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			return []orderentity.Order{}, fmt.Errorf("Order with filter: %+v is not found", param)
+		}
+		return []orderentity.Order{}, err
+	}
+	if len(orders) == 0 {
+		return orders, errors.New("Orders not found")
+	}
+	return orders, nil
+}
+
 func (s *OrderService) NewOrder(order orderentity.Order) (orderentity.Order, error) {
 	customer, err := s.customer.FindById(order.CustomerID)
 	if err != nil {
@@ -94,16 +108,19 @@ func (s *OrderService) NewOrder(order orderentity.Order) (orderentity.Order, err
 		if err != nil {
 			golog.Errorf("Cannot find product: %v", err)
 		}
-		productQty := product.Quantity.Int64
-		stockQty := productQty - int64(orderDetail.Quantity)
-		product.Quantity = sql.NullInt64{
-			Int64: stockQty,
-			Valid: true,
-		}
-		// update product stock
-		_, err = s.product.Update(product)
-		if err != nil {
-			golog.Errorf("Update Product Stock error: %v", err)
+		// Only update stock when the order is finished
+		if order.Status == orderentity.StatusFinish {
+			productQty := product.Quantity.Int64
+			stockQty := productQty - int64(orderDetail.Quantity)
+			product.Quantity = sql.NullInt64{
+				Int64: stockQty,
+				Valid: true,
+			}
+			// update product stock
+			_, err = s.product.Update(product)
+			if err != nil {
+				golog.Errorf("Update Product Stock error: %v", err)
+			}
 		}
 
 	}
@@ -112,6 +129,10 @@ func (s *OrderService) NewOrder(order orderentity.Order) (orderentity.Order, err
 
 func (s *OrderService) UpdateOrder(order orderentity.Order) (orderentity.Order, error) {
 	return s.order.Update(order)
+}
+
+func (s *OrderService) UpdateOrderStatus(order orderentity.Order) (orderentity.Order, error) {
+	return s.order.UpdateStatus(int64(order.ID), order.Status)
 }
 
 func (s *OrderService) DeleteOrder(id int64) (orderentity.Order, error) {

@@ -60,6 +60,7 @@ func (m *AuthMiddleware) CheckJWTToken(next http.HandlerFunc) http.HandlerFunc {
 		})
 		if err != nil {
 			response.RenderJSONError(w, http.StatusUnauthorized, err)
+			return
 		}
 		claims, ok := token.Claims.(*response.TokenData)
 		if !ok || !token.Valid {

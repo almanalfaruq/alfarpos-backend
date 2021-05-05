@@ -377,6 +377,21 @@ func (mr *MockorderServiceIfaceMockRecorder) GetOrderByUserId(userId interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrderByUserId", reflect.TypeOf((*MockorderServiceIface)(nil).GetOrderByUserId), userId)
 }
 
+// GetOrderUsingFilter mocks base method
+func (m *MockorderServiceIface) GetOrderUsingFilter(param order.GetOrderUsingFilterParam) ([]order.Order, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrderUsingFilter", param)
+	ret0, _ := ret[0].([]order.Order)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrderUsingFilter indicates an expected call of GetOrderUsingFilter
+func (mr *MockorderServiceIfaceMockRecorder) GetOrderUsingFilter(param interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrderUsingFilter", reflect.TypeOf((*MockorderServiceIface)(nil).GetOrderUsingFilter), param)
+}
+
 // NewOrder mocks base method
 func (m *MockorderServiceIface) NewOrder(orderData order.Order) (order.Order, error) {
 	m.ctrl.T.Helper()
@@ -597,18 +612,19 @@ func (m *MockproductServiceIface) EXPECT() *MockproductServiceIfaceMockRecorder 
 }
 
 // GetAllProduct mocks base method
-func (m *MockproductServiceIface) GetAllProduct() ([]model.Product, error) {
+func (m *MockproductServiceIface) GetAllProduct(limit, page int) ([]model.Product, bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllProduct")
+	ret := m.ctrl.Call(m, "GetAllProduct", limit, page)
 	ret0, _ := ret[0].([]model.Product)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetAllProduct indicates an expected call of GetAllProduct
-func (mr *MockproductServiceIfaceMockRecorder) GetAllProduct() *gomock.Call {
+func (mr *MockproductServiceIfaceMockRecorder) GetAllProduct(limit, page interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllProduct", reflect.TypeOf((*MockproductServiceIface)(nil).GetAllProduct))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllProduct", reflect.TypeOf((*MockproductServiceIface)(nil).GetAllProduct), limit, page)
 }
 
 // GetOneProduct mocks base method
@@ -657,18 +673,19 @@ func (mr *MockproductServiceIfaceMockRecorder) GetOneProductByCode(code interfac
 }
 
 // GetProductsBySearchQuery mocks base method
-func (m *MockproductServiceIface) GetProductsBySearchQuery(query string) ([]model.Product, error) {
+func (m *MockproductServiceIface) GetProductsBySearchQuery(query string, limit, page int) ([]model.Product, bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetProductsBySearchQuery", query)
+	ret := m.ctrl.Call(m, "GetProductsBySearchQuery", query, limit, page)
 	ret0, _ := ret[0].([]model.Product)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetProductsBySearchQuery indicates an expected call of GetProductsBySearchQuery
-func (mr *MockproductServiceIfaceMockRecorder) GetProductsBySearchQuery(query interface{}) *gomock.Call {
+func (mr *MockproductServiceIfaceMockRecorder) GetProductsBySearchQuery(query, limit, page interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsBySearchQuery", reflect.TypeOf((*MockproductServiceIface)(nil).GetProductsBySearchQuery), query)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsBySearchQuery", reflect.TypeOf((*MockproductServiceIface)(nil).GetProductsBySearchQuery), query, limit, page)
 }
 
 // GetProductsByCode mocks base method

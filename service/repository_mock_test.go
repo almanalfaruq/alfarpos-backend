@@ -403,6 +403,21 @@ func (mr *MockorderRepositoryIfaceMockRecorder) FindByUserId(userId interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByUserId", reflect.TypeOf((*MockorderRepositoryIface)(nil).FindByUserId), userId)
 }
 
+// FindByFilter mocks base method
+func (m *MockorderRepositoryIface) FindByFilter(status []int32, invoice, startDate, endDate, sort string) ([]order.Order, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByFilter", status, invoice, startDate, endDate, sort)
+	ret0, _ := ret[0].([]order.Order)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByFilter indicates an expected call of FindByFilter
+func (mr *MockorderRepositoryIfaceMockRecorder) FindByFilter(status, invoice, startDate, endDate, sort interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByFilter", reflect.TypeOf((*MockorderRepositoryIface)(nil).FindByFilter), status, invoice, startDate, endDate, sort)
+}
+
 // New mocks base method
 func (m *MockorderRepositoryIface) New(orderData order.Order) (order.Order, error) {
 	m.ctrl.T.Helper()
@@ -431,6 +446,21 @@ func (m *MockorderRepositoryIface) Update(orderData order.Order) (order.Order, e
 func (mr *MockorderRepositoryIfaceMockRecorder) Update(orderData interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockorderRepositoryIface)(nil).Update), orderData)
+}
+
+// UpdateStatus mocks base method
+func (m *MockorderRepositoryIface) UpdateStatus(orderID int64, status int32) (order.Order, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateStatus", orderID, status)
+	ret0, _ := ret[0].(order.Order)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateStatus indicates an expected call of UpdateStatus
+func (mr *MockorderRepositoryIfaceMockRecorder) UpdateStatus(orderID, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockorderRepositoryIface)(nil).UpdateStatus), orderID, status)
 }
 
 // Delete mocks base method

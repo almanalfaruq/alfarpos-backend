@@ -61,10 +61,20 @@ func GetAllRoutes(database *util.DBConn, config util.Config) *mux.Router {
 	orderController := InjectOrderController(database, config)
 	routesApi.HandleFunc("/orders", authMw.CheckJWTToken(orderController.GetAllOrderHandler)).Methods("GET")
 	routesApi.HandleFunc("/orders/id/{id}", authMw.CheckJWTToken(orderController.GetOrderByIDHandler)).Methods("GET")
-	routesApi.HandleFunc("/orders", orderController.NewOrderHandler).Methods("POST")
+	routesApi.HandleFunc("/orders/filters", authMw.CheckJWTToken(orderController.GetOrderUsingFilterHandler)).Methods("GET", "POST")
+	routesApi.HandleFunc("/orders", authMw.CheckJWTToken(orderController.NewOrderHandler)).Methods("POST")
+	routesApi.HandleFunc("/orders/status", authMw.CheckJWTToken(orderController.UpdateStatusHandler)).Methods("PUT")
 
 	printController := InjectPrintController(database, config)
 	routesApi.HandleFunc("/print/order/{invoice}", authMw.CheckJWTToken(printController.OrderByInvoiceToPdfHandler)).Methods("GET")
+
+	moneyController := InjectMoneyController(database, config)
+	routesApi.HandleFunc("/money", authMw.CheckJWTToken(moneyController.NewMoneyHandler)).Methods("POST")
+	routesApi.HandleFunc("/money/filters", authMw.CheckJWTToken(moneyController.GetMoneyTransactionWithFilterHandler)).Methods("GET", "POST")
+
+	profileController := InjectProfileController(database, config)
+	routesApi.HandleFunc("/profiles/{id}", authMw.CheckJWTToken(profileController.GetProfileByIDHandler)).Methods("GET")
+	routesApi.HandleFunc("/profiles", authMw.CheckJWTToken(profileController.UpdateHandler)).Methods("PUT")
 
 	routes.PathPrefix("/").Handler(http.FileServer(http.Dir("./public")))
 
