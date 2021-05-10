@@ -52,7 +52,7 @@ func (dbConn *DBConn) GetDb() *gorm.DB {
 }
 
 func (dbConn *DBConn) MigrateDb() {
-	err := dbConn.DB.AutoMigrate(&model.Category{}, &model.Customer{}, &model.OrderDetail{}, &orderentity.Order{}, &model.Payment{},
+	err := dbConn.DB.AutoMigrate(&model.Category{}, &model.Customer{}, &orderentity.Order{}, &model.OrderDetail{}, &model.Payment{},
 		&model.Product{}, &model.ProductPrice{}, &model.Stock{}, &model.Unit{}, &userentity.User{}, &transactionentity.Money{},
 		&profileentity.Profile{}, &statsentity.ShopStats{})
 	if err != nil {
@@ -61,7 +61,7 @@ func (dbConn *DBConn) MigrateDb() {
 }
 
 func (dbConn *DBConn) DropDb() {
-	dbConn.DB.Migrator().DropTable(&model.Category{}, &model.Customer{}, &model.OrderDetail{}, &orderentity.Order{}, &model.Payment{},
+	dbConn.DB.Migrator().DropTable(&model.Category{}, &model.Customer{}, &orderentity.Order{}, &model.OrderDetail{}, &model.Payment{},
 		&model.Product{}, &model.ProductPrice{}, &model.Stock{}, &model.Unit{}, &userentity.User{}, &transactionentity.Money{},
 		&profileentity.Profile{}, &statsentity.ShopStats{})
 }
