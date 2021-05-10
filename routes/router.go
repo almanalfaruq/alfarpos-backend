@@ -76,6 +76,9 @@ func GetAllRoutes(database *util.DBConn, config util.Config) *mux.Router {
 	routesApi.HandleFunc("/profiles/{id}", authMw.CheckJWTToken(profileController.GetProfileByIDHandler)).Methods("GET")
 	routesApi.HandleFunc("/profiles", authMw.CheckJWTToken(profileController.UpdateHandler)).Methods("PUT")
 
+	statsController := InjectStatsController(database, config)
+	routesApi.HandleFunc("/stats", authMw.CheckCORS(authMw.CheckJWTToken(statsController.GetShopStats))).Methods("GET", "OPTIONS")
+
 	routes.PathPrefix("/").Handler(http.FileServer(http.Dir("./public")))
 
 	return routes

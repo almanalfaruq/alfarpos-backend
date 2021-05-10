@@ -5,7 +5,9 @@ import (
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	orderentity "github.com/almanalfaruq/alfarpos-backend/model/order"
-	"github.com/almanalfaruq/alfarpos-backend/model/transaction"
+	profileentity "github.com/almanalfaruq/alfarpos-backend/model/profile"
+	statsentity "github.com/almanalfaruq/alfarpos-backend/model/stats"
+	transactionentity "github.com/almanalfaruq/alfarpos-backend/model/transaction"
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/kataras/golog"
 	"gorm.io/driver/postgres"
@@ -51,7 +53,8 @@ func (dbConn *DBConn) GetDb() *gorm.DB {
 
 func (dbConn *DBConn) MigrateDb() {
 	err := dbConn.DB.AutoMigrate(&model.Category{}, &model.Customer{}, &model.OrderDetail{}, &orderentity.Order{}, &model.Payment{},
-		&model.Product{}, &model.ProductPrice{}, &model.Stock{}, &model.Unit{}, &userentity.User{}, &transaction.Money{})
+		&model.Product{}, &model.ProductPrice{}, &model.Stock{}, &model.Unit{}, &userentity.User{}, &transactionentity.Money{},
+		&profileentity.Profile{}, &statsentity.ShopStats{})
 	if err != nil {
 		panic(err)
 	}
@@ -59,7 +62,8 @@ func (dbConn *DBConn) MigrateDb() {
 
 func (dbConn *DBConn) DropDb() {
 	dbConn.DB.Migrator().DropTable(&model.Category{}, &model.Customer{}, &model.OrderDetail{}, &orderentity.Order{}, &model.Payment{},
-		&model.Product{}, &model.ProductPrice{}, &model.Stock{}, &model.Unit{}, &userentity.User{}, &transaction.Money{})
+		&model.Product{}, &model.ProductPrice{}, &model.Stock{}, &model.Unit{}, &userentity.User{}, &transactionentity.Money{},
+		&profileentity.Profile{}, &statsentity.ShopStats{})
 }
 
 func (dbConn *DBConn) Close() {

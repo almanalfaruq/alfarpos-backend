@@ -32,7 +32,7 @@ func (r *MoneyRepo) GetMoneyTransactionByFilter(status []int32, startDate, endDa
 		for _, st := range status {
 			statuses = append(statuses, strconv.FormatInt(int64(st), 10))
 		}
-		whereClauses = append(whereClauses, fmt.Sprintf("money.status IN (%s)", strings.Join(statuses, ",")))
+		whereClauses = append(whereClauses, fmt.Sprintf("money.type IN (%s)", strings.Join(statuses, ",")))
 	}
 	if startDate != "" || endDate != "" {
 		if startDate == endDate {
