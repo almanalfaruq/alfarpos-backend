@@ -44,9 +44,11 @@ func main() {
 }
 
 func initMigration(shouldDropDB bool) {
-	err := config.Read("./config.yaml", &config)
-	if err != nil {
-		panic(err)
+	if err := config.Read("/etc/alfarpos/config.yaml", &config); err != nil {
+		err = config.Read("./config.yaml", &config)
+		if err != nil {
+			panic(err)
+		}
 	}
 	golog.Info("Connecting to database...")
 	databaseConnection.Open(config)
