@@ -3,12 +3,15 @@ package dependency_injection
 import (
 	"github.com/almanalfaruq/alfarpos-backend/controller"
 	profilectrl "github.com/almanalfaruq/alfarpos-backend/controller/profile"
+	statsctrl "github.com/almanalfaruq/alfarpos-backend/controller/stats"
 	transactionctrl "github.com/almanalfaruq/alfarpos-backend/controller/transaction"
 	"github.com/almanalfaruq/alfarpos-backend/repository"
 	profilerepo "github.com/almanalfaruq/alfarpos-backend/repository/profile"
+	statsrepo "github.com/almanalfaruq/alfarpos-backend/repository/stats"
 	transactionrepo "github.com/almanalfaruq/alfarpos-backend/repository/transaction"
 	"github.com/almanalfaruq/alfarpos-backend/service"
 	profilesvc "github.com/almanalfaruq/alfarpos-backend/service/profile"
+	statssvc "github.com/almanalfaruq/alfarpos-backend/service/stats"
 	transactionsvc "github.com/almanalfaruq/alfarpos-backend/service/transaction"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 )
@@ -80,4 +83,12 @@ func InjectProfileController(dbConn *util.DBConn, config util.Config) *profilect
 	profileRepo := profilerepo.NewProfile(dbConn)
 	profileService := profilesvc.NewProfile(profileRepo)
 	return profilectrl.NewProfile(profileService)
+}
+
+func InjectStatsController(dbConn *util.DBConn, config util.Config) *statsctrl.StatsController {
+	statsRepo := statsrepo.NewStats(dbConn)
+	orderRepo := repository.NewOrderRepo(dbConn)
+	moneyRepo := transactionrepo.NewMoney(dbConn)
+	statsService := statssvc.New(statsRepo, orderRepo, moneyRepo)
+	return statsctrl.New(statsService)
 }
