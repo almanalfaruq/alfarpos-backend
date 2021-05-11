@@ -46,7 +46,7 @@ func (service *ProductService) GetAllProduct(limit, page int) (products []model.
 	}
 	offset := (page - 1) * limit
 	limitPlusOne := limit + 1
-	products, err = service.product.FindAllWithLimit(limit, offset)
+	products, err = service.product.FindAllWithLimit(limitPlusOne, offset)
 	if err != nil {
 		return nil, false, err
 	}
@@ -309,7 +309,6 @@ func (s *ProductService) importProducts(ctx context.Context, products []model.Pr
 	errIndex := []string{}
 	productCounter := 0
 	for _, product := range products {
-		logger.Log.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", product.Name, product.Quantity.Int64, product.SellPrice.Int64, product.BuyPrice.Int64)
 		categories, err := s.category.FindByName(strings.ToLower(product.Category.Name))
 		var category model.Category
 		if err != nil || len(categories) == 0 {

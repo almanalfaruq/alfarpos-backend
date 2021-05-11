@@ -31,7 +31,7 @@ func (repo *ProductRepository) FindAllWithLimit(limit, offset int) ([]model.Prod
 	var products []model.Product
 	db := repo.db.GetDb()
 	return products, db.Preload(clause.Associations).
-		Find(&products).Limit(limit).Offset(offset).Error
+		Limit(limit).Offset(offset).Find(&products).Error
 }
 
 func (repo *ProductRepository) FindById(id int64) (model.Product, error) {

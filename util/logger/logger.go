@@ -10,8 +10,11 @@ import (
 var Log *golog.Logger
 
 func New(cfg *util.Config) (error, func()) {
+	Log = golog.New()
+
 	if cfg.Env == "dev" {
 		Log.SetLevel("debug")
+		return nil, func() {}
 	}
 	// use  debug.log and info.log files for the example.
 	debugFile, err := os.OpenFile(cfg.Log.PathDebug, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
@@ -23,8 +26,6 @@ func New(cfg *util.Config) (error, func()) {
 	if err != nil {
 		return err, func() {}
 	}
-
-	Log = golog.New()
 
 	Log.SetLevelOutput("info", infoFile)
 	Log.SetLevelOutput("debug", debugFile)
