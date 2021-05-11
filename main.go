@@ -37,7 +37,7 @@ func main() {
 	flag.BoolVar(&shouldDropDB, "drop", false, "flag to drop db")
 	flag.Parse()
 
-	err := logger.New(&config)
+	err, cleanup := logger.New(&config)
 	if err != nil {
 		panic(err)
 	}
@@ -46,6 +46,7 @@ func main() {
 	initRouter()
 
 	defer databaseConnection.Close()
+	defer cleanup()
 }
 
 func initMigration(shouldDropDB bool) {
