@@ -21,14 +21,14 @@ if [ ! -d "$LOGDIR" ]; then
   mkdir -p $LOGDIR
   chown $SUDO_USER:$SUDO_USER $LOGDIR
 fi
-DIRCONFIG = "/etc/alfarpos/"
-CONFIGFILE = "config.yaml"
+DIRCONFIG="/etc/alfarpos/"
+CONFIGFILE="config.yaml"
 echo "Copying config file. Don't forget to change the config in $DIRCONFIG$CONFIGFILE"
 if [ ! -d "$LOGDIR" ]; then
   echo "Log config didn't exist, creating the directory"
   mkdir -p $DIRCONFIG
 fi
-if [ -f $BINARY ]; then
+if [ -f $DIRCONFIG$CONFIGFILE ]; then
   echo "Found existing config file, will creating a backup"
   mv "$DIRCONFIG$CONFIGFILE" "$DIRCONFIG$CONFIGFILE.bk"
   echo "Backup created at $DIRCONFIG$CONFIGFILE.bk"

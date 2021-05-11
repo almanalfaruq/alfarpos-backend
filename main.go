@@ -37,6 +37,13 @@ func main() {
 	flag.BoolVar(&shouldDropDB, "drop", false, "flag to drop db")
 	flag.Parse()
 
+	if err := config.Read("/etc/alfarpos/config.yaml", &config); err != nil {
+		err = config.Read("./config.yaml", &config)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	err := logger.New(&config)
 	if err != nil {
 		panic(err)
@@ -49,12 +56,6 @@ func main() {
 }
 
 func initMigration(shouldDropDB bool) {
-	if err := config.Read("/etc/alfarpos/config.yaml", &config); err != nil {
-		err = config.Read("./config.yaml", &config)
-		if err != nil {
-			panic(err)
-		}
-	}
 	logger.Log.Info("Connecting to database...")
 	databaseConnection.Open(config)
 	logger.Log.Info("Logonnected!")
