@@ -44,7 +44,7 @@ func main() {
 		}
 	}
 
-	err := logger.New(&config)
+	err, cleanup := logger.New(&config)
 	if err != nil {
 		panic(err)
 	}
@@ -53,6 +53,7 @@ func main() {
 	initRouter()
 
 	defer databaseConnection.Close()
+	defer cleanup()
 }
 
 func initMigration(shouldDropDB bool) {
