@@ -11,9 +11,9 @@ import (
 	orderentity "github.com/almanalfaruq/alfarpos-backend/model/order"
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/almanalfaruq/alfarpos-backend/util"
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
 	"github.com/gorilla/mux"
-	"github.com/kataras/golog"
 )
 
 type OrderController struct {
@@ -59,7 +59,7 @@ func (c *OrderController) GetOrderUsingFilterHandler(w http.ResponseWriter, r *h
 	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	golog.Infof("%s - Order: GetOrderUsingFilterHandler (/orders/filter)", r.Method)
+	logger.Log.Infof("%s - Order: GetOrderUsingFilterHandler (/orders/filter)", r.Method)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
@@ -119,7 +119,7 @@ func (c *OrderController) NewOrderHandler(w http.ResponseWriter, r *http.Request
 	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	golog.Infof("%s - Order: NewOrderHandler (/orders)", r.Method)
+	logger.Log.Infof("%s - Order: NewOrderHandler (/orders)", r.Method)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
@@ -169,7 +169,7 @@ func (c *OrderController) GetOrderByIDHandler(w http.ResponseWriter, r *http.Req
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
-	golog.Infof("%s - Order: GetOrderByIDHandler (/orders/%d)", r.Method, id)
+	logger.Log.Infof("%s - Order: GetOrderByIDHandler (/orders/%d)", r.Method, id)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
@@ -197,7 +197,7 @@ func (c *OrderController) UpdateStatusHandler(w http.ResponseWriter, r *http.Req
 	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	golog.Infof("%s - Order: UpdateStatusHandler (/orders/status)", r.Method)
+	logger.Log.Infof("%s - Order: UpdateStatusHandler (/orders/status)", r.Method)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {

@@ -16,13 +16,23 @@ if [ ! -f $BINARY ]; then
 fi
 echo "Setting up alfarpos log dir"
 LOGDIR="/var/log/alfarpos/"
-if [ -d "$LOGDIR" ]; then
+if [ ! -d "$LOGDIR" ]; then
   echo "Log directory didn't exist, creating the directory"
   mkdir -p $LOGDIR
-  chown root:$SUDO_USER $LOGDIR
+  chown $SUDO_USER:$SUDO_USER $LOGDIR
 fi
-echo "Copying config file"
-mkdir -p "/etc/alfarpos/"
-cp "./files/etc/alfarpos/config.yaml" "/etc/alfarpos/"
-echo "Setting up service file"
+DIRCONFIG = "/etc/alfarpos/"
+CONFIGFILE = "config.yaml"
+echo "Copying config file. Don't forget to change the config in $DIRCONFIG$CONFIGFILE"
+if [ ! -d "$LOGDIR" ]; then
+  echo "Log config didn't exist, creating the directory"
+  mkdir -p $DIRCONFIG
+fi
+if [ -f $BINARY ]; then
+  echo "Found existing config file, will creating a backup"
+  mv "$DIRCONFIG$CONFIGFILE" "$DIRCONFIG$CONFIGFILE.bk"
+  echo "Backup created at $DIRCONFIG$CONFIGFILE.bk"
+fi
+cp "./files/etc/alfarpos/config.yaml" $DIRCONFIG
+echo "Setting up service file. You should start and enable it by yourself"
 cp "./files/etc/systemd/system/alfarpos.service" "/etc/systemd/system/"

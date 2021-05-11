@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/kataras/golog"
 	"golang.org/x/crypto/bcrypt"
 
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/almanalfaruq/alfarpos-backend/util"
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
 )
 
@@ -48,7 +48,7 @@ func (service *UserService) LoginUser(userData string) (userentity.UserResponse,
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(userFromDb.Password), []byte(user.Password))
 	if err != nil {
-		golog.Error(err)
+		logger.Log.Error(err)
 		return userentity.UserResponse{}, errors.New("Username or Password mismatch")
 	}
 	user = userFromDb

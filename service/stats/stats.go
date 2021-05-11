@@ -10,7 +10,7 @@ import (
 	orderentity "github.com/almanalfaruq/alfarpos-backend/model/order"
 	statsentity "github.com/almanalfaruq/alfarpos-backend/model/stats"
 	transactionentity "github.com/almanalfaruq/alfarpos-backend/model/transaction"
-	"github.com/kataras/golog"
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 )
 
 type StatsService struct {
@@ -43,7 +43,7 @@ func (s *StatsService) GetShopStats(ctx context.Context, date string) (statsenti
 		if err == nil {
 			return result, nil
 		}
-		golog.Errorf("[GetShopStats] GetByDate error: %v", err)
+		logger.Log.Errorf("[GetShopStats] GetByDate error: %v", err)
 	}
 
 	// get from each table order and transaction if shop_stats return no data
@@ -131,7 +131,7 @@ func (s *StatsService) GetShopStats(ctx context.Context, date string) (statsenti
 	if !isToday {
 		_, err = s.statsRepo.InsertShopStats(ctx, result)
 		if err != nil {
-			golog.Errorf("[GetShopStats] InsertShopStats error: %v", err)
+			logger.Log.Errorf("[GetShopStats] InsertShopStats error: %v", err)
 		}
 	}
 

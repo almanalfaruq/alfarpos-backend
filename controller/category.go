@@ -11,9 +11,9 @@ import (
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/almanalfaruq/alfarpos-backend/util"
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
 	"github.com/gorilla/mux"
-	"github.com/kataras/golog"
 )
 
 type CategoryController struct {
@@ -37,15 +37,15 @@ func (c *CategoryController) GetCategoriesHandler(w http.ResponseWriter, r *http
 	query := r.URL.Query().Get("query")
 
 	if query == "" {
-		golog.Info("GET - Category: GetAllCategoryHandler (/categories)")
+		logger.Log.Info("GET - Category: GetAllCategoryHandler (/categories)")
 		categories, err = c.category.GetAllCategory()
 		if err != nil {
-			golog.Error(err)
+			logger.Log.Error(err)
 			response.RenderJSONError(w, http.StatusInternalServerError, err)
 			return
 		}
 	} else {
-		golog.Infof("GET - Product: GetCategoriesByNameHandler (/categories?query=%s)", query)
+		logger.Log.Infof("GET - Product: GetCategoriesByNameHandler (/categories?query=%s)", query)
 		categories, err = c.category.GetCategoriesByName(query)
 		if err != nil {
 			response.RenderJSONError(w, http.StatusNotFound, err)
@@ -63,7 +63,7 @@ func (c *CategoryController) GetCategoryByIdHandler(w http.ResponseWriter, r *ht
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
-	golog.Infof("GET - Product: GetCategoryByIdHandler (/categories/id/%v)", id)
+	logger.Log.Infof("GET - Product: GetCategoryByIdHandler (/categories/id/%v)", id)
 	category, err := c.category.GetOneCategory(id)
 	if err != nil {
 		response.RenderJSONError(w, http.StatusNotFound, err)
@@ -79,7 +79,7 @@ func (c *CategoryController) NewCategoryHandler(w http.ResponseWriter, r *http.R
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	golog.Info("POST - Category: NewCategoryHandler (/categories)")
+	logger.Log.Info("POST - Category: NewCategoryHandler (/categories)")
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
@@ -123,7 +123,7 @@ func (c *CategoryController) UpdateCategoryHandler(w http.ResponseWriter, r *htt
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
-	golog.Infof("PUT - Category: UpdateCategoryHandler (/categories/%v)", id)
+	logger.Log.Infof("PUT - Category: UpdateCategoryHandler (/categories/%v)", id)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
@@ -168,7 +168,7 @@ func (c *CategoryController) DeleteCategoryHandler(w http.ResponseWriter, r *htt
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
-	golog.Infof("DELETE - Category: DeleteCategoryHandler (/categories/%v)", id)
+	logger.Log.Infof("DELETE - Category: DeleteCategoryHandler (/categories/%v)", id)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {

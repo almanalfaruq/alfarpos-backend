@@ -10,9 +10,9 @@ import (
 
 	profileentity "github.com/almanalfaruq/alfarpos-backend/model/profile"
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
 	"github.com/gorilla/mux"
-	"github.com/kataras/golog"
 )
 
 type ProfileController struct {
@@ -31,7 +31,7 @@ func (c *ProfileController) GetProfileByIDHandler(w http.ResponseWriter, r *http
 
 	vars := mux.Vars(r)
 	id, err := strconv.ParseInt(vars["id"], 10, 64)
-	golog.Infof("%s - Profile: GetProfileByIDHandler (/profiles/%d)", r.Method, id)
+	logger.Log.Infof("%s - Profile: GetProfileByIDHandler (/profiles/%d)", r.Method, id)
 	if err != nil {
 		response.RenderJSONError(w, http.StatusBadRequest, err)
 		return
@@ -63,7 +63,7 @@ func (c *ProfileController) UpdateHandler(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	golog.Infof("%s - Profile: UpdateHandler (/profiles)", r.Method)
+	logger.Log.Infof("%s - Profile: UpdateHandler (/profiles)", r.Method)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
@@ -111,7 +111,7 @@ func (c *ProfileController) GetShopProfileHandler(w http.ResponseWriter, r *http
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	golog.Infof("%s - Profile: GetShopProfileHandler (/profile/shop/)", r.Method)
+	logger.Log.Infof("%s - Profile: GetShopProfileHandler (/profile/shop/)", r.Method)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {

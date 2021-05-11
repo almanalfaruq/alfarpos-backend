@@ -10,9 +10,9 @@ import (
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/almanalfaruq/alfarpos-backend/util"
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
 	"github.com/gorilla/mux"
-	"github.com/kataras/golog"
 )
 
 type UnitController struct {
@@ -36,14 +36,14 @@ func (c *UnitController) GetUnitsHandler(w http.ResponseWriter, r *http.Request)
 	query := r.URL.Query().Get("query")
 
 	if query == "" {
-		golog.Info("GET - Unit: GetAllUnitHandler (/units)")
+		logger.Log.Info("GET - Unit: GetAllUnitHandler (/units)")
 		units, err = c.unit.GetAllUnit()
 		if err != nil {
 			response.RenderJSONError(w, http.StatusInternalServerError, err)
 			return
 		}
 	} else {
-		golog.Infof("GET - Product: GetUnitsByNameHandler (/units?query=%s)", query)
+		logger.Log.Infof("GET - Product: GetUnitsByNameHandler (/units?query=%s)", query)
 		units, err = c.unit.GetUnitsByName(query)
 		if err != nil {
 			response.RenderJSONError(w, http.StatusNotFound, err)
@@ -60,7 +60,7 @@ func (c *UnitController) GetUnitByIdHandler(w http.ResponseWriter, r *http.Reque
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
-	golog.Infof("GET - Product: GetUnitByIdHandler (/units/id/%d)", id)
+	logger.Log.Infof("GET - Product: GetUnitByIdHandler (/units/id/%d)", id)
 	unit, err := c.unit.GetOneUnit(id)
 	if err != nil {
 		response.RenderJSONError(w, http.StatusNotFound, err)
@@ -75,7 +75,7 @@ func (c *UnitController) NewUnitHandler(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	golog.Info("POST - Unit: NewUnitHandler (/units)")
+	logger.Log.Info("POST - Unit: NewUnitHandler (/units)")
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
@@ -113,7 +113,7 @@ func (c *UnitController) UpdateUnitHandler(w http.ResponseWriter, r *http.Reques
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
-	golog.Infof("PUT - Unit: UpdateUnitHandler (/units/%d)", id)
+	logger.Log.Infof("PUT - Unit: UpdateUnitHandler (/units/%d)", id)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
@@ -151,7 +151,7 @@ func (c *UnitController) DeleteUnitHandler(w http.ResponseWriter, r *http.Reques
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
-	golog.Infof("DELETE - Unit: DeleteUnitHandler (/units/%d)", id)
+	logger.Log.Infof("DELETE - Unit: DeleteUnitHandler (/units/%d)", id)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {

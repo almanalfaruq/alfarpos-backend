@@ -14,8 +14,8 @@ import (
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/almanalfaruq/alfarpos-backend/util"
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
-	"github.com/kataras/golog"
 )
 
 type ProductController struct {
@@ -56,14 +56,14 @@ func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Re
 	page, _ := strconv.ParseInt(r.URL.Query().Get("page"), 10, 64)
 
 	if query == "" {
-		golog.Info("GET - Product: GetProductsHandler (/products)")
+		logger.Log.Info("GET - Product: GetProductsHandler (/products)")
 		products, hasNext, err = c.product.GetAllProduct(int(limit), int(page))
 		if err != nil {
 			response.RenderJSONError(w, http.StatusInternalServerError, err)
 			return
 		}
 	} else {
-		golog.Infof("GET - Product: GetProductsByNameHandler (/products?searchBy=%s&query=%s&limit=%d&page=%d)", searchBy, query, limit, page)
+		logger.Log.Infof("GET - Product: GetProductsByNameHandler (/products?searchBy=%s&query=%s&limit=%d&page=%d)", searchBy, query, limit, page)
 		if searchBy == "" {
 			products, hasNext, err = c.product.GetProductsBySearchQuery(query, int(limit), int(page))
 			if err != nil {
@@ -111,7 +111,7 @@ func (c *ProductController) GetProductByIdHandler(w http.ResponseWriter, r *http
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
-	golog.Infof("GET - Product: GetProductByIdHandler (/products/id/%d)", id)
+	logger.Log.Infof("GET - Product: GetProductByIdHandler (/products/id/%d)", id)
 	product, err := c.product.GetOneProduct(id)
 	if err != nil {
 		response.RenderJSONError(w, http.StatusNotFound, err)
@@ -138,7 +138,7 @@ func (c *ProductController) GetProductsByIDsHandler(w http.ResponseWriter, r *ht
 	vars := mux.Vars(r)
 	ids := vars["ids"]
 	splitIDs := strings.Split(ids, ",")
-	golog.Infof("GET - Product: GetProductsByIDsHandler (/products/ids/%s)", ids)
+	logger.Log.Infof("GET - Product: GetProductsByIDsHandler (/products/ids/%s)", ids)
 	var intIDs []int64
 	for _, id := range splitIDs {
 		intID, err := strconv.ParseInt(id, 10, 64)
@@ -172,7 +172,7 @@ func (c *ProductController) GetProductByCodeHandler(w http.ResponseWriter, r *ht
 
 	vars := mux.Vars(r)
 	code := vars["code"]
-	golog.Infof("GET - Product: GetProductByCodeHandler (/products/code/%s)", code)
+	logger.Log.Infof("GET - Product: GetProductByCodeHandler (/products/code/%s)", code)
 	product, err := c.product.GetOneProductByCode(code)
 	if err != nil {
 		response.RenderJSONError(w, http.StatusNotFound, err)
@@ -187,7 +187,7 @@ func (c *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Req
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	golog.Info("POST - Product: NewProductHandler (/products)")
+	logger.Log.Info("POST - Product: NewProductHandler (/products)")
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
@@ -255,7 +255,7 @@ func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *
 
 	vars := mux.Vars(r)
 	sheetName := vars["sheetName"]
-	golog.Infof("POST - Product: UploadExcelProductHandler (/products/upload_excel/%s)", sheetName)
+	logger.Log.Infof("POST - Product: UploadExcelProductHandler (/products/upload_excel/%s)", sheetName)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
@@ -302,7 +302,7 @@ func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
-	golog.Infof("PUT - Product: UpdateProductHandler (/products/%d)", id)
+	logger.Log.Infof("PUT - Product: UpdateProductHandler (/products/%d)", id)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
@@ -340,7 +340,7 @@ func (c *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
-	golog.Infof("DELETE - Product: DeleteProductHandler (/products/%d)", id)
+	logger.Log.Infof("DELETE - Product: DeleteProductHandler (/products/%d)", id)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
@@ -358,7 +358,7 @@ func (c *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.
 	product, err := c.product.DeleteProduct(id)
 	if err != nil {
 		response.RenderJSONError(w, http.StatusBadRequest, err)
-		golog.Error(err)
+		logger.Log.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -9,8 +9,8 @@ import (
 
 	transactionentity "github.com/almanalfaruq/alfarpos-backend/model/transaction"
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
-	"github.com/kataras/golog"
 )
 
 type MoneyController struct {
@@ -38,7 +38,7 @@ func (c *MoneyController) NewMoneyHandler(w http.ResponseWriter, r *http.Request
 	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	golog.Infof("%s - Money: NewMoneyHandler (/money)", r.Method)
+	logger.Log.Infof("%s - Money: NewMoneyHandler (/money)", r.Method)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
@@ -91,7 +91,7 @@ func (c *MoneyController) GetMoneyTransactionWithFilterHandler(w http.ResponseWr
 	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	golog.Infof("%s - Money: GetMoneyTransactionWithFilterHandler (/money/filters)", r.Method)
+	logger.Log.Infof("%s - Money: GetMoneyTransactionWithFilterHandler (/money/filters)", r.Method)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {

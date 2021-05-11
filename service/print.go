@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/almanalfaruq/alfarpos-backend/util"
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 	"github.com/dustin/go-humanize"
-	"github.com/kataras/golog"
 
 	"github.com/jung-kurt/gofpdf"
 )
@@ -27,7 +27,7 @@ func (service *PrintService) OrderByInvoiceToPdf(invoice string) (*gofpdf.Fpdf, 
 	invoice = strings.ToLower(invoice)
 	order, err := service.order.FindByInvoice(invoice)
 	if err != nil {
-		golog.Error(err)
+		logger.Log.Error(err)
 		return nil, err
 	}
 

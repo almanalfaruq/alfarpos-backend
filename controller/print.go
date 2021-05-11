@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
-	"github.com/kataras/golog"
 
 	"github.com/gorilla/mux"
 )
@@ -33,7 +33,7 @@ func (c *PrintController) OrderByInvoiceToPdfHandler(w http.ResponseWriter, r *h
 	buffer := new(bytes.Buffer)
 	vars := mux.Vars(r)
 	invoice := vars["invoice"]
-	golog.Infof("GET - Printer: OrderByInvoiceToPdfHandler (/print/order/%s)", invoice)
+	logger.Log.Infof("GET - Printer: OrderByInvoiceToPdfHandler (/print/order/%s)", invoice)
 	textAttachment := fmt.Sprintf("attachment; filename=\"%s.pdf\";", invoice)
 
 	pdf, err := c.print.OrderByInvoiceToPdf(invoice)

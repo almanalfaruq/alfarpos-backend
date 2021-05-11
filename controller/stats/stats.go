@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
-	"github.com/kataras/golog"
 )
 
 type StatsController struct {
@@ -24,7 +24,7 @@ func (c *StatsController) GetShopStats(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	golog.Infof("%s - Stats: GetShopStats (/stats)", r.Method)
+	logger.Log.Infof("%s - Stats: GetShopStats (/stats)", r.Method)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {

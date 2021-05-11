@@ -11,12 +11,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kataras/golog"
 	"github.com/lib/pq"
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 )
 
 type ProductService struct {
@@ -205,7 +205,7 @@ func (service *ProductService) NewProduct(productData string) (model.Product, er
 	// }
 	// _, err = service.stock.New(stock)
 	// if err != nil {
-	// 	golog.Errorf("Error new product stock: %v", err)
+	// 	logger.Log.Errorf("Error new product stock: %v", err)
 	// }
 	return product, nil
 }
@@ -254,7 +254,7 @@ func (s *ProductService) ExportAllProductsToExcel() (*excelize.File, error) {
 }
 
 func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Reader) (int, error) {
-	golog.Info("Starting excel import...")
+	logger.Log.Info("Starting excel import...")
 	excel, err := excelize.OpenReader(excelFile)
 	if err != nil {
 		return 0, err
@@ -274,7 +274,7 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 	go func() {
 		_, errIndex = s.importProducts(ctx, products)
 		if len(errIndex) == len(products) {
-			golog.Error("The products are not imported")
+			logger.Log.Error("The products are not imported")
 			cancel()
 		}
 		allProducts, err := s.product.FindAll()
@@ -282,7 +282,7 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 			cancel()
 		}
 
-		golog.Info("Starting to compile the products")
+		logger.Log.Info("Starting to compile the products")
 		for _, product := range allProducts {
 			var relatedIDs []int64
 			relatedProducts, err := s.product.GetMultipleProductByExactCode(product.Code.String)
@@ -297,10 +297,10 @@ func (s *ProductService) NewProductUsingExcel(sheetName string, excelFile io.Rea
 			product.RelatedProducts = pq.Int64Array(relatedIDs)
 			_, err = s.product.Update(product)
 			if err != nil {
-				golog.Errorf("Cannot update product; id: %d, err: %v", product.ID, err)
+				logger.Log.Errorf("Cannot update product; id: %d, err: %v", product.ID, err)
 			}
 		}
-		golog.Info("Compiling product finished")
+		logger.Log.Info("Compiling product finished")
 	}()
 	return len(products), nil
 }
@@ -309,7 +309,7 @@ func (s *ProductService) importProducts(ctx context.Context, products []model.Pr
 	errIndex := []string{}
 	productCounter := 0
 	for _, product := range products {
-		golog.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", product.Name, product.Quantity.Int64, product.SellPrice.Int64, product.BuyPrice.Int64)
+		logger.Log.Infof("Product Name: %s\nQuantity: %d\nSell Price: %d\nBuy Price: %d\n\n", product.Name, product.Quantity.Int64, product.SellPrice.Int64, product.BuyPrice.Int64)
 		categories, err := s.category.FindByName(strings.ToLower(product.Category.Name))
 		var category model.Category
 		if err != nil || len(categories) == 0 {
@@ -347,11 +347,11 @@ func (s *ProductService) importProducts(ctx context.Context, products []model.Pr
 	}
 	if productCounter != len(products) {
 		warnText := fmt.Sprintf("There are %v rows, but only %v products were created.", len(products), productCounter)
-		golog.Warn(warnText)
+		logger.Log.Warn(warnText)
 		warnText = fmt.Sprintf("These are the name of products of unimported rows: %s", strings.Join(errIndex, ", "))
-		golog.Warn(warnText)
+		logger.Log.Warn(warnText)
 	}
-	golog.Infof("%v products imported!", productCounter)
+	logger.Log.Infof("%v products imported!", productCounter)
 	return productCounter, errIndex
 }
 

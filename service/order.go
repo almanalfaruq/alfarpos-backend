@@ -9,7 +9,7 @@ import (
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	orderentity "github.com/almanalfaruq/alfarpos-backend/model/order"
-	"github.com/kataras/golog"
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 )
 
 type OrderService struct {
@@ -106,7 +106,7 @@ func (s *OrderService) NewOrder(order orderentity.Order) (orderentity.Order, err
 	for _, orderDetail := range order.OrderDetails {
 		product, err := s.product.FindById(orderDetail.ProductOrder.ProductID)
 		if err != nil {
-			golog.Errorf("Cannot find product: %v", err)
+			logger.Log.Errorf("Cannot find product: %v", err)
 		}
 		// Only update stock when the order is finished
 		if order.Status == orderentity.StatusFinish {
@@ -119,7 +119,7 @@ func (s *OrderService) NewOrder(order orderentity.Order) (orderentity.Order, err
 			// update product stock
 			_, err = s.product.Update(product)
 			if err != nil {
-				golog.Errorf("Update Product Stock error: %v", err)
+				logger.Log.Errorf("Update Product Stock error: %v", err)
 			}
 		}
 

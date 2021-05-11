@@ -10,9 +10,9 @@ import (
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/almanalfaruq/alfarpos-backend/util"
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
 	"github.com/gorilla/mux"
-	"github.com/kataras/golog"
 )
 
 type PaymentController struct {
@@ -36,14 +36,14 @@ func (c *PaymentController) GetPaymentsHandler(w http.ResponseWriter, r *http.Re
 	query := r.URL.Query().Get("query")
 
 	if query == "" {
-		golog.Info("GET - Payment: GetAllPaymentHandler (/payments)")
+		logger.Log.Info("GET - Payment: GetAllPaymentHandler (/payments)")
 		payments, err = c.payment.GetAllPayment()
 		if err != nil {
 			response.RenderJSONError(w, http.StatusInternalServerError, err)
 			return
 		}
 	} else {
-		golog.Infof("GET - Product: GetPaymentsByNameHandler (/payments?query=%s)", query)
+		logger.Log.Infof("GET - Product: GetPaymentsByNameHandler (/payments?query=%s)", query)
 		payments, err = c.payment.GetPaymentsByName(query)
 		if err != nil {
 			response.RenderJSONError(w, http.StatusNotFound, err)
@@ -61,7 +61,7 @@ func (c *PaymentController) GetPaymentByIdHandler(w http.ResponseWriter, r *http
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
 
-	golog.Infof("GET - Product: GetPaymentByIdHandler (/payments/id/%d)", id)
+	logger.Log.Infof("GET - Product: GetPaymentByIdHandler (/payments/id/%d)", id)
 	payment, err := c.payment.GetOnePayment(id)
 	if err != nil {
 		response.RenderJSONError(w, http.StatusNotFound, err)
@@ -77,7 +77,7 @@ func (c *PaymentController) NewPaymentHandler(w http.ResponseWriter, r *http.Req
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	golog.Info("POST - Payment: NewPaymentHandler (/payments)")
+	logger.Log.Info("POST - Payment: NewPaymentHandler (/payments)")
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
@@ -115,7 +115,7 @@ func (c *PaymentController) UpdatePaymentHandler(w http.ResponseWriter, r *http.
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 32)
-	golog.Infof("PUT - Payment: UpdatePaymentHandler (/payments/%v)", id)
+	logger.Log.Infof("PUT - Payment: UpdatePaymentHandler (/payments/%v)", id)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
@@ -153,7 +153,7 @@ func (c *PaymentController) DeletePaymentHandler(w http.ResponseWriter, r *http.
 
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 10, 64)
-	golog.Infof("DELETE - Payment: DeletePaymentHandler (/payments/%d)", id)
+	logger.Log.Infof("DELETE - Payment: DeletePaymentHandler (/payments/%d)", id)
 
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {

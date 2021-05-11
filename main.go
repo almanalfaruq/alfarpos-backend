@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"net/http"
-	"os"
 
 	"github.com/rs/cors"
 
@@ -13,9 +12,9 @@ import (
 	profilerepo "github.com/almanalfaruq/alfarpos-backend/repository/profile"
 	"github.com/almanalfaruq/alfarpos-backend/routes"
 	"github.com/almanalfaruq/alfarpos-backend/util"
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 
 	_ "github.com/almanalfaruq/alfarpos-backend/docs"
-	"github.com/kataras/golog"
 )
 
 var config util.Config
@@ -38,6 +37,11 @@ func main() {
 	flag.BoolVar(&shouldDropDB, "drop", false, "flag to drop db")
 	flag.Parse()
 
+	err := logger.New(&config)
+	if err != nil {
+		panic(err)
+	}
+
 	initMigration(shouldDropDB)
 	initRouter()
 
@@ -51,45 +55,26 @@ func initMigration(shouldDropDB bool) {
 			panic(err)
 		}
 	}
-	if config.Env == "dev" {
-		golog.SetLevel("debug")
-	} else {
-		// use  debug.log and info.log files for the example.
-		debugFile, err := os.OpenFile(config.Log.PathDebug, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-		if err != nil {
-			panic(err)
-		}
-		defer debugFile.Close()
-
-		infoFile, err := os.OpenFile(config.Log.PathInfo, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-		if err != nil {
-			panic(err)
-		}
-		defer infoFile.Close()
-
-		golog.SetLevelOutput("info", infoFile)
-		golog.SetLevelOutput("debug", debugFile)
-	}
-	golog.Info("Connecting to database...")
+	logger.Log.Info("Connecting to database...")
 	databaseConnection.Open(config)
-	golog.Info("Connected!")
+	logger.Log.Info("Logonnected!")
 	// Database Drop
 	if shouldDropDB {
-		golog.Warn("Dropping database...")
+		logger.Log.Warn("Dropping database...")
 		databaseConnection.DropDb()
-		golog.Info("Dropped!")
+		logger.Log.Info("Dropped!")
 	}
 
 	// Database Migration
-	golog.Warn("Migrating database...")
+	logger.Log.Warn("Migrating database...")
 	databaseConnection.MigrateDb()
-	golog.Info("Migrated!")
+	logger.Log.Info("Migrated!")
 
 	// Populate data for payment and customer
 	if shouldDropDB {
-		golog.Info("Populating first data for payment and customer...")
+		logger.Log.Info("Populating first data for payment and customer...")
 		populateFirstData()
-		golog.Info("Done populating data")
+		logger.Log.Info("Done populating data")
 	}
 }
 
@@ -103,10 +88,10 @@ func initRouter() {
 		AllowedHeaders:     []string{"Content-Type", "Bearer", "Bearer ", "content-type", "Origin", "Accept"},
 		OptionsPassthrough: true,
 	}).Handler(routes)
-	golog.Info("Server listening at http://localhost:8000")
+	logger.Log.Info("Server listening at http://localhost:8000")
 	err := http.ListenAndServe(":8000", handler)
 	if err != nil {
-		golog.Fatal(err)
+		logger.Log.Fatal(err)
 		panic(err)
 	}
 }

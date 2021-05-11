@@ -4,8 +4,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
-	"github.com/kataras/golog"
 )
 
 type UserController struct {
@@ -32,7 +32,7 @@ func (c *UserController) RegisterHandler(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	golog.Info("POST - User: RegisterHandler (/users/register)")
+	logger.Log.Info("POST - User: RegisterHandler (/users/register)")
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -63,7 +63,7 @@ func (c *UserController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	golog.Info("POST - User: LoginHandler (/users/login)")
+	logger.Log.Info("POST - User: LoginHandler (/users/login)")
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
