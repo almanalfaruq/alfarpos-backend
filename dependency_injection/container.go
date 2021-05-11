@@ -81,7 +81,7 @@ func InjectMoneyController(dbConn *util.DBConn, config util.Config) *transaction
 
 func InjectProfileController(dbConn *util.DBConn, config util.Config) *profilectrl.ProfileController {
 	profileRepo := profilerepo.NewProfile(dbConn)
-	profileService := profilesvc.NewProfile(profileRepo)
+	profileService := profilesvc.NewProfile(&config, profileRepo)
 	return profilectrl.NewProfile(profileService)
 }
 

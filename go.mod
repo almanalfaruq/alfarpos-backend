@@ -13,7 +13,7 @@ require (
 	github.com/golang/mock v1.4.3
 	github.com/gorilla/mux v1.7.4
 	github.com/jung-kurt/gofpdf v1.16.2
-	github.com/kataras/golog v0.0.13
+	github.com/kataras/golog v0.1.7
 	github.com/lib/pq v1.3.0
 	github.com/mailru/easyjson v0.7.1 // indirect
 	github.com/rs/cors v1.7.0
@@ -21,6 +21,7 @@ require (
 	github.com/swaggo/http-swagger v0.0.0-20200308142732-58ac5e232fba
 	github.com/swaggo/swag v1.6.9
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/sys v0.0.0-20210510120138-977fb7262007 // indirect
 	gopkg.in/yaml.v2 v2.2.8
 	gorm.io/driver/postgres v1.0.5
 	gorm.io/gorm v1.20.7

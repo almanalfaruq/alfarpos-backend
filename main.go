@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"net/http"
+	"os"
 
 	"github.com/rs/cors"
 
@@ -49,6 +50,25 @@ func initMigration(shouldDropDB bool) {
 		if err != nil {
 			panic(err)
 		}
+	}
+	if config.Env == "dev" {
+		golog.SetLevel("debug")
+	} else {
+		// use  debug.log and info.log files for the example.
+		debugFile, err := os.OpenFile(config.Log.PathDebug, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err != nil {
+			panic(err)
+		}
+		defer debugFile.Close()
+
+		infoFile, err := os.OpenFile(config.Log.PathInfo, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err != nil {
+			panic(err)
+		}
+		defer infoFile.Close()
+
+		golog.SetLevelOutput("info", infoFile)
+		golog.SetLevelOutput("debug", debugFile)
 	}
 	golog.Info("Connecting to database...")
 	databaseConnection.Open(config)

@@ -74,6 +74,7 @@ func GetAllRoutes(database *util.DBConn, config util.Config) *mux.Router {
 
 	profileController := InjectProfileController(database, config)
 	routesApi.HandleFunc("/profiles/{id}", authMw.CheckJWTToken(profileController.GetProfileByIDHandler)).Methods("GET")
+	routesApi.HandleFunc("/profile/shop/", authMw.CheckJWTToken(profileController.GetShopProfileHandler)).Methods("GET")
 	routesApi.HandleFunc("/profiles", authMw.CheckJWTToken(profileController.UpdateHandler)).Methods("PUT")
 
 	statsController := InjectStatsController(database, config)

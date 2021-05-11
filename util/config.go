@@ -11,6 +11,7 @@ type Config struct {
 	SecretKey   string      `yaml:"secret-key"`
 	Database    Database    `yaml:"database"`
 	ShopProfile ShopProfile `yaml:"shop-profile"`
+	Log         Log         `yaml:"log"`
 }
 
 type Database struct {
@@ -23,11 +24,18 @@ type Database struct {
 }
 
 type ShopProfile struct {
-	Name        string `yaml:"name"`
-	Description string `yaml:"description"`
-	Address     string `yaml:"address"`
-	Phone       string `yaml:"phone"`
-	NPWP        string `yaml:"npwp"`
+	Name            string `yaml:"name"`
+	Description     string `yaml:"description"`
+	Address         string `yaml:"address"`
+	Phone           string `yaml:"phone"`
+	NPWP            string `yaml:"npwp"`
+	ThankyouMessage string `yaml:"thankyou_message"`
+	FootNote        string `yaml:"foot_note"`
+}
+
+type Log struct {
+	PathInfo  string `yaml:"path_info"`
+	PathDebug string `yaml:"path_debug"`
 }
 
 type IConfig interface {

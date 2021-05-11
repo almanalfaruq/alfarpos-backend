@@ -106,3 +106,26 @@ func (c *ProfileController) UpdateHandler(w http.ResponseWriter, r *http.Request
 
 	response.RenderJSONSuccess(w, http.StatusOK, profile, "Success updating profile")
 }
+
+func (c *ProfileController) GetShopProfileHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	golog.Infof("%s - Profile: GetShopProfileHandler (/profile/shop/)", r.Method)
+
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
+	if !ok {
+		err := errors.New("Cannot parse user context")
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if user.ID < 1 {
+		err := fmt.Errorf("User must logged in!")
+		response.RenderJSONError(w, http.StatusForbidden, err)
+		return
+	}
+
+	profile := c.profileService.GetShopProfile()
+	response.RenderJSONSuccess(w, http.StatusOK, profile, "Success getting shop profile")
+}

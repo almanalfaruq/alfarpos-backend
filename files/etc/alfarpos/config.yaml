@@ -1,4 +1,4 @@
-env: dev
+env: production
 secret-key: secret
 database:
   host: localhost
