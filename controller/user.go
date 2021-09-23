@@ -36,12 +36,14 @@ func (c *UserController) RegisterHandler(w http.ResponseWriter, r *http.Request)
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	user, err := c.user.NewUser(string(body))
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusUnprocessableEntity, err)
 		return
 	}
@@ -67,12 +69,14 @@ func (c *UserController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	data, err := c.user.LoginUser(string(body))
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusUnauthorized, err)
 		return
 	}

@@ -39,6 +39,7 @@ func (c *PaymentController) GetPaymentsHandler(w http.ResponseWriter, r *http.Re
 		logger.Log.Info("GET - Payment: GetAllPaymentHandler (/payments)")
 		payments, err = c.payment.GetAllPayment()
 		if err != nil {
+			logger.Log.Debug(err)
 			response.RenderJSONError(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -46,6 +47,7 @@ func (c *PaymentController) GetPaymentsHandler(w http.ResponseWriter, r *http.Re
 		logger.Log.Infof("GET - Product: GetPaymentsByNameHandler (/payments?query=%s)", query)
 		payments, err = c.payment.GetPaymentsByName(query)
 		if err != nil {
+			logger.Log.Debug(err)
 			response.RenderJSONError(w, http.StatusNotFound, err)
 			return
 		}
@@ -64,6 +66,7 @@ func (c *PaymentController) GetPaymentByIdHandler(w http.ResponseWriter, r *http
 	logger.Log.Infof("GET - Product: GetPaymentByIdHandler (/payments/id/%d)", id)
 	payment, err := c.payment.GetOnePayment(id)
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusNotFound, err)
 		return
 	}

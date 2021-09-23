@@ -36,6 +36,7 @@ func (c *OrderController) GetAllOrderHandler(w http.ResponseWriter, r *http.Requ
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -48,6 +49,7 @@ func (c *OrderController) GetAllOrderHandler(w http.ResponseWriter, r *http.Requ
 
 	orders, err := c.order.GetAllOrder()
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -64,12 +66,14 @@ func (c *OrderController) GetOrderUsingFilterHandler(w http.ResponseWriter, r *h
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if user.ID < 1 {
 		err := errors.New("User not found")
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusForbidden, err)
 		return
 	}
@@ -84,11 +88,13 @@ func (c *OrderController) GetOrderUsingFilterHandler(w http.ResponseWriter, r *h
 	var param orderentity.GetOrderUsingFilterParam
 	err = json.Unmarshal(body, &param)
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if param.Sort != "" && (param.Sort != orderentity.SortAsc && param.Sort != orderentity.SortDesc) {
+		logger.Log.Debug(err)
 		err = errors.New("Unsupported sort param")
 		response.RenderJSONError(w, http.StatusBadRequest, err)
 		return
@@ -96,6 +102,7 @@ func (c *OrderController) GetOrderUsingFilterHandler(w http.ResponseWriter, r *h
 
 	orders, err := c.order.GetOrderUsingFilter(param)
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -124,12 +131,14 @@ func (c *OrderController) NewOrderHandler(w http.ResponseWriter, r *http.Request
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if user.ID == 0 {
 		err := fmt.Errorf("User must logged in!")
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusForbidden, err)
 		return
 	}
@@ -137,6 +146,7 @@ func (c *OrderController) NewOrderHandler(w http.ResponseWriter, r *http.Request
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -144,12 +154,14 @@ func (c *OrderController) NewOrderHandler(w http.ResponseWriter, r *http.Request
 	var data orderentity.Order
 	err = json.Unmarshal(body, &data)
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	order, err := c.order.NewOrder(data)
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -174,18 +186,21 @@ func (c *OrderController) GetOrderByIDHandler(w http.ResponseWriter, r *http.Req
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		err := errors.New("User must be Admin or Manager")
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusForbidden, err)
 		return
 	}
 
 	orders, err := c.order.GetOneOrder(id)
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -202,12 +217,14 @@ func (c *OrderController) UpdateStatusHandler(w http.ResponseWriter, r *http.Req
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if user.ID < 1 {
 		err := fmt.Errorf("User must logged in!")
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusForbidden, err)
 		return
 	}
@@ -215,6 +232,7 @@ func (c *OrderController) UpdateStatusHandler(w http.ResponseWriter, r *http.Req
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -222,6 +240,7 @@ func (c *OrderController) UpdateStatusHandler(w http.ResponseWriter, r *http.Req
 	var data orderentity.Order
 	err = json.Unmarshal(body, &data)
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -233,6 +252,7 @@ func (c *OrderController) UpdateStatusHandler(w http.ResponseWriter, r *http.Req
 
 	order, err := c.order.UpdateOrderStatus(data)
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}

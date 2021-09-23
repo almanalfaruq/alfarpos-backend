@@ -59,6 +59,7 @@ func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Re
 		logger.Log.Info("GET - Product: GetProductsHandler (/products)")
 		products, hasNext, err = c.product.GetAllProduct(int(limit), int(page))
 		if err != nil {
+			logger.Log.Debug(err)
 			response.RenderJSONError(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -67,18 +68,21 @@ func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Re
 		if searchBy == "" {
 			products, hasNext, err = c.product.GetProductsBySearchQuery(query, int(limit), int(page))
 			if err != nil {
+				logger.Log.Debug(err)
 				response.RenderJSONError(w, http.StatusNotFound, err)
 				return
 			}
 		} else if searchBy == "unit" {
 			products, err = c.product.GetProductsByUnitName(query)
 			if err != nil {
+				logger.Log.Debug(err)
 				response.RenderJSONError(w, http.StatusNotFound, err)
 				return
 			}
 		} else if searchBy == "category" {
 			products, err = c.product.GetProductsByCategoryName(query)
 			if err != nil {
+				logger.Log.Debug(err)
 				response.RenderJSONError(w, http.StatusNotFound, err)
 				return
 			}
@@ -114,6 +118,7 @@ func (c *ProductController) GetProductByIdHandler(w http.ResponseWriter, r *http
 	logger.Log.Infof("GET - Product: GetProductByIdHandler (/products/id/%d)", id)
 	product, err := c.product.GetOneProduct(id)
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusNotFound, err)
 		return
 	}
@@ -149,6 +154,7 @@ func (c *ProductController) GetProductsByIDsHandler(w http.ResponseWriter, r *ht
 	}
 	products, err := c.product.GetProductsByIDs(intIDs)
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusNotFound, err)
 		return
 	}
@@ -175,6 +181,7 @@ func (c *ProductController) GetProductByCodeHandler(w http.ResponseWriter, r *ht
 	logger.Log.Infof("GET - Product: GetProductByCodeHandler (/products/code/%s)", code)
 	product, err := c.product.GetOneProductByCode(code)
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusNotFound, err)
 		return
 	}
@@ -192,6 +199,7 @@ func (c *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Req
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -205,12 +213,14 @@ func (c *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Req
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	product, err := c.product.NewProduct(string(body))
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -221,6 +231,7 @@ func (c *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Req
 func (c *ProductController) ExportAllProductsToExcelHandler(w http.ResponseWriter, r *http.Request) {
 	excel, err := c.product.ExportAllProductsToExcel()
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -233,6 +244,7 @@ func (c *ProductController) ExportAllProductsToExcelHandler(w http.ResponseWrite
 	w.Header().Set("Expires", "0")
 	err = excel.Write(w)
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 	}
 }
@@ -260,6 +272,7 @@ func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -272,11 +285,13 @@ func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *
 
 	err = r.ParseMultipartForm(20 << 20)
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 	file, _, err := r.FormFile("file")
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -284,6 +299,7 @@ func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *
 
 	rowsLength, err := c.product.NewProductUsingExcel(sheetName, file)
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -307,6 +323,7 @@ func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -320,12 +337,14 @@ func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.
 	body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	product, err := c.product.UpdateProduct(string(body))
 	if err != nil {
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -345,6 +364,7 @@ func (c *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.
 	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
 	if !ok {
 		err := errors.New("Cannot parse user context")
+		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}

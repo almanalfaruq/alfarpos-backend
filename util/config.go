@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	Env         string      `yaml:"env"`
+	Debug       bool        `yaml:"debug"`
 	SecretKey   string      `yaml:"secret-key"`
 	Database    Database    `yaml:"database"`
 	ShopProfile ShopProfile `yaml:"shop-profile"`

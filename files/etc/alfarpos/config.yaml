@@ -1,4 +1,5 @@
 env: production
+debug: true
 secret-key: secret
 database:
   host: localhost

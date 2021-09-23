@@ -38,7 +38,6 @@ func (dbConn *DBConn) Open(config Config) *gorm.DB {
 	}
 	url = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.Database.Host, config.Database.Port,
 		config.Database.Username, password, dbName)
-	golog.Infof("URL Database: %s", url)
 	var err error
 	dbConn.DB, err = gorm.Open(postgres.Open(url), &gorm.Config{})
 	if err != nil {
