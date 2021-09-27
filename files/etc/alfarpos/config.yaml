@@ -1,4 +1,4 @@
-env: production
+env: local
 debug: true
 secret-key: secret
 database:

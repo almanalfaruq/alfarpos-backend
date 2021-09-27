@@ -38,7 +38,7 @@ func main() {
 	flag.Parse()
 
 	if err := config.Read("/etc/alfarpos/config.yaml", &config); err != nil {
-		err = config.Read("./config.yaml", &config)
+		err = config.Read("./files/etc/alfarpos/config.yaml", &config)
 		if err != nil {
 			panic(err)
 		}

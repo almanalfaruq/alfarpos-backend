@@ -16,6 +16,10 @@ func New(cfg *util.Config) (error, func()) {
 		Log.SetLevel("debug")
 	}
 
+	if cfg.Env == "local" {
+		return nil, func() {}
+	}
+
 	// use  debug.log and info.log files for the example.
 	debugFile, err := os.OpenFile(cfg.Log.PathDebug, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
