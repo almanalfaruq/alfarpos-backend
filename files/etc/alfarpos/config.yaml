@@ -9,13 +9,13 @@ database:
   dbname: alfarpos
   dbname-test: alfarpos_test
 shop-profile:
-  name: 'Toko Alfar'
-  description: 'Toko Serba Ada'
-  address: 'Ketaon RT 7 RW 1, Banyudono, Boyolali 57373'
+  name: 'TOKO ALFAR'
+  description: 'TOKO SERBA ADA'
+  address: 'KETAON RT 7 RW 1, BANYUDONO, BOYOLALI 57373'
   phone: '(0276) 3283720'
   npwp: '192810982901809'
-  thankyou_message: 'Terima kasih atas kunjungan anda'
-  foot_note: 'Barang yang sudah dibeli tidak dapat dikembalikan'
+  thankyou_message: 'TERIMA KASIH ATAS KUNJUNGAN ANDA'
+  foot_note: 'BARANG YANG SUDAH DIBELI TIDAK DAPAT DIKEMBALIKAN'
 log:
   path_info: '/var/log/alfarpos/info.log'
   path_debug: '/var/log/alfarpos/debug.log'

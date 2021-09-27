@@ -4,11 +4,13 @@ This is a backend service for Point of Sales system.
 
 ### How it works
 
+TBD
+
 ### How to install
 
 #### Prerequisite
 
-- Golang >=1.14
+- Golang >=1.15
 - PostgreSQL >=9.6
 - Linux system
 
