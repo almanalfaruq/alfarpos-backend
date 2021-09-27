@@ -1,17 +1,17 @@
-package service
+package user
 
 import (
 	"encoding/json"
 	"errors"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type UserService struct {
@@ -96,6 +96,16 @@ func (service *UserService) UpdateUser(userData string) (userentity.User, error)
 	err := json.Unmarshal(userDataByte, &user)
 	if err != nil {
 		return user, err
+	}
+
+	if user.Password != "" {
+		encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return userentity.User{}, err
+		}
+		user.Password = string(encryptedPassword)
+	} else {
+
 	}
 	return service.user.Update(user)
 }

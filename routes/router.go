@@ -26,6 +26,7 @@ func GetAllRoutes(database *util.DBConn, config util.Config) *mux.Router {
 	userController := InjectUserController(database, config)
 	routesApi.HandleFunc("/users/register", authMw.CheckCORS(userController.RegisterHandler)).Methods("POST", "OPTIONS")
 	routesApi.HandleFunc("/users/login", authMw.CheckCORS(userController.LoginHandler)).Methods("POST", "OPTIONS")
+	routesApi.HandleFunc("/users/update", authMw.CheckCORS(userController.UpdateHandler)).Methods("PUT", "OPTIONS")
 
 	productController := InjectProductController(database, config)
 	routesApi.HandleFunc("/products", productController.GetProductsHandler).Methods("GET")

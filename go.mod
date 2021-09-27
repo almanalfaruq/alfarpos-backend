@@ -1,15 +1,14 @@
 module github.com/almanalfaruq/alfarpos-backend
 
-// +heroku goVersion go1.14
-go 1.14
+go 1.15
 
 require (
 	github.com/360EntSecGroup-Skylar/excelize v1.4.1
 	github.com/360EntSecGroup-Skylar/excelize/v2 v2.1.0
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dustin/go-humanize v1.0.0
 	github.com/go-openapi/swag v0.19.9 // indirect
+	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/golang/mock v1.4.3
 	github.com/gorilla/mux v1.7.4
 	github.com/jung-kurt/gofpdf v1.16.2

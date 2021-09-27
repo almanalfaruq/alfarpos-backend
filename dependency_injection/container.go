@@ -5,22 +5,24 @@ import (
 	profilectrl "github.com/almanalfaruq/alfarpos-backend/controller/profile"
 	statsctrl "github.com/almanalfaruq/alfarpos-backend/controller/stats"
 	transactionctrl "github.com/almanalfaruq/alfarpos-backend/controller/transaction"
+	userctrl "github.com/almanalfaruq/alfarpos-backend/controller/user"
 	"github.com/almanalfaruq/alfarpos-backend/repository"
 	profilerepo "github.com/almanalfaruq/alfarpos-backend/repository/profile"
 	statsrepo "github.com/almanalfaruq/alfarpos-backend/repository/stats"
 	transactionrepo "github.com/almanalfaruq/alfarpos-backend/repository/transaction"
+	userrepo "github.com/almanalfaruq/alfarpos-backend/repository/user"
 	"github.com/almanalfaruq/alfarpos-backend/service"
 	profilesvc "github.com/almanalfaruq/alfarpos-backend/service/profile"
 	statssvc "github.com/almanalfaruq/alfarpos-backend/service/stats"
 	transactionsvc "github.com/almanalfaruq/alfarpos-backend/service/transaction"
+	usersvc "github.com/almanalfaruq/alfarpos-backend/service/user"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
-func InjectUserController(dbConn *util.DBConn, config util.Config) *controller.UserController {
-	userRepo := repository.NewUserRepo(dbConn)
-	userService := service.NewUserService(config, userRepo)
-	userController := controller.NewUserController(userService)
-	return userController
+func InjectUserController(dbConn *util.DBConn, config util.Config) *userctrl.UserController {
+	userRepo := userrepo.NewUserRepo(dbConn)
+	userService := usersvc.NewUserService(config, userRepo)
+	return userctrl.NewUserController(userService)
 }
 
 func InjectProductController(dbConn *util.DBConn, config util.Config) *controller.ProductController {

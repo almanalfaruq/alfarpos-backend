@@ -1,4 +1,4 @@
-package controller
+package user
 
 import (
 	"io/ioutil"
@@ -56,7 +56,7 @@ func (c *UserController) RegisterHandler(w http.ResponseWriter, r *http.Request)
 // @Description Endpoint for getting the token for the logged in user
 // @Tags user
 // @Produce json
-// @Param json body user.User true "These field must be present: username, password"
+// @Param json body user.User true "These field must be present: username, password, fullname, address, phone, and role_id (1 = Admin; 2 = Manager; 3 = Cashier)"
 // @Success 200 {object} response.ResponseMapper{data=string} "Return a jwt token to be used for other requests"
 // @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
 // @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
@@ -82,4 +82,37 @@ func (c *UserController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.RenderJSONSuccess(w, http.StatusOK, data, "User logged in")
+}
+
+// UpdateUser godoc
+// @Summary Update user
+// @Description Endpoint for updating the user
+// @Tags user
+// @Produce json
+// @Param json body user.User true "These field must be present: username, password"
+// @Success 200 {object} response.ResponseMapper{data=user.Data} "Return the updated user data"
+// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Router /users/update [put]
+func (c *UserController) UpdateHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	logger.Log.Info("PUT - User: UpdateHandler (/users/update)")
+	body, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		logger.Log.Debug(err)
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	data, err := c.user.UpdateUser(string(body))
+	if err != nil {
+		logger.Log.Debug(err)
+		response.RenderJSONError(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	response.RenderJSONSuccess(w, http.StatusOK, data, "User updated")
 }

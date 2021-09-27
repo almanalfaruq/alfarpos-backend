@@ -2,7 +2,7 @@ package response
 
 import (
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type TokenData struct {

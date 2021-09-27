@@ -1,14 +1,15 @@
-package repository
+package user
 
 import (
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 )
 
 type UserRepository struct {
-	db dbIface
+	db util.DBIface
 }
 
-func NewUserRepo(db dbIface) *UserRepository {
+func NewUserRepo(db util.DBIface) *UserRepository {
 	return &UserRepository{
 		db: db,
 	}
@@ -51,12 +52,13 @@ func (repo *UserRepository) New(user userentity.User) (userentity.User, error) {
 func (repo *UserRepository) Update(user userentity.User) (userentity.User, error) {
 	var oldUser userentity.User
 	db := repo.db.GetDb()
-	err := db.Where("id = ?", user.ID).First(&oldUser).Error
-	if err != nil {
-		return user, err
-	}
 	oldUser = user
-	return user, db.Save(&oldUser).Error
+	if user.Password == "" {
+		return user, db.Model(&oldUser).Select("*").Omit("password").Updates(user).Error
+	}
+	err := db.Model(&oldUser).Updates(user).Error
+	user.Password = ""
+	return user, err
 }
 
 func (repo *UserRepository) Delete(id int64) (userentity.User, error) {
