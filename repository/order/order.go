@@ -1,4 +1,4 @@
-package repository
+package order
 
 import (
 	"fmt"
@@ -7,15 +7,16 @@ import (
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	orderentity "github.com/almanalfaruq/alfarpos-backend/model/order"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 type OrderRepository struct {
-	db dbIface
+	db util.DBIface
 }
 
-func NewOrderRepo(db dbIface) *OrderRepository {
+func NewOrderRepo(db util.DBIface) *OrderRepository {
 	return &OrderRepository{
 		db: db,
 	}

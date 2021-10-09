@@ -30,9 +30,9 @@ func NewMoney(moneyUC moneyUsecase) *MoneyController {
 // @Accept json
 // @Produce json
 // @Param body body transactionentity.Money true "Money transaction"
-// @Success 200 {object} response.ResponseMapper{data=transactionentity.Money} "Return money transaction data"
-// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
-// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Success 200 {object} response.ResponseStruct{data=transactionentity.Money} "Return money transaction data"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
 // @Router /money [post]
 func (c *MoneyController) NewMoneyHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
@@ -83,9 +83,9 @@ func (c *MoneyController) NewMoneyHandler(w http.ResponseWriter, r *http.Request
 // @Accept json
 // @Produce json
 // @Param body body transactionentity.GetMoneyWithFilterReq true "Money transaction"
-// @Success 200 {object} response.ResponseMapper{data=[]transactionentity.Money} "Return monies transaction data"
-// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
-// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Success 200 {object} response.ResponseStruct{data=[]transactionentity.Money} "Return monies transaction data"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
 // @Router /money/filters [post]
 func (c *MoneyController) GetMoneyTransactionWithFilterHandler(w http.ResponseWriter, r *http.Request) {
 	var err error

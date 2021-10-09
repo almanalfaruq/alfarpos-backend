@@ -31,3 +31,7 @@ $ sudo systemctl start alfarpos.service
 ```
 
 5. Monitor the log in `/var/log/alfarpos/info.log`
+
+### Dev Notes
+
+#### Generate swagger docs

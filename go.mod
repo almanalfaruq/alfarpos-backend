@@ -1,11 +1,10 @@
 module github.com/almanalfaruq/alfarpos-backend
 
-go 1.15
+go 1.16
 
 require (
 	github.com/360EntSecGroup-Skylar/excelize v1.4.1
 	github.com/360EntSecGroup-Skylar/excelize/v2 v2.1.0
-	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/dustin/go-humanize v1.0.0
 	github.com/go-openapi/swag v0.19.9 // indirect
 	github.com/golang-jwt/jwt/v4 v4.1.0

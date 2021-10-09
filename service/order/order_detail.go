@@ -1,4 +1,4 @@
-package service
+package order
 
 import (
 	"encoding/json"
@@ -21,34 +21,34 @@ func NewOrderDetailService(orderRepo orderRepositoryIface, orderDetailRepo order
 	}
 }
 
-func (service *OrderDetailService) GetOrderDetailByOrder(orderDetailData string) ([]model.OrderDetail, error) {
+func (service *OrderDetailService) GetOrderDetailByOrder(orderDetailData string) ([]orderentity.OrderDetail, error) {
 	var order orderentity.Order
 	orderDetailDataByte := []byte(orderDetailData)
 	err := json.Unmarshal(orderDetailDataByte, &order)
 	if err != nil {
-		return []model.OrderDetail{}, err
+		return []orderentity.OrderDetail{}, err
 	}
 	if order.Invoice != "" {
 		order, err = service.order.FindByInvoice(order.Invoice)
 		if err != nil {
 			if errors.Is(err, model.ErrNotFound) {
-				return []model.OrderDetail{}, fmt.Errorf("Order with invoice: %s is not found", order.Invoice)
+				return []orderentity.OrderDetail{}, fmt.Errorf("Order with invoice: %s is not found", order.Invoice)
 			}
-			return []model.OrderDetail{}, err
+			return []orderentity.OrderDetail{}, err
 		}
 	} else {
 		order, err = service.order.FindById(int64(order.ID))
 		if err != nil {
 			if errors.Is(err, model.ErrNotFound) {
-				return []model.OrderDetail{}, fmt.Errorf("Order with id: %d is not found", order.ID)
+				return []orderentity.OrderDetail{}, fmt.Errorf("Order with id: %d is not found", order.ID)
 			}
-			return []model.OrderDetail{}, err
+			return []orderentity.OrderDetail{}, err
 		}
 	}
 	return service.orderDetail.FindByOrder(order)
 }
 
-func (service *OrderDetailService) DeleteOrderDetail(id int64) (model.OrderDetail, error) {
+func (service *OrderDetailService) DeleteOrderDetail(id int64) (orderentity.OrderDetail, error) {
 	return service.orderDetail.Delete(id)
 }
 

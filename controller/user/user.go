@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	_ "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 	"github.com/almanalfaruq/alfarpos-backend/util/response"
 )
@@ -24,9 +25,9 @@ func NewUserController(userService userServiceIface) *UserController {
 // @Tags user
 // @Produce json
 // @Param json body user.User true "These field must be present: username, password, fullname, address, phone, and role_id (1 = Admin; 2 = Manager; 3 = Cashier)"
-// @Success 200 {object} response.ResponseMapper{data=user.User} "Return the new registered user"
-// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
-// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Success 200 {object} response.ResponseStruct{data=user.User} "Return the new registered user"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
 // @Router /users/register [post]
 func (c *UserController) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -57,9 +58,9 @@ func (c *UserController) RegisterHandler(w http.ResponseWriter, r *http.Request)
 // @Tags user
 // @Produce json
 // @Param json body user.User true "These field must be present: username, password, fullname, address, phone, and role_id (1 = Admin; 2 = Manager; 3 = Cashier)"
-// @Success 200 {object} response.ResponseMapper{data=string} "Return a jwt token to be used for other requests"
-// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
-// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Success 200 {object} response.ResponseStruct{data=string} "Return a jwt token to be used for other requests"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
 // @Router /users/login [post]
 func (c *UserController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -90,9 +91,9 @@ func (c *UserController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 // @Tags user
 // @Produce json
 // @Param json body user.User true "These field must be present: username, password"
-// @Success 200 {object} response.ResponseMapper{data=user.Data} "Return the updated user data"
-// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
-// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Success 200 {object} response.ResponseStruct{data=user.User} "Return the updated user data"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
 // @Router /users/update [put]
 func (c *UserController) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")

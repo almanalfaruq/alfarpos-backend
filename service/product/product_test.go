@@ -1,4 +1,4 @@
-package service
+package product
 
 import (
 	"database/sql"
@@ -10,6 +10,8 @@ import (
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/almanalfaruq/alfarpos-backend/model"
+	productentity "github.com/almanalfaruq/alfarpos-backend/model/product"
+	stockentity "github.com/almanalfaruq/alfarpos-backend/model/stock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -30,7 +32,7 @@ func TestProductUpdateProduct(t *testing.T) {
 		},
 		Name: "Pcs",
 	}
-	product := model.Product{
+	product := productentity.Product{
 		Template: model.Template{
 			ID: int64(1),
 		},
@@ -66,7 +68,7 @@ func TestProductUpdateProduct(t *testing.T) {
 	testTable := []struct {
 		testName string
 		arg      func() string
-		expect   model.Product
+		expect   productentity.Product
 		wantErr  bool
 	}{
 		{
@@ -74,7 +76,7 @@ func TestProductUpdateProduct(t *testing.T) {
 			arg: func() string {
 				return `{product_id: 1}`
 			},
-			expect:  model.Product{},
+			expect:  productentity.Product{},
 			wantErr: true,
 		},
 		{
@@ -175,8 +177,8 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 					Name: "Unit1",
 				}
 				unitRepository.EXPECT().FindByName("Unit1").Return([]model.Unit{unit}, nil)
-				productRepository.EXPECT().FindByCode("Product1").Return([]model.Product{}, nil)
-				product := model.Product{
+				productRepository.EXPECT().FindByCode("Product1").Return([]productentity.Product{}, nil)
+				product := productentity.Product{
 					Template: model.Template{
 						ID: int64(1),
 					},
@@ -205,7 +207,7 @@ func TestProductService_NewProductUsingExcel(t *testing.T) {
 				productStub := product
 				productStub.ID = int64(0)
 				productRepository.EXPECT().New(productStub).Return(product, nil)
-				stock := model.Stock{
+				stock := stockentity.Stock{
 					Template: model.Template{
 						ID: int64(1),
 					},

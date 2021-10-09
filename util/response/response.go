@@ -7,7 +7,7 @@ import (
 	"github.com/kataras/golog"
 )
 
-type responseStruct struct {
+type ResponseStruct struct {
 	Code    int         `json:"code" example:"200"`
 	Data    interface{} `json:"data"`
 	Message string      `json:"message" example:"Success getting all products"`
@@ -22,13 +22,13 @@ func RenderJSONSuccess(w http.ResponseWriter, status int, data interface{}, mess
 }
 
 func renderJSON(w http.ResponseWriter, status int, data interface{}, message string) {
-	responseMapper := responseStruct{
+	ResponseStruct := ResponseStruct{
 		Code:    status,
 		Data:    data,
 		Message: message,
 	}
 	w.WriteHeader(status)
-	err := json.NewEncoder(w).Encode(responseMapper)
+	err := json.NewEncoder(w).Encode(ResponseStruct)
 	if err != nil {
 		golog.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -5,8 +5,10 @@ import (
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	orderentity "github.com/almanalfaruq/alfarpos-backend/model/order"
+	productentity "github.com/almanalfaruq/alfarpos-backend/model/product"
 	profileentity "github.com/almanalfaruq/alfarpos-backend/model/profile"
 	statsentity "github.com/almanalfaruq/alfarpos-backend/model/stats"
+	stockentity "github.com/almanalfaruq/alfarpos-backend/model/stock"
 	transactionentity "github.com/almanalfaruq/alfarpos-backend/model/transaction"
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/kataras/golog"
@@ -51,8 +53,8 @@ func (dbConn *DBConn) GetDb() *gorm.DB {
 }
 
 func (dbConn *DBConn) MigrateDb() {
-	err := dbConn.DB.AutoMigrate(&model.Category{}, &model.Customer{}, &orderentity.Order{}, &model.OrderDetail{}, &model.Payment{},
-		&model.Product{}, &model.ProductPrice{}, &model.Stock{}, &model.Unit{}, &userentity.User{}, &transactionentity.Money{},
+	err := dbConn.DB.AutoMigrate(&model.Category{}, &model.Customer{}, &orderentity.Order{}, &orderentity.OrderDetail{}, &model.Payment{},
+		&productentity.Product{}, &productentity.ProductPrice{}, &stockentity.Stock{}, &model.Unit{}, &userentity.User{}, &transactionentity.Money{},
 		&profileentity.Profile{}, &statsentity.ShopStats{})
 	if err != nil {
 		panic(err)
@@ -60,9 +62,12 @@ func (dbConn *DBConn) MigrateDb() {
 }
 
 func (dbConn *DBConn) DropDb() {
-	dbConn.DB.Migrator().DropTable(&model.Category{}, &model.Customer{}, &orderentity.Order{}, &model.OrderDetail{}, &model.Payment{},
-		&model.Product{}, &model.ProductPrice{}, &model.Stock{}, &model.Unit{}, &userentity.User{}, &transactionentity.Money{},
+	err := dbConn.DB.Migrator().DropTable(&model.Category{}, &model.Customer{}, &orderentity.Order{}, &orderentity.OrderDetail{}, &model.Payment{},
+		&productentity.Product{}, &productentity.ProductPrice{}, &stockentity.Stock{}, &model.Unit{}, &userentity.User{}, &transactionentity.Money{},
 		&profileentity.Profile{}, &statsentity.ShopStats{})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (dbConn *DBConn) Close() {

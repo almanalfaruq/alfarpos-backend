@@ -1,4 +1,4 @@
-package controller
+package order
 
 import (
 	"encoding/json"
@@ -118,9 +118,9 @@ func (c *OrderController) GetOrderUsingFilterHandler(w http.ResponseWriter, r *h
 // @Accept json
 // @Produce json
 // @Param body body order.Order true "Order with order detail"
-// @Success 200 {object} response.ResponseMapper{data=order.Order} "Return order data"
-// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
-// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Success 200 {object} response.ResponseStruct{data=orderentity.Order} "Return order data"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
 // @Router /orders [post]
 func (c *OrderController) NewOrderHandler(w http.ResponseWriter, r *http.Request) {
 	var err error

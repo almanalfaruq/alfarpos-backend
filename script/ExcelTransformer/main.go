@@ -9,6 +9,7 @@ import (
 
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/almanalfaruq/alfarpos-backend/model"
+	productentity "github.com/almanalfaruq/alfarpos-backend/model/product"
 )
 
 /*
@@ -88,8 +89,8 @@ func main() {
 	}
 }
 
-func parseExcelRowsToProduct(rows [][]string) []model.Product {
-	var products []model.Product
+func parseExcelRowsToProduct(rows [][]string) []productentity.Product {
+	var products []productentity.Product
 	// skip index 0 - Header
 	for _, row := range rows[1:] {
 		code := row[9]
@@ -115,12 +116,12 @@ func parseExcelRowsToProduct(rows [][]string) []model.Product {
 		}
 
 		// for other product price based on its qty
-		var productPrices model.ProductPrices
+		var productPrices productentity.ProductPrices
 		multiplierStr := row[81]
 		if multiplierStr != "" {
 			multiplier, _ := strconv.ParseInt(multiplierStr, 10, 64)
 			sellPrice, _ := strconv.ParseInt(row[86], 10, 64)
-			productPrices = append(productPrices, model.ProductPrice{
+			productPrices = append(productPrices, productentity.ProductPrice{
 				QuantityMultiplier: int32(multiplier),
 				PricePerPacket: sql.NullInt64{
 					Int64: sellPrice,
@@ -129,7 +130,7 @@ func parseExcelRowsToProduct(rows [][]string) []model.Product {
 			})
 		}
 
-		product := model.Product{
+		product := productentity.Product{
 			Code:      getSqlNullString(code),
 			Name:      name,
 			SellPrice: getSqlNullInt64(sellPrice),
@@ -163,7 +164,7 @@ func parseExcelRowsToProduct(rows [][]string) []model.Product {
 			}
 
 			unitName = strings.ToLower(row[72])
-			product := model.Product{
+			product := productentity.Product{
 				Code:      getSqlNullString(code),
 				Name:      name,
 				SellPrice: getSqlNullInt64(sellPrice),

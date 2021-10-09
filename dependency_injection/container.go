@@ -2,16 +2,23 @@ package dependency_injection
 
 import (
 	"github.com/almanalfaruq/alfarpos-backend/controller"
+	orderctrl "github.com/almanalfaruq/alfarpos-backend/controller/order"
+	productctrl "github.com/almanalfaruq/alfarpos-backend/controller/product"
 	profilectrl "github.com/almanalfaruq/alfarpos-backend/controller/profile"
 	statsctrl "github.com/almanalfaruq/alfarpos-backend/controller/stats"
 	transactionctrl "github.com/almanalfaruq/alfarpos-backend/controller/transaction"
 	userctrl "github.com/almanalfaruq/alfarpos-backend/controller/user"
 	"github.com/almanalfaruq/alfarpos-backend/repository"
+	orderrepo "github.com/almanalfaruq/alfarpos-backend/repository/order"
+	productrepo "github.com/almanalfaruq/alfarpos-backend/repository/product"
 	profilerepo "github.com/almanalfaruq/alfarpos-backend/repository/profile"
 	statsrepo "github.com/almanalfaruq/alfarpos-backend/repository/stats"
+	stockrepo "github.com/almanalfaruq/alfarpos-backend/repository/stock"
 	transactionrepo "github.com/almanalfaruq/alfarpos-backend/repository/transaction"
 	userrepo "github.com/almanalfaruq/alfarpos-backend/repository/user"
 	"github.com/almanalfaruq/alfarpos-backend/service"
+	ordersvc "github.com/almanalfaruq/alfarpos-backend/service/order"
+	productsvc "github.com/almanalfaruq/alfarpos-backend/service/product"
 	profilesvc "github.com/almanalfaruq/alfarpos-backend/service/profile"
 	statssvc "github.com/almanalfaruq/alfarpos-backend/service/stats"
 	transactionsvc "github.com/almanalfaruq/alfarpos-backend/service/transaction"
@@ -25,25 +32,25 @@ func InjectUserController(dbConn *util.DBConn, config util.Config) *userctrl.Use
 	return userctrl.NewUserController(userService)
 }
 
-func InjectProductController(dbConn *util.DBConn, config util.Config) *controller.ProductController {
-	productRepository := repository.NewProductRepo(dbConn)
+func InjectProductController(dbConn *util.DBConn, config util.Config) *productctrl.ProductController {
+	productRepository := productrepo.NewProductRepo(dbConn)
 	categoryRepository := repository.NewCategoryRepo(dbConn)
 	unitRepository := repository.NewUnitRepo(dbConn)
-	stockRepository := repository.NewStockRepo(dbConn)
-	productService := service.NewProductService(productRepository, categoryRepository, unitRepository, stockRepository)
-	productController := controller.NewProductController(config, productService)
+	stockRepository := stockrepo.NewStockRepo(dbConn)
+	productService := productsvc.NewProductService(productRepository, categoryRepository, unitRepository, stockRepository)
+	productController := productctrl.NewProductController(config, productService)
 	return productController
 }
 
-func InjectOrderController(dbConn *util.DBConn, config util.Config) *controller.OrderController {
-	orderRepository := repository.NewOrderRepo(dbConn)
-	orderDetailRepository := repository.NewOrderDetailRepo(dbConn)
+func InjectOrderController(dbConn *util.DBConn, config util.Config) *orderctrl.OrderController {
+	orderRepository := orderrepo.NewOrderRepo(dbConn)
+	orderDetailRepository := orderrepo.NewOrderDetailRepo(dbConn)
 	paymentRepository := repository.NewPaymentRepo(dbConn)
 	customerRepository := repository.NewCustomerRepo(dbConn)
-	productRepository := repository.NewProductRepo(dbConn)
-	orderService := service.NewOrderService(orderRepository, orderDetailRepository, paymentRepository, customerRepository,
+	productRepository := productrepo.NewProductRepo(dbConn)
+	orderService := ordersvc.NewOrderService(orderRepository, orderDetailRepository, paymentRepository, customerRepository,
 		productRepository)
-	orderController := controller.NewOrderController(config, orderService)
+	orderController := orderctrl.NewOrderController(config, orderService)
 	return orderController
 }
 
@@ -69,7 +76,7 @@ func InjectPaymentController(dbConn *util.DBConn, config util.Config) *controlle
 }
 
 func InjectPrintController(dbConn *util.DBConn, config util.Config) *controller.PrintController {
-	orderRepository := repository.NewOrderRepo(dbConn)
+	orderRepository := orderrepo.NewOrderRepo(dbConn)
 	printService := service.NewPrintService(config, orderRepository)
 	printController := controller.NewPrintController(printService)
 	return printController
@@ -89,7 +96,7 @@ func InjectProfileController(dbConn *util.DBConn, config util.Config) *profilect
 
 func InjectStatsController(dbConn *util.DBConn, config util.Config) *statsctrl.StatsController {
 	statsRepo := statsrepo.NewStats(dbConn)
-	orderRepo := repository.NewOrderRepo(dbConn)
+	orderRepo := orderrepo.NewOrderRepo(dbConn)
 	moneyRepo := transactionrepo.NewMoney(dbConn)
 	statsService := statssvc.New(statsRepo, orderRepo, moneyRepo)
 	return statsctrl.New(statsService)

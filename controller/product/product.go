@@ -1,4 +1,4 @@
-package controller
+package product
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/almanalfaruq/alfarpos-backend/model"
+	productentity "github.com/almanalfaruq/alfarpos-backend/model/product"
 	userentity "github.com/almanalfaruq/alfarpos-backend/model/user"
 	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/almanalfaruq/alfarpos-backend/util/logger"
@@ -37,16 +37,16 @@ func NewProductController(conf util.Config, productService productServiceIface) 
 // @Produce json
 // @Param searchBy query string false "unit or category"
 // @Param query query string false "If this empty, it will fetch all products"
-// @Success 200 {object} response.ResponseMapper{data=[]model.Product} "Return array of product"
-// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
-// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Success 200 {object} response.ResponseStruct{data=[]productentity.Product} "Return array of product"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
 // @Router /products [get]
 func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	var (
-		products []model.Product
+		products []productentity.Product
 		hasNext  bool
 		err      error
 	)
@@ -87,11 +87,11 @@ func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Re
 				return
 			}
 		} else {
-			products = []model.Product{}
+			products = []productentity.Product{}
 		}
 	}
 
-	resp := model.ProductResponse{
+	resp := productentity.ProductResponse{
 		Products: products,
 		HasNext:  hasNext,
 	}
@@ -105,9 +105,9 @@ func (c *ProductController) GetProductsHandler(w http.ResponseWriter, r *http.Re
 // @Tags product
 // @Produce json
 // @Param id path integer false "id of the product"
-// @Success 200 {object} response.ResponseMapper{data=model.Product} "Return a product"
-// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
-// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Success 200 {object} response.ResponseStruct{data=productentity.Product} "Return a product"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
 // @Router /products/id/{id} [get]
 func (c *ProductController) GetProductByIdHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -131,11 +131,11 @@ func (c *ProductController) GetProductByIdHandler(w http.ResponseWriter, r *http
 // @Description Get Multiple Product based on id
 // @Tags product
 // @Produce json
-// @Param id path integer false "id of the product"
-// @Success 200 {object} response.ResponseMapper{data=[]model.Product} "Return a product"
-// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
-// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
-// @Router /products/id/{id} [get]
+// @Param ids path integer false "ids of the product"
+// @Success 200 {object} response.ResponseStruct{data=[]productentity.Product} "Return a product"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Router /products/ids/{ids} [get]
 func (c *ProductController) GetProductsByIDsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -168,9 +168,9 @@ func (c *ProductController) GetProductsByIDsHandler(w http.ResponseWriter, r *ht
 // @Tags product
 // @Produce json
 // @Param coded path string false "code of the product"
-// @Success 200 {object} response.ResponseMapper{data=model.Product} "Return a product"
-// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
-// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Success 200 {object} response.ResponseStruct{data=productentity.Product} "Return a product"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
 // @Router /products/code/{code} [get]
 func (c *ProductController) GetProductByCodeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -256,9 +256,9 @@ func (c *ProductController) ExportAllProductsToExcelHandler(w http.ResponseWrite
 // @Tags product
 // @Produce json
 // @Param sheetName path string false "Name of the sheet"
-// @Success 200 {object} response.ResponseMapper{data=[]model.Product} "Return array of product"
-// @Failure 404 {object} response.ResponseMapper{data=string} "Return error with message"
-// @Failure 500 {object} response.ResponseMapper{data=string} "Return error with message"
+// @Success 200 {object} response.ResponseStruct{data=[]productentity.Product} "Return array of product"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
 // @Router /products/upload_excel [post]
 func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
@@ -384,4 +384,66 @@ func (c *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.
 	}
 
 	response.RenderJSONSuccess(w, http.StatusOK, product, "Product deleted")
+}
+
+// UpsertProductUsingExcel godoc
+// @Summary Update or insert products from excel file
+// @Description Update or insert products from excel file (*.xlsx). First row should be the header with these column in order:
+// @Description Code (Barcode), Product Name, Sell Price, Quantity, Category Name, Buy Price, and Unit Name (pcs, bottle, etc.)
+// @Tags product
+// @Produce json
+// @Param sheetName path string false "Name of the sheet"
+// @Success 200 {object} response.ResponseStruct{data=[]productentity.Product} "Return array of product"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Router /products/upsert_excel [put]
+func (c *ProductController) UpsertProductUsingExcelHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	vars := mux.Vars(r)
+	sheetName := vars["sheetName"]
+	logger.Log.Infof("PUT - Product: UpsertProductUsingExcelHandler (/products/upsert_excel/%s)", sheetName)
+
+	user, ok := r.Context().Value(userentity.CTX_USER).(userentity.User)
+	if !ok {
+		err := errors.New("Cannot parse user context")
+		logger.Log.Debug(err)
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
+		message := "User must be Admin or Manager"
+		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
+		return
+	}
+
+	err = r.ParseMultipartForm(20 << 20)
+	if err != nil {
+		logger.Log.Debug(err)
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
+		return
+	}
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		logger.Log.Debug(err)
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer file.Close()
+
+	err = c.product.UpsertWithExcel(r.Context(), sheetName, file)
+	if err != nil {
+		logger.Log.Debug(err)
+		response.RenderJSONError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	message := "In progres updating existing product or inserting new product to DB"
+	response.RenderJSONSuccess(w, http.StatusCreated, message, message)
 }
