@@ -495,7 +495,12 @@ func (s *ProductService) UpsertWithExcel(ctx context.Context, sheetName string, 
 		}
 		errIndex = []string{}
 		for _, product := range products {
-			relatedProducts, err := s.product.GetMultipleProductByExactCode(product.Code.String)
+			var relatedProducts productentity.Products
+			if product.Code.String == "" {
+				relatedProducts, err = s.product.FindByName(product.Name)
+			} else {
+				relatedProducts, err = s.product.GetMultipleProductByExactCode(product.Code.String)
+			}
 			if err != nil {
 				continue
 			}

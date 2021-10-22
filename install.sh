@@ -23,6 +23,8 @@ if [ ! -f $BINARY ]; then
 fi
 if [ $UPDATE -eq 1 ]; then
   echo "Success updating alfarpos-backend binary"
+  echo "Restarting the service..."
+  service alfarpos restart
   exit 0
 fi
 

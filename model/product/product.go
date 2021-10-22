@@ -7,6 +7,7 @@ import (
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	"github.com/lib/pq"
+	"gorm.io/gorm"
 )
 
 // Product field name
@@ -40,6 +41,11 @@ type Product struct {
 	RelatedProducts pq.Int64Array   `gorm:"type:int8[]" json:"related_products"`
 	ProductPrices   ProductPrices   `json:"product_prices"`
 	IsOpenPrice     bool            `json:"is_open_price"`
+}
+
+func (p *Product) BeforeSave(tx *gorm.DB) error {
+	p.Name = strings.ToUpper(p.Name)
+	return nil
 }
 
 type Products []Product
