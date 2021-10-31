@@ -159,6 +159,7 @@ func (c *OrderController) NewOrderHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	data.UserID = user.ID
 	order, err := c.order.NewOrder(data)
 	if err != nil {
 		logger.Log.Debug(err)
