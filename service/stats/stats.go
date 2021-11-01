@@ -97,7 +97,7 @@ func (s *StatsService) GetShopStats(ctx context.Context, date string) (statsenti
 		for _, order := range allOrders {
 			grossProfit += order.Total
 			for _, odetail := range order.OrderDetails {
-				netProfit += int64(odetail.Quantity) * odetail.Product.BuyPrice.Int64
+				netProfit += odetail.SubTotal - (int64(odetail.Quantity) * odetail.Product.BuyPrice.Int64)
 			}
 		}
 		result.GrossProfit = grossProfit
