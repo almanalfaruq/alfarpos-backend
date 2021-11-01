@@ -38,6 +38,7 @@ func GetAllRoutes(database *util.DBConn, config util.Config) *mux.Router {
 	routesApi.HandleFunc("/products/upload_excel/{sheetName}", authMw.CheckJWTToken(productController.UploadExcelProductHandler)).Methods("POST")
 	routesApi.HandleFunc("/products/{id}", authMw.CheckJWTToken(productController.UpdateProductHandler)).Methods("PUT", "OPTIONS")
 	routesApi.HandleFunc("/products/upsert_excel/{sheetName}", authMw.CheckJWTToken(productController.UpsertProductUsingExcelHandler)).Methods("PUT")
+	routesApi.HandleFunc("/products/{id}", authMw.CheckJWTToken(productController.DeleteProductHandler)).Methods("DELETE", "OPTIONS")
 
 	categoryController := InjectCategoryController(database, config)
 	routesApi.HandleFunc("/categories", categoryController.GetCategoriesHandler).Methods("GET")

@@ -77,7 +77,7 @@ func (repo *OrderRepository) FindByUserId(userId int64) ([]orderentity.Order, er
 	return orders, nil
 }
 
-func (repo *OrderRepository) FindByFilter(status []int32, invoice, startDate, endDate, sort string) ([]orderentity.Order, error) {
+func (repo *OrderRepository) FindByFilter(status []int32, invoice, startDate, endDate, sort string, limit, page int32) ([]orderentity.Order, error) {
 	var orders []orderentity.Order
 	var whereClauses []string
 	if invoice != "" {
@@ -107,9 +107,16 @@ func (repo *OrderRepository) FindByFilter(status []int32, invoice, startDate, en
 		sortSql = fmt.Sprintf("%s %s", sortSql, sort)
 	}
 	db := repo.db.GetDb()
-	err := db.Preload("OrderDetails.Product").Preload("OrderDetails.Product.Unit").
-		Preload("OrderDetails.Product.Category").Preload(clause.Associations).
-		Where(strings.Join(whereClauses, " AND ")).Order(sortSql).Find(&orders).Error
+	var err error
+	if limit == 0 && page < 1 {
+		err = db.Preload("OrderDetails.Product").Preload("OrderDetails.Product.Unit").
+			Preload("OrderDetails.Product.Category").Preload(clause.Associations).
+			Where(strings.Join(whereClauses, " AND ")).Order(sortSql).Find(&orders).Error
+	} else {
+		offset := (page - 1) * limit
+		err = db.Preload(clause.Associations).
+			Where(strings.Join(whereClauses, " AND ")).Limit(int(limit)).Offset(int(offset)).Order(sortSql).Find(&orders).Error
+	}
 	return orders, err
 }
 

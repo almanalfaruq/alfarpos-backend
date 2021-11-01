@@ -56,7 +56,7 @@ func (s *StatsService) GetShopStats(ctx context.Context, date string) (statsenti
 	)
 	go func() {
 		defer wg.Done()
-		orders, err := s.orderRepo.FindByFilter([]int32{orderentity.StatusFinish}, "", date, date, "")
+		orders, err := s.orderRepo.FindByFilter([]int32{orderentity.StatusFinish}, "", date, date, "", 0, 0)
 		if err != nil {
 			errOrder = err
 			return

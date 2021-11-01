@@ -56,4 +56,6 @@ type GetOrderUsingFilterParam struct {
 	StartDate string  `json:"start_date"`
 	EndDate   string  `json:"end_date"`
 	Sort      string  `json:"sort"`
+	Limit     int32   `json:"limit"`
+	Page      int32   `json:"page"`
 }

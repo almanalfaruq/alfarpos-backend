@@ -193,18 +193,18 @@ func (mr *MockorderRepositoryIfaceMockRecorder) FindByUserId(userId interface{})
 }
 
 // FindByFilter mocks base method
-func (m *MockorderRepositoryIface) FindByFilter(status []int32, invoice, startDate, endDate, sort string) ([]order.Order, error) {
+func (m *MockorderRepositoryIface) FindByFilter(status []int32, invoice, startDate, endDate, sort string, limit, page int32) ([]order.Order, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindByFilter", status, invoice, startDate, endDate, sort)
+	ret := m.ctrl.Call(m, "FindByFilter", status, invoice, startDate, endDate, sort, limit, page)
 	ret0, _ := ret[0].([]order.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindByFilter indicates an expected call of FindByFilter
-func (mr *MockorderRepositoryIfaceMockRecorder) FindByFilter(status, invoice, startDate, endDate, sort interface{}) *gomock.Call {
+func (mr *MockorderRepositoryIfaceMockRecorder) FindByFilter(status, invoice, startDate, endDate, sort, limit, page interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByFilter", reflect.TypeOf((*MockorderRepositoryIface)(nil).FindByFilter), status, invoice, startDate, endDate, sort)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByFilter", reflect.TypeOf((*MockorderRepositoryIface)(nil).FindByFilter), status, invoice, startDate, endDate, sort, limit, page)
 }
 
 // New mocks base method
@@ -476,21 +476,6 @@ func (m *MockproductRepositoryIface) FindByExactCode(code string) (product.Produ
 func (mr *MockproductRepositoryIfaceMockRecorder) FindByExactCode(code interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByExactCode", reflect.TypeOf((*MockproductRepositoryIface)(nil).FindByExactCode), code)
-}
-
-// GetMultipleProductByExactCode mocks base method
-func (m *MockproductRepositoryIface) GetMultipleProductByExactCode(code string) ([]product.Product, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMultipleProductByExactCode", code)
-	ret0, _ := ret[0].([]product.Product)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetMultipleProductByExactCode indicates an expected call of GetMultipleProductByExactCode
-func (mr *MockproductRepositoryIfaceMockRecorder) GetMultipleProductByExactCode(code interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultipleProductByExactCode", reflect.TypeOf((*MockproductRepositoryIface)(nil).GetMultipleProductByExactCode), code)
 }
 
 // SearchBy mocks base method

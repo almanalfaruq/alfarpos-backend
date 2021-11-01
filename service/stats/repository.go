@@ -13,7 +13,7 @@ type moneyRepo interface {
 }
 
 type orderRepositoryIface interface {
-	FindByFilter(status []int32, invoice, startDate, endDate, sort string) ([]orderentity.Order, error)
+	FindByFilter(status []int32, invoice, startDate, endDate, sort string, limit, page int32) ([]orderentity.Order, error)
 }
 
 type statsRepo interface {

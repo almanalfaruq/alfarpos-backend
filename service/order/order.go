@@ -73,7 +73,11 @@ func (s *OrderService) GetOrderByUserId(userId int64) ([]orderentity.Order, erro
 }
 
 func (s *OrderService) GetOrderUsingFilter(param orderentity.GetOrderUsingFilterParam) ([]orderentity.Order, error) {
-	orders, err := s.order.FindByFilter(param.Statuses, param.Invoice, param.StartDate, param.EndDate, param.Sort)
+	var limitPlusOne int32
+	if param.Limit != 0 {
+		limitPlusOne = param.Limit + 1
+	}
+	orders, err := s.order.FindByFilter(param.Statuses, param.Invoice, param.StartDate, param.EndDate, param.Sort, limitPlusOne, param.Page)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return []orderentity.Order{}, fmt.Errorf("Order with filter: %+v is not found", param)
@@ -82,6 +86,9 @@ func (s *OrderService) GetOrderUsingFilter(param orderentity.GetOrderUsingFilter
 	}
 	if len(orders) == 0 {
 		return orders, errors.New("Orders not found")
+	}
+	if param.Limit != 0 && param.Page > 1 && len(orders) > int(param.Limit) {
+		orders = orders[:param.Limit]
 	}
 	return orders, nil
 }
