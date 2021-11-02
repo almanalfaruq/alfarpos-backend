@@ -70,7 +70,7 @@ func (s *StatsService) GetShopStats(ctx context.Context, date string) (statsenti
 	)
 	go func() {
 		defer wg.Done()
-		transactions, err := s.moneyRepo.GetMoneyTransactionByFilter([]int32{}, date, date)
+		transactions, err := s.moneyRepo.GetMoneyTransactionByFilter([]int32{}, date, date, "")
 		if err != nil {
 			errTransaction = err
 			return

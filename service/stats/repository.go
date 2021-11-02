@@ -9,7 +9,7 @@ import (
 )
 
 type moneyRepo interface {
-	GetMoneyTransactionByFilter(status []int32, startDate, endDate string) ([]transactionentity.Money, error)
+	GetMoneyTransactionByFilter(status []int32, startDate, endDate, sort string) ([]transactionentity.Money, error)
 }
 
 type orderRepositoryIface interface {

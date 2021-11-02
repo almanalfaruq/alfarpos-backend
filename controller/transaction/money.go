@@ -100,9 +100,10 @@ func (c *MoneyController) GetMoneyTransactionWithFilterHandler(w http.ResponseWr
 		return
 	}
 
-	if ok := user.HasRole(userentity.RoleAdmin); !ok {
-		message := "User must be Admin"
-		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
+	if user.ID < 1 {
+		err := errors.New("User not found")
+		logger.Log.Debug(err)
+		response.RenderJSONError(w, http.StatusForbidden, err)
 		return
 	}
 

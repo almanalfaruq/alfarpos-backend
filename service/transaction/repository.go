@@ -1,8 +1,10 @@
 package transaction
 
-import "github.com/almanalfaruq/alfarpos-backend/model/transaction"
+import (
+	transactionentity "github.com/almanalfaruq/alfarpos-backend/model/transaction"
+)
 
 type moneyRepo interface {
-	InsertMoneyTransaction(money transaction.Money) (transaction.Money, error)
-	GetMoneyTransactionByFilter(status []int32, startDate, endDate string) ([]transaction.Money, error)
+	InsertMoneyTransaction(money transactionentity.Money) (transactionentity.Money, error)
+	GetMoneyTransactionByFilter(status []int32, startDate, endDate, sort string) ([]transactionentity.Money, error)
 }

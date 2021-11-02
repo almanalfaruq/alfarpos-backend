@@ -17,5 +17,5 @@ func (u *MoneyUsecase) InsertMoney(money transaction.Money) (transaction.Money, 
 }
 
 func (u *MoneyUsecase) GetMoneyWithFilter(param transaction.GetMoneyWithFilterReq) ([]transaction.Money, error) {
-	return u.repo.GetMoneyTransactionByFilter(param.Types, param.StartDate, param.EndDate)
+	return u.repo.GetMoneyTransactionByFilter(param.Types, param.StartDate, param.EndDate, param.Sort)
 }

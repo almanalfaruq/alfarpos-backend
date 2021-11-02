@@ -24,7 +24,7 @@ func (r *MoneyRepo) InsertMoneyTransaction(money transaction.Money) (transaction
 	return money, db.Create(&money).Error
 }
 
-func (r *MoneyRepo) GetMoneyTransactionByFilter(status []int32, startDate, endDate string) ([]transaction.Money, error) {
+func (r *MoneyRepo) GetMoneyTransactionByFilter(status []int32, startDate, endDate, sort string) ([]transaction.Money, error) {
 	var monies []transaction.Money
 	var whereClauses []string
 	if len(status) > 0 {
@@ -36,17 +36,21 @@ func (r *MoneyRepo) GetMoneyTransactionByFilter(status []int32, startDate, endDa
 	}
 	if startDate != "" || endDate != "" {
 		if startDate == endDate {
-			whereClauses = append(whereClauses, fmt.Sprintf("date(money.created_at) = '%s'", startDate))
+			whereClauses = append(whereClauses, fmt.Sprintf("timezone('UTC', money.created_at) = '%s'", startDate))
 		} else {
 			if startDate != "" {
-				whereClauses = append(whereClauses, fmt.Sprintf("money.created_at >= '%s'", startDate))
+				whereClauses = append(whereClauses, fmt.Sprintf("timezone('UTC', money.created_at) >= '%s'", startDate))
 			}
 			if endDate != "" {
-				whereClauses = append(whereClauses, fmt.Sprintf("money.created_at <= '%s'", endDate))
+				whereClauses = append(whereClauses, fmt.Sprintf("timezone('UTC', money.created_at) <= '%s'", endDate))
 			}
 		}
 	}
+	sortSql := "money.id"
+	if sort != "" {
+		sortSql = fmt.Sprintf("%s %s", sortSql, sort)
+	}
 	db := r.db.GetDb()
-	err := db.Where(strings.Join(whereClauses, " AND ")).Find(&monies).Error
+	err := db.Where(strings.Join(whereClauses, " AND ")).Order(sortSql).Find(&monies).Error
 	return monies, err
 }

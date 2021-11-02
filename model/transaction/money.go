@@ -21,4 +21,5 @@ type GetMoneyWithFilterReq struct {
 	Types     []int32 `json:"types"`
 	StartDate string  `json:"start_date"`
 	EndDate   string  `json:"end_date"`
+	Sort      string  `json:"sort"`
 }
