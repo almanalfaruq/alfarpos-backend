@@ -59,3 +59,8 @@ type GetOrderUsingFilterParam struct {
 	Limit     int32   `json:"limit"`
 	Page      int32   `json:"page"`
 }
+
+type GetOrderUsingFilterResponse struct {
+	Orders  []Order `json:"orders"`
+	HasNext bool    `json:"has_next"`
+}

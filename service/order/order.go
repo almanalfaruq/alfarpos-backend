@@ -72,25 +72,34 @@ func (s *OrderService) GetOrderByUserId(userId int64) ([]orderentity.Order, erro
 	return orders, nil
 }
 
-func (s *OrderService) GetOrderUsingFilter(param orderentity.GetOrderUsingFilterParam) ([]orderentity.Order, error) {
+func (s *OrderService) GetOrderUsingFilter(param orderentity.GetOrderUsingFilterParam) (orderentity.GetOrderUsingFilterResponse, error) {
 	var limitPlusOne int32
 	if param.Limit != 0 {
 		limitPlusOne = param.Limit + 1
 	}
-	orders, err := s.order.FindByFilter(param.Statuses, param.Invoice, param.StartDate, param.EndDate, param.Sort, limitPlusOne, param.Page)
+	var offset int32
+	if param.Page > 0 {
+		offset = (param.Page - 1) * param.Limit
+	}
+	orders, err := s.order.FindByFilter(param.Statuses, param.Invoice, param.StartDate, param.EndDate, param.Sort, limitPlusOne, offset)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			return []orderentity.Order{}, fmt.Errorf("Order with filter: %+v is not found", param)
+			return orderentity.GetOrderUsingFilterResponse{}, fmt.Errorf("Order with filter: %+v is not found", param)
 		}
-		return []orderentity.Order{}, err
+		return orderentity.GetOrderUsingFilterResponse{}, err
 	}
 	if len(orders) == 0 {
-		return orders, errors.New("Orders not found")
+		return orderentity.GetOrderUsingFilterResponse{}, errors.New("Orders not found")
 	}
-	if param.Limit != 0 && param.Page > 1 && len(orders) > int(param.Limit) {
+	var hasNext bool
+	if param.Limit != 0 && param.Page >= 1 && len(orders) > int(param.Limit) {
 		orders = orders[:param.Limit]
+		hasNext = true
 	}
-	return orders, nil
+	return orderentity.GetOrderUsingFilterResponse{
+		Orders:  orders,
+		HasNext: hasNext,
+	}, nil
 }
 
 func (s *OrderService) NewOrder(order orderentity.Order) (orderentity.Order, error) {

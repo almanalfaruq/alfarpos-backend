@@ -193,18 +193,18 @@ func (mr *MockorderRepositoryIfaceMockRecorder) FindByUserId(userId interface{})
 }
 
 // FindByFilter mocks base method
-func (m *MockorderRepositoryIface) FindByFilter(status []int32, invoice, startDate, endDate, sort string, limit, page int32) ([]order.Order, error) {
+func (m *MockorderRepositoryIface) FindByFilter(status []int32, invoice, startDate, endDate, sort string, limit, offset int32) ([]order.Order, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindByFilter", status, invoice, startDate, endDate, sort, limit, page)
+	ret := m.ctrl.Call(m, "FindByFilter", status, invoice, startDate, endDate, sort, limit, offset)
 	ret0, _ := ret[0].([]order.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindByFilter indicates an expected call of FindByFilter
-func (mr *MockorderRepositoryIfaceMockRecorder) FindByFilter(status, invoice, startDate, endDate, sort, limit, page interface{}) *gomock.Call {
+func (mr *MockorderRepositoryIfaceMockRecorder) FindByFilter(status, invoice, startDate, endDate, sort, limit, offset interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByFilter", reflect.TypeOf((*MockorderRepositoryIface)(nil).FindByFilter), status, invoice, startDate, endDate, sort, limit, page)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByFilter", reflect.TypeOf((*MockorderRepositoryIface)(nil).FindByFilter), status, invoice, startDate, endDate, sort, limit, offset)
 }
 
 // New mocks base method

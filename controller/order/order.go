@@ -100,14 +100,14 @@ func (c *OrderController) GetOrderUsingFilterHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	orders, err := c.order.GetOrderUsingFilter(param)
+	result, err := c.order.GetOrderUsingFilter(param)
 	if err != nil {
 		logger.Log.Debug(err)
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	response.RenderJSONSuccess(w, http.StatusOK, orders, "Success getting orders with filter")
+	response.RenderJSONSuccess(w, http.StatusOK, result, "Success getting orders with filter")
 }
 
 // NewOrder godoc
