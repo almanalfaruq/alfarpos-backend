@@ -17,6 +17,7 @@ import (
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	productentity "github.com/almanalfaruq/alfarpos-backend/model/product"
+	"github.com/almanalfaruq/alfarpos-backend/util"
 	"github.com/almanalfaruq/alfarpos-backend/util/logger"
 )
 
@@ -52,6 +53,13 @@ func (service *ProductService) GetAllProduct(limit, page int) (products []produc
 		return nil, false, err
 	}
 
+	sort.Slice(products, func(i, j int) bool {
+		if products[i].Name == products[j].Name {
+			return products[i].UnitID < products[j].UnitID
+		}
+		return products[i].Name < products[j].Name
+	})
+
 	if len(products) == limitPlusOne {
 		products = products[:limit]
 		hasNext = true
@@ -77,6 +85,12 @@ func (service *ProductService) GetProductsByIDs(IDs []int64) ([]productentity.Pr
 	if err != nil {
 		return []productentity.Product{}, err
 	}
+	sort.Slice(products, func(i, j int) bool {
+		if products[i].Name == products[j].Name {
+			return products[i].UnitID < products[j].UnitID
+		}
+		return products[i].Name < products[j].Name
+	})
 	for _, product := range products {
 		if len(product.ProductPrices) > 0 {
 			sort.Slice(product.ProductPrices, func(i, j int) bool {
@@ -106,6 +120,12 @@ func (service *ProductService) GetProductsByCode(productCode string) ([]producte
 	if err != nil {
 		return nil, err
 	}
+	sort.Slice(products, func(i, j int) bool {
+		if products[i].Name == products[j].Name {
+			return products[i].UnitID < products[j].UnitID
+		}
+		return products[i].Name < products[j].Name
+	})
 	for _, product := range products {
 		if len(product.ProductPrices) > 0 {
 			sort.Slice(product.ProductPrices, func(i, j int) bool {
@@ -126,6 +146,12 @@ func (service *ProductService) GetProductsBySearchQuery(query string, limit, pag
 	if err != nil {
 		return nil, false, err
 	}
+	sort.Slice(products, func(i, j int) bool {
+		if products[i].Name == products[j].Name {
+			return products[i].UnitID < products[j].UnitID
+		}
+		return products[i].Name < products[j].Name
+	})
 	for _, product := range products {
 		if len(product.ProductPrices) > 0 {
 			sort.Slice(product.ProductPrices, func(i, j int) bool {
@@ -146,6 +172,12 @@ func (service *ProductService) GetProductsByName(productName string) ([]producte
 	if err != nil {
 		return nil, err
 	}
+	sort.Slice(products, func(i, j int) bool {
+		if products[i].Name == products[j].Name {
+			return products[i].UnitID < products[j].UnitID
+		}
+		return products[i].Name < products[j].Name
+	})
 	for _, product := range products {
 		if len(product.ProductPrices) > 0 {
 			sort.Slice(product.ProductPrices, func(i, j int) bool {
@@ -162,6 +194,12 @@ func (service *ProductService) GetProductsByCategoryName(categoryName string) ([
 	if err != nil {
 		return nil, err
 	}
+	sort.Slice(products, func(i, j int) bool {
+		if products[i].Name == products[j].Name {
+			return products[i].UnitID < products[j].UnitID
+		}
+		return products[i].Name < products[j].Name
+	})
 	for _, product := range products {
 		if len(product.ProductPrices) > 0 {
 			sort.Slice(product.ProductPrices, func(i, j int) bool {
@@ -178,6 +216,12 @@ func (service *ProductService) GetProductsByUnitName(unitName string) ([]product
 	if err != nil {
 		return nil, err
 	}
+	sort.Slice(products, func(i, j int) bool {
+		if products[i].Name == products[j].Name {
+			return products[i].UnitID < products[j].UnitID
+		}
+		return products[i].Name < products[j].Name
+	})
 	for _, product := range products {
 		if len(product.ProductPrices) > 0 {
 			sort.Slice(product.ProductPrices, func(i, j int) bool {
@@ -379,8 +423,29 @@ func (s *ProductService) UpdateProduct(productData string) (productentity.Produc
 	return s.product.Update(product)
 }
 
-func (service *ProductService) DeleteProduct(id int64) (productentity.Product, error) {
-	return service.product.Delete(id)
+func (s *ProductService) DeleteProduct(id int64) (productentity.Product, error) {
+	product, err := s.product.FindById(id)
+	if err != nil {
+		return productentity.Product{}, err
+	}
+	if len(product.RelatedProducts) == 0 {
+		return s.product.Delete(id)
+	}
+
+	products, err := s.product.FindByIDs(product.RelatedProducts)
+	if err != nil {
+		return productentity.Product{}, err
+	}
+
+	for _, p := range products {
+		p.RelatedProducts = util.FindAndDeleteInt64(p.RelatedProducts, id)
+		_, err := s.product.Update(p)
+		if err != nil {
+			return productentity.Product{}, err
+		}
+	}
+
+	return s.product.Delete(id)
 }
 
 func (s *ProductService) parseExcelRowsToProduct(rows [][]string) ([]productentity.Product, []string) {
