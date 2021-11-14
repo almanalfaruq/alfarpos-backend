@@ -73,7 +73,7 @@ func GetAllRoutes(database *util.DBConn, config util.Config) *mux.Router {
 
 	moneyController := InjectMoneyController(database, config)
 	routesApi.HandleFunc("/money", authMw.CheckJWTToken(moneyController.NewMoneyHandler)).Methods("POST")
-	routesApi.HandleFunc("/money/filters", authMw.CheckJWTToken(moneyController.GetMoneyTransactionWithFilterHandler)).Methods("GET", "POST")
+	routesApi.HandleFunc("/money/filters", authMw.CheckCORS(authMw.CheckJWTToken(moneyController.GetMoneyTransactionWithFilterHandler))).Methods("GET", "POST", "OPTIONS")
 
 	profileController := InjectProfileController(database, config)
 	routesApi.HandleFunc("/profiles/{id}", authMw.CheckJWTToken(profileController.GetProfileByIDHandler)).Methods("GET")
