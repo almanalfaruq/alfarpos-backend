@@ -23,9 +23,8 @@ type DBConn struct {
 
 func (dbConn *DBConn) Open(config Config) *gorm.DB {
 	var (
-		dbName   string
-		password string
-		url      string
+		dbName string
+		url    string
 	)
 	if config.Env == "test" {
 		dbName = config.Database.DBTestName
@@ -34,12 +33,7 @@ func (dbConn *DBConn) Open(config Config) *gorm.DB {
 		dbName = config.Database.DBName
 		golog.Infof("Connecting to database: %v", config.Database.DBName)
 	}
-	if config.Database.Password == "" {
-		password = `""`
-	} else {
-		password = config.Database.Password
-	}
-	url = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", config.Database.Username, password,
+	url = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", config.Database.Username, config.Database.Password,
 		config.Database.Host, config.Database.Port, dbName)
 	sqlDB, err := sql.Open("postgres", url)
 	if err != nil {
