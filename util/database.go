@@ -1,7 +1,6 @@
 package util
 
 import (
-	"database/sql"
 	"fmt"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
@@ -35,13 +34,8 @@ func (dbConn *DBConn) Open(config Config) *gorm.DB {
 	}
 	url = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", config.Database.Username, config.Database.Password,
 		config.Database.Host, config.Database.Port, dbName)
-	sqlDB, err := sql.Open("postgres", url)
-	if err != nil {
-		panic("Cannot connect to the database using sql open")
-	}
-	dbConn.DB, err = gorm.Open(postgres.New(postgres.Config{
-		Conn: sqlDB,
-	}), &gorm.Config{})
+	var err error
+	dbConn.DB, err = gorm.Open(postgres.Open(url), &gorm.Config{})
 	if err != nil {
 		panic("Cannot connect to the database using gorm")
 	}
