@@ -92,13 +92,13 @@ func (repo *OrderRepository) FindByFilter(status []int32, invoice, startDate, en
 	}
 	if startDate != "" || endDate != "" {
 		if startDate == endDate {
-			whereClauses = append(whereClauses, fmt.Sprintf("timezone('UTC', orders.created_at)::date = '%s'", startDate))
+			whereClauses = append(whereClauses, fmt.Sprintf("orders.created_at::date = '%s'", startDate))
 		} else {
 			if startDate != "" {
-				whereClauses = append(whereClauses, fmt.Sprintf("timezone('UTC', orders.created_at)::date >= '%s'", startDate))
+				whereClauses = append(whereClauses, fmt.Sprintf("orders.created_at::date >= '%s'", startDate))
 			}
 			if endDate != "" {
-				whereClauses = append(whereClauses, fmt.Sprintf("timezone('UTC', orders.created_at)::date <= '%s'", endDate))
+				whereClauses = append(whereClauses, fmt.Sprintf("orders.created_at::date <= '%s'", endDate))
 			}
 		}
 	}
