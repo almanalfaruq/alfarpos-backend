@@ -18,8 +18,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/swaggo/http-swagger v0.0.0-20200308142732-58ac5e232fba
 	github.com/swaggo/swag v1.6.9
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/sys v0.0.0-20210510120138-977fb7262007 // indirect
+	golang.org/x/crypto v0.1.0
 	gopkg.in/yaml.v2 v2.2.8
 	gorm.io/driver/postgres v1.0.5
 	gorm.io/gorm v1.20.7
