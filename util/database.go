@@ -14,6 +14,7 @@ import (
 	"github.com/kataras/golog"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"net/url"
 )
 
 type DBConn struct {
@@ -21,10 +22,7 @@ type DBConn struct {
 }
 
 func (dbConn *DBConn) Open(config Config) *gorm.DB {
-	var (
-		dbName string
-		url    string
-	)
+	var dbName string
 	if config.Env == "test" {
 		dbName = config.Database.DBTestName
 		golog.Infof("Connecting to database: %v", config.Database.DBTestName)
@@ -32,10 +30,10 @@ func (dbConn *DBConn) Open(config Config) *gorm.DB {
 		dbName = config.Database.DBName
 		golog.Infof("Connecting to database: %v", config.Database.DBName)
 	}
-	url = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", config.Database.Username, config.Database.Password,
+	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", config.Database.Username, url.QueryEscape(config.Database.Password),
 		config.Database.Host, config.Database.Port, dbName)
 	var err error
-	dbConn.DB, err = gorm.Open(postgres.Open(url), &gorm.Config{})
+	dbConn.DB, err = gorm.Open(postgres.Open(dbUrl), &gorm.Config{})
 	if err != nil {
 		panic("Cannot connect to the database using gorm")
 	}
