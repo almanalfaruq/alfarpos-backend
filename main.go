@@ -4,6 +4,7 @@ import (
 	"flag"
 	"net/http"
 
+	"github.com/kataras/golog"
 	"github.com/rs/cors"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
@@ -40,13 +41,13 @@ func main() {
 	if err := config.Read("/etc/alfarpos/config.yaml", &config); err != nil {
 		err = config.Read("./files/etc/alfarpos/config.yaml", &config)
 		if err != nil {
-			panic(err)
+			golog.Fatal(err)
 		}
 	}
 
-	err, cleanup := logger.New(&config)
+	cleanup, err := logger.New(&config)
 	if err != nil {
-		panic(err)
+		golog.Fatal(err)
 	}
 
 	initMigration(shouldDropDB)
@@ -59,7 +60,7 @@ func main() {
 func initMigration(shouldDropDB bool) {
 	logger.Log.Info("Connecting to database...")
 	databaseConnection.Open(config)
-	logger.Log.Info("Logonnected!")
+	logger.Log.Info("Connected!")
 	// Database Drop
 	if shouldDropDB {
 		logger.Log.Warn("Dropping database...")
@@ -94,7 +95,6 @@ func initRouter() {
 	err := http.ListenAndServe(":8000", handler)
 	if err != nil {
 		logger.Log.Fatal(err)
-		panic(err)
 	}
 }
 
@@ -105,7 +105,7 @@ func populateFirstData() {
 	paymentRepo := repository.NewPaymentRepo(&databaseConnection)
 	_, err := paymentRepo.New(payment)
 	if err != nil {
-		panic(err)
+		logger.Log.Fatal(err)
 	}
 
 	customer := model.Customer{
@@ -114,7 +114,7 @@ func populateFirstData() {
 	customerRepo := repository.NewCustomerRepo(&databaseConnection)
 	_, err = customerRepo.New(customer)
 	if err != nil {
-		panic(err)
+		logger.Log.Fatal(err)
 	}
 
 	profile := profileentity.Profile{
@@ -127,6 +127,6 @@ func populateFirstData() {
 	profileRepo := profilerepo.NewProfile(&databaseConnection)
 	_, err = profileRepo.New(profile)
 	if err != nil {
-		panic(err)
+		logger.Log.Fatal(err)
 	}
 }

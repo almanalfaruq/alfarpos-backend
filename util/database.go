@@ -3,6 +3,8 @@ package util
 import (
 	"fmt"
 
+	"net/url"
+
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	orderentity "github.com/almanalfaruq/alfarpos-backend/model/order"
 	productentity "github.com/almanalfaruq/alfarpos-backend/model/product"
@@ -14,7 +16,6 @@ import (
 	"github.com/kataras/golog"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"net/url"
 )
 
 type DBConn struct {
@@ -35,7 +36,7 @@ func (dbConn *DBConn) Open(config Config) *gorm.DB {
 	var err error
 	dbConn.DB, err = gorm.Open(postgres.Open(dbUrl), &gorm.Config{})
 	if err != nil {
-		panic("Cannot connect to the database using gorm")
+		golog.Fatalf("Cannot connect to the database using gorm. err: %v", err)
 	}
 	return dbConn.DB
 }
@@ -49,7 +50,7 @@ func (dbConn *DBConn) MigrateDb() {
 		&productentity.Product{}, &productentity.ProductPrice{}, &stockentity.Stock{}, &model.Unit{}, &userentity.User{}, &transactionentity.Money{},
 		&profileentity.Profile{}, &statsentity.ShopStats{})
 	if err != nil {
-		panic(err)
+		golog.Fatalf("Cannot connect to the database using gorm. err: %v", err)
 	}
 }
 
@@ -58,7 +59,7 @@ func (dbConn *DBConn) DropDb() {
 		&productentity.Product{}, &productentity.ProductPrice{}, &stockentity.Stock{}, &model.Unit{}, &userentity.User{}, &transactionentity.Money{},
 		&profileentity.Profile{}, &statsentity.ShopStats{})
 	if err != nil {
-		panic(err)
+		golog.Fatalf("Cannot connect to the database using gorm. err: %v", err)
 	}
 }
 

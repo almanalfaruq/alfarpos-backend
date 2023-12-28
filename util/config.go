@@ -1,7 +1,7 @@
 package util
 
 import (
-	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v2"
 )
@@ -44,7 +44,7 @@ type IConfig interface {
 }
 
 func (config *Config) Read(filePath string, c *Config) error {
-	file, err := ioutil.ReadFile(filePath)
+	file, err := os.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
