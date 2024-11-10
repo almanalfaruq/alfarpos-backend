@@ -3,9 +3,9 @@ debug: true
 secret-key: secret
 database:
   host: localhost
-  port: 5432
-  username: almanalfaruq
-  password: ''
+  port: 5656
+  username: alfar
+  password: 'testabcde'
   dbname: alfarpos
   dbname-test: alfarpos_test
 shop-profile:

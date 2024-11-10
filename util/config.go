@@ -11,6 +11,7 @@ type Config struct {
 	Debug       bool        `yaml:"debug"`
 	SecretKey   string      `yaml:"secret-key"`
 	Database    Database    `yaml:"database"`
+	Memcached   Memcached   `yaml:"memcached"`
 	ShopProfile ShopProfile `yaml:"shop-profile"`
 	Log         Log         `yaml:"log"`
 }
@@ -22,6 +23,11 @@ type Database struct {
 	Password   string `yaml:"password"`
 	DBName     string `yaml:"dbname"`
 	DBTestName string `yaml:"dbname-test"`
+}
+
+type Memcached struct {
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
 }
 
 type ShopProfile struct {

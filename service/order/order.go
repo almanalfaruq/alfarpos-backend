@@ -10,6 +10,7 @@ import (
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	orderentity "github.com/almanalfaruq/alfarpos-backend/model/order"
 	"github.com/almanalfaruq/alfarpos-backend/util/logger"
+	"github.com/almanalfaruq/alfarpos-backend/util/memcache"
 )
 
 type OrderService struct {
@@ -115,6 +116,9 @@ func (s *OrderService) NewOrder(order orderentity.Order) (orderentity.Order, err
 	order.Payment = payment
 	now := time.Now()
 	order.Invoice = fmt.Sprintf("INV/%s/%d", now.Format("20060201"), now.Unix())
+	if s.validateDuplicateOrder(order) {
+		return order, errors.New("order duplicated")
+	}
 	order, err = s.order.New(order)
 	if err != nil {
 		return orderentity.Order{}, err
@@ -138,9 +142,26 @@ func (s *OrderService) NewOrder(order orderentity.Order) (orderentity.Order, err
 				logger.Log.Errorf("Update Product Stock error: %v", err)
 			}
 		}
-
 	}
+
+	err = memcache.GetInstance().Set(order.GenerateCacheKey(), true, 3)
+	if err != nil {
+		logger.Log.Errorf("Set order cache error: %v", err)
+	}
+
 	return order, nil
+}
+
+func (s *OrderService) validateDuplicateOrder(order orderentity.Order) bool {
+	key := order.GenerateCacheKey()
+	cacheResult, err := memcache.GetInstance().Get(key)
+	if err != nil {
+		logger.Log.Errorf("Get order cache error: %v", err)
+		return false
+	}
+
+	result, _ := cacheResult.(bool)
+	return result
 }
 
 func (s *OrderService) UpdateOrder(order orderentity.Order) (orderentity.Order, error) {

@@ -1,6 +1,8 @@
 package order
 
 import (
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
@@ -35,6 +37,14 @@ func (o *Order) AfterFind(tx *gorm.DB) (err error) {
 		o.User.Password = ""
 	}
 	return
+}
+
+func (o Order) GenerateCacheKey() string {
+	productIDs := []string{}
+	for _, detail := range o.OrderDetails {
+		productIDs = append(productIDs, strconv.FormatInt(detail.ProductOrder.ProductID, 10))
+	}
+	return strings.Join(productIDs, ",")
 }
 
 // Status for order
