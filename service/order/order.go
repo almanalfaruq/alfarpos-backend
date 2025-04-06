@@ -109,6 +109,9 @@ func (s *OrderService) NewOrder(order orderentity.Order) (orderentity.Order, err
 		return orderentity.Order{}, err
 	}
 	order.Customer = customer
+	if order.PaymentID == 0 {
+		order.PaymentID = 1
+	}
 	payment, err := s.payment.FindById(order.PaymentID)
 	if err != nil {
 		return orderentity.Order{}, err
@@ -156,7 +159,9 @@ func (s *OrderService) validateDuplicateOrder(order orderentity.Order) bool {
 	key := order.GenerateCacheKey()
 	cacheResult, err := memcache.GetInstance().Get(key)
 	if err != nil {
-		logger.Log.Errorf("Get order cache error: %v", err)
+		if !errors.Is(err, memcache.ErrCacheMiss) {
+			logger.Log.Errorf("Get order cache error: %v", err)
+		}
 		return false
 	}
 

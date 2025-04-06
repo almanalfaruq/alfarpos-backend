@@ -7,6 +7,8 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
+var ErrCacheMiss = memcache.ErrCacheMiss
+
 type singleton struct {
 	client *memcache.Client
 }
