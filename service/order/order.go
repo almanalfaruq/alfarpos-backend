@@ -120,8 +120,14 @@ func (s *OrderService) NewOrder(order orderentity.Order) (orderentity.Order, err
 	now := time.Now()
 	order.Invoice = fmt.Sprintf("INV/%s/%d", now.Format("20060201"), now.Unix())
 	if s.validateDuplicateOrder(order) {
-		return order, errors.New("order duplicated")
+		return order, fmt.Errorf("order duplicated with order id: %d", order.ID)
 	}
+
+	err = memcache.GetInstance().Set(order.GenerateCacheKey(), true, 3)
+	if err != nil {
+		logger.Log.Errorf("Set order cache error: %v", err)
+	}
+
 	order, err = s.order.New(order)
 	if err != nil {
 		return orderentity.Order{}, err
@@ -130,6 +136,7 @@ func (s *OrderService) NewOrder(order orderentity.Order) (orderentity.Order, err
 		product, err := s.product.FindById(orderDetail.ProductOrder.ProductID)
 		if err != nil {
 			logger.Log.Errorf("Cannot find product: %v", err)
+			continue
 		}
 		// Only update stock when the order is finished
 		if order.Status == orderentity.StatusFinish {
@@ -145,11 +152,6 @@ func (s *OrderService) NewOrder(order orderentity.Order) (orderentity.Order, err
 				logger.Log.Errorf("Update Product Stock error: %v", err)
 			}
 		}
-	}
-
-	err = memcache.GetInstance().Set(order.GenerateCacheKey(), true, 3)
-	if err != nil {
-		logger.Log.Errorf("Set order cache error: %v", err)
 	}
 
 	return order, nil
