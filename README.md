@@ -35,3 +35,19 @@ $ sudo systemctl start alfarpos.service
 ### Dev Notes
 
 #### Generate swagger docs
+
+1. Install swag:
+```bash
+go install github.com/swaggo/swag/cmd/swag@latest
+```
+
+2. Generate docs:
+```bash
+swag init --parseDependency
+```
+
+3. Access the documentation:
+Open [http://localhost:8000/swagger/index.html](http://localhost:8000/swagger/index.html) in your browser.
+
+#### Authentication
+Most endpoints are protected by JWT. You need to login (`POST /api/users/login`) to get a token, then click the "Authorize" button in Swagger UI and enter `Bearer <your_token>`.

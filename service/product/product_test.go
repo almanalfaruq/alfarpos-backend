@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/360EntSecGroup-Skylar/excelize/v2"
+	"github.com/xuri/excelize/v2"
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	productentity "github.com/almanalfaruq/alfarpos-backend/model/product"
 	stockentity "github.com/almanalfaruq/alfarpos-backend/model/stock"

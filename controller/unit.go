@@ -3,7 +3,7 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -27,6 +27,16 @@ func NewUnitController(conf util.Config, unitService unitServiceIface) *UnitCont
 	}
 }
 
+// GetUnits godoc
+// @Summary Get all units or search by name
+// @Description Get all units or search by name
+// @Tags unit
+// @Produce json
+// @Param query query string false "Unit name query"
+// @Success 200 {object} response.ResponseStruct{data=[]model.Unit} "Return array of units"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Not Found"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Router /units [get]
 func (c *UnitController) GetUnitsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -54,6 +64,16 @@ func (c *UnitController) GetUnitsHandler(w http.ResponseWriter, r *http.Request)
 	response.RenderJSONSuccess(w, http.StatusOK, units, "Success getting all units")
 }
 
+// GetUnitByID godoc
+// @Summary Get unit by ID
+// @Description Get unit by ID
+// @Tags unit
+// @Produce json
+// @Param id path int true "Unit ID"
+// @Success 200 {object} response.ResponseStruct{data=model.Unit} "Return unit"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Not Found"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Router /units/id/{id} [get]
 func (c *UnitController) GetUnitByIdHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -70,6 +90,18 @@ func (c *UnitController) GetUnitByIdHandler(w http.ResponseWriter, r *http.Reque
 	response.RenderJSONSuccess(w, http.StatusOK, unit, fmt.Sprintf("Success getting unit with id: %d", id))
 }
 
+// NewUnit godoc
+// @Summary Create a new unit
+// @Description Create a new unit
+// @Tags unit
+// @Accept json
+// @Produce json
+// @Param unit body model.Unit true "Unit data"
+// @Success 201 {object} response.ResponseStruct{data=model.Unit} "Unit created"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /units [post]
 func (c *UnitController) NewUnitHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Content-Type", "application/json")
@@ -86,11 +118,11 @@ func (c *UnitController) NewUnitHandler(w http.ResponseWriter, r *http.Request) 
 
 	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
+		response.RenderJSONError(w, http.StatusForbidden, errors.New(message))
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
@@ -106,6 +138,19 @@ func (c *UnitController) NewUnitHandler(w http.ResponseWriter, r *http.Request) 
 	response.RenderJSONSuccess(w, http.StatusCreated, unit, "Unit created")
 }
 
+// UpdateUnit godoc
+// @Summary Update a unit
+// @Description Update a unit
+// @Tags unit
+// @Accept json
+// @Produce json
+// @Param id path int true "Unit ID"
+// @Param unit body model.Unit true "Unit data"
+// @Success 200 {object} response.ResponseStruct{data=model.Unit} "Unit updated"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /units/{id} [put]
 func (c *UnitController) UpdateUnitHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Content-Type", "application/json")
@@ -124,11 +169,11 @@ func (c *UnitController) UpdateUnitHandler(w http.ResponseWriter, r *http.Reques
 
 	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
+		response.RenderJSONError(w, http.StatusForbidden, errors.New(message))
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
@@ -144,6 +189,17 @@ func (c *UnitController) UpdateUnitHandler(w http.ResponseWriter, r *http.Reques
 	response.RenderJSONSuccess(w, http.StatusOK, unit, "Unit updated")
 }
 
+// DeleteUnit godoc
+// @Summary Delete a unit
+// @Description Delete a unit by ID
+// @Tags unit
+// @Produce json
+// @Param id path int true "Unit ID"
+// @Success 200 {object} response.ResponseStruct{data=model.Unit} "Unit deleted"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /units/{id} [delete]
 func (c *UnitController) DeleteUnitHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Content-Type", "application/json")
@@ -162,7 +218,7 @@ func (c *UnitController) DeleteUnitHandler(w http.ResponseWriter, r *http.Reques
 
 	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
+		response.RenderJSONError(w, http.StatusForbidden, errors.New(message))
 		return
 	}
 

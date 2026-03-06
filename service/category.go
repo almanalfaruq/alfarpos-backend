@@ -42,7 +42,7 @@ func (service *CategoryService) GetCategoriesByName(name string) ([]model.Catego
 		return nil, err
 	}
 	if len(categories) == 0 {
-		return nil, errors.New("Categories not found")
+		return []model.Category{}, errors.New("Categories not found")
 	}
 	return categories, nil
 }

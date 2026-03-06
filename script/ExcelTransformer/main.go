@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	productentity "github.com/almanalfaruq/alfarpos-backend/model/product"
+	"github.com/xuri/excelize/v2"
 )
 
 /*
@@ -50,7 +50,10 @@ func main() {
 		panic(err)
 	}
 
-	rows := excel.GetRows(sheetName)
+	rows, err := excel.GetRows(sheetName)
+	if err != nil {
+		panic(err)
+	}
 	if len(rows) < 1 {
 		panic("Rows length < 1")
 	}

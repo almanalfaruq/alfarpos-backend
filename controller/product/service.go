@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/360EntSecGroup-Skylar/excelize/v2"
+	"github.com/xuri/excelize/v2"
 	productentity "github.com/almanalfaruq/alfarpos-backend/model/product"
 )
 

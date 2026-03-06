@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
+	"github.com/xuri/excelize/v2"
 )
 
 func main() {
@@ -26,7 +26,10 @@ func main() {
 		panic(err)
 	}
 
-	rows := excel.GetRows(sheetName)
+	rows, err := excel.GetRows(sheetName)
+	if err != nil {
+		panic(err)
+	}
 	if len(rows) < 1 {
 		panic("Rows length < 1")
 	}

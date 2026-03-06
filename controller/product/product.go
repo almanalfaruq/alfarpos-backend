@@ -3,7 +3,7 @@ package product
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -189,6 +189,18 @@ func (c *ProductController) GetProductByCodeHandler(w http.ResponseWriter, r *ht
 	response.RenderJSONSuccess(w, http.StatusOK, product, fmt.Sprintf("Success getting product with code: %s", code))
 }
 
+// NewProduct godoc
+// @Summary Create a new product
+// @Description Create a new product
+// @Tags product
+// @Accept json
+// @Produce json
+// @Param product body productentity.Product true "Product data"
+// @Success 201 {object} response.ResponseStruct{data=productentity.Product} "Product created"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /products [post]
 func (c *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Content-Type", "application/json")
@@ -206,11 +218,11 @@ func (c *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Req
 
 	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
+		response.RenderJSONError(w, http.StatusForbidden, errors.New(message))
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		logger.Log.Debug(err)
@@ -228,6 +240,14 @@ func (c *ProductController) NewProductHandler(w http.ResponseWriter, r *http.Req
 	response.RenderJSONSuccess(w, http.StatusCreated, product, "Product created")
 }
 
+// ExportAllProductsToExcel godoc
+// @Summary Export all products to excel
+// @Description Export all products to excel file
+// @Tags product
+// @Produce octet-stream
+// @Success 200 {file} file "Excel file"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Router /products/export_excel [get]
 func (c *ProductController) ExportAllProductsToExcelHandler(w http.ResponseWriter, r *http.Request) {
 	excel, err := c.product.ExportAllProductsToExcel()
 	if err != nil {
@@ -279,7 +299,7 @@ func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *
 
 	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
+		response.RenderJSONError(w, http.StatusForbidden, errors.New(message))
 		return
 	}
 
@@ -311,6 +331,19 @@ func (c *ProductController) UploadExcelProductHandler(w http.ResponseWriter, r *
 	response.RenderJSONSuccess(w, http.StatusCreated, message, message)
 }
 
+// UpdateProduct godoc
+// @Summary Update a product
+// @Description Update a product
+// @Tags product
+// @Accept json
+// @Produce json
+// @Param id path int true "Product ID"
+// @Param product body productentity.Product true "Product data"
+// @Success 200 {object} response.ResponseStruct{data=productentity.Product} "Product updated"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /products/{id} [put]
 func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Content-Type", "application/json")
@@ -330,11 +363,11 @@ func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.
 
 	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
+		response.RenderJSONError(w, http.StatusForbidden, errors.New(message))
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		logger.Log.Debug(err)
@@ -352,6 +385,17 @@ func (c *ProductController) UpdateProductHandler(w http.ResponseWriter, r *http.
 	response.RenderJSONSuccess(w, http.StatusOK, product, "Product updated")
 }
 
+// DeleteProduct godoc
+// @Summary Delete a product
+// @Description Delete a product by ID
+// @Tags product
+// @Produce json
+// @Param id path int true "Product ID"
+// @Success 200 {object} response.ResponseStruct{data=productentity.Product} "Product deleted"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /products/{id} [delete]
 func (c *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Content-Type", "application/json")
@@ -371,7 +415,7 @@ func (c *ProductController) DeleteProductHandler(w http.ResponseWriter, r *http.
 
 	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
+		response.RenderJSONError(w, http.StatusForbidden, errors.New(message))
 		return
 	}
 
@@ -416,7 +460,7 @@ func (c *ProductController) UpsertProductUsingExcelHandler(w http.ResponseWriter
 
 	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
+		response.RenderJSONError(w, http.StatusForbidden, errors.New(message))
 		return
 	}
 

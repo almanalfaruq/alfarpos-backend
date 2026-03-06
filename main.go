@@ -29,7 +29,7 @@ var databaseConnection util.DBConn
 // @contact.url https://twitter.com/almanalfaruq
 // @contact.email alman.alfaruq@gmail.com
 
-// @host localhost:8080
+// @host localhost:8000
 // @BasePath /api/
 // @query.collection.format multi
 

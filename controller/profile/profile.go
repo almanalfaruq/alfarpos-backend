@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -25,6 +25,17 @@ func NewProfile(profileService profileService) *ProfileController {
 	}
 }
 
+// GetProfileByID godoc
+// @Summary Get profile by ID
+// @Description Get profile by ID
+// @Tags profile
+// @Produce json
+// @Param id path int true "Profile ID"
+// @Success 200 {object} response.ResponseStruct{data=profileentity.Profile} "Return profile"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /profiles/{id} [get]
 func (c *ProfileController) GetProfileByIDHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -59,6 +70,18 @@ func (c *ProfileController) GetProfileByIDHandler(w http.ResponseWriter, r *http
 	response.RenderJSONSuccess(w, http.StatusOK, profile, "Success getting profile by ID")
 }
 
+// UpdateProfile godoc
+// @Summary Update profile
+// @Description Update profile
+// @Tags profile
+// @Accept json
+// @Produce json
+// @Param body body profileentity.Profile true "Profile data"
+// @Success 200 {object} response.ResponseStruct{data=profileentity.Profile} "Return profile"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /profiles [put]
 func (c *ProfileController) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -84,7 +107,7 @@ func (c *ProfileController) UpdateHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
@@ -107,6 +130,16 @@ func (c *ProfileController) UpdateHandler(w http.ResponseWriter, r *http.Request
 	response.RenderJSONSuccess(w, http.StatusOK, profile, "Success updating profile")
 }
 
+// GetShopProfile godoc
+// @Summary Get shop profile
+// @Description Get shop profile
+// @Tags profile
+// @Produce json
+// @Success 200 {object} response.ResponseStruct{data=profileentity.Profile} "Return shop profile"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /profile/shop/ [get]
 func (c *ProfileController) GetShopProfileHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")

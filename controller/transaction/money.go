@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	transactionentity "github.com/almanalfaruq/alfarpos-backend/model/transaction"
@@ -33,6 +33,7 @@ func NewMoney(moneyUC moneyUsecase) *MoneyController {
 // @Success 200 {object} response.ResponseStruct{data=transactionentity.Money} "Return money transaction data"
 // @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
 // @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Security ApiKeyAuth
 // @Router /money [post]
 func (c *MoneyController) NewMoneyHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
@@ -53,7 +54,7 @@ func (c *MoneyController) NewMoneyHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
@@ -86,6 +87,7 @@ func (c *MoneyController) NewMoneyHandler(w http.ResponseWriter, r *http.Request
 // @Success 200 {object} response.ResponseStruct{data=[]transactionentity.Money} "Return monies transaction data"
 // @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
 // @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Security ApiKeyAuth
 // @Router /money/filters [post]
 func (c *MoneyController) GetMoneyTransactionWithFilterHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
@@ -107,7 +109,7 @@ func (c *MoneyController) GetMoneyTransactionWithFilterHandler(w http.ResponseWr
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		response.RenderJSONError(w, http.StatusInternalServerError, err)

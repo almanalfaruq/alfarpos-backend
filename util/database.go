@@ -48,7 +48,7 @@ func (dbConn *DBConn) GetDb() *gorm.DB {
 func (dbConn *DBConn) MigrateDb() {
 	err := dbConn.DB.AutoMigrate(&model.Category{}, &model.Customer{}, &orderentity.Order{}, &orderentity.OrderDetail{}, &model.Payment{},
 		&productentity.Product{}, &productentity.ProductPrice{}, &stockentity.Stock{}, &model.Unit{}, &userentity.User{}, &transactionentity.Money{},
-		&profileentity.Profile{}, &statsentity.ShopStats{})
+		&profileentity.Profile{}, &statsentity.ShopStats{}, &statsentity.ProductStats{})
 	if err != nil {
 		golog.Fatalf("Cannot connect to the database using gorm. err: %v", err)
 	}
@@ -57,7 +57,7 @@ func (dbConn *DBConn) MigrateDb() {
 func (dbConn *DBConn) DropDb() {
 	err := dbConn.DB.Migrator().DropTable(&model.Category{}, &model.Customer{}, &orderentity.Order{}, &orderentity.OrderDetail{}, &model.Payment{},
 		&productentity.Product{}, &productentity.ProductPrice{}, &stockentity.Stock{}, &model.Unit{}, &userentity.User{}, &transactionentity.Money{},
-		&profileentity.Profile{}, &statsentity.ShopStats{})
+		&profileentity.Profile{}, &statsentity.ShopStats{}, &statsentity.ProductStats{})
 	if err != nil {
 		golog.Fatalf("Cannot connect to the database using gorm. err: %v", err)
 	}

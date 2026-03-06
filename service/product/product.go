@@ -13,7 +13,7 @@ import (
 
 	"github.com/lib/pq"
 
-	"github.com/360EntSecGroup-Skylar/excelize/v2"
+	"github.com/xuri/excelize/v2"
 
 	"github.com/almanalfaruq/alfarpos-backend/model"
 	productentity "github.com/almanalfaruq/alfarpos-backend/model/product"

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -28,6 +28,16 @@ func NewOrderController(conf util.Config, orderService orderServiceIface) *Order
 	}
 }
 
+// GetAllOrder godoc
+// @Summary Get all orders
+// @Description Get all orders
+// @Tags order
+// @Produce json
+// @Success 200 {object} response.ResponseStruct{data=[]orderentity.Order} "Return array of orders"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /orders [get]
 func (c *OrderController) GetAllOrderHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Content-Type", "application/json")
@@ -43,7 +53,7 @@ func (c *OrderController) GetAllOrderHandler(w http.ResponseWriter, r *http.Requ
 
 	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
+		response.RenderJSONError(w, http.StatusForbidden, errors.New(message))
 		return
 	}
 
@@ -57,6 +67,19 @@ func (c *OrderController) GetAllOrderHandler(w http.ResponseWriter, r *http.Requ
 	response.RenderJSONSuccess(w, http.StatusOK, orders, "Success getting all orders")
 }
 
+// GetOrderUsingFilter godoc
+// @Summary Get orders using filter
+// @Description Get orders using filter
+// @Tags order
+// @Accept json
+// @Produce json
+// @Param filter body orderentity.GetOrderUsingFilterParam true "Filter parameters"
+// @Success 200 {object} response.ResponseStruct{data=[]orderentity.Order} "Return array of orders"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 400 {object} response.ResponseStruct{data=string} "Bad Request"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /orders/filter [post]
 func (c *OrderController) GetOrderUsingFilterHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Content-Type", "application/json")
@@ -78,7 +101,7 @@ func (c *OrderController) GetOrderUsingFilterHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
@@ -117,10 +140,11 @@ func (c *OrderController) GetOrderUsingFilterHandler(w http.ResponseWriter, r *h
 // @Tags order
 // @Accept json
 // @Produce json
-// @Param body body order.Order true "Order with order detail"
+// @Param body body orderentity.Order true "Order with order detail"
 // @Success 200 {object} response.ResponseStruct{data=orderentity.Order} "Return order data"
 // @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
 // @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Security ApiKeyAuth
 // @Router /orders [post]
 func (c *OrderController) NewOrderHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
@@ -143,7 +167,7 @@ func (c *OrderController) NewOrderHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		logger.Log.Debug(err)
@@ -175,6 +199,17 @@ func (c *OrderController) NewOrderHandler(w http.ResponseWriter, r *http.Request
 	response.RenderJSONSuccess(w, http.StatusOK, order, "Success creating a new order")
 }
 
+// GetOrderByID godoc
+// @Summary Get order by ID
+// @Description Get order by ID
+// @Tags order
+// @Produce json
+// @Param id path int true "Order ID"
+// @Success 200 {object} response.ResponseStruct{data=orderentity.Order} "Return order"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /orders/{id} [get]
 func (c *OrderController) GetOrderByIDHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Content-Type", "application/json")
@@ -209,6 +244,18 @@ func (c *OrderController) GetOrderByIDHandler(w http.ResponseWriter, r *http.Req
 	response.RenderJSONSuccess(w, http.StatusOK, orders, fmt.Sprintf("Success getting order by id: %d", id))
 }
 
+// UpdateStatus godoc
+// @Summary Update order status
+// @Description Update order status
+// @Tags order
+// @Accept json
+// @Produce json
+// @Param body body orderentity.Order true "Order data with ID and Status"
+// @Success 200 {object} response.ResponseStruct{data=orderentity.Order} "Return order"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /orders/status [put]
 func (c *OrderController) UpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Content-Type", "application/json")
@@ -230,7 +277,7 @@ func (c *OrderController) UpdateStatusHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		logger.Log.Debug(err)

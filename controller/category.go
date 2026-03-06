@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -28,6 +28,16 @@ func NewCategoryController(conf util.Config, categoryService categoryServiceIfac
 	}
 }
 
+// GetCategories godoc
+// @Summary Get all categories or search by name
+// @Description Get all categories or search by name
+// @Tags category
+// @Produce json
+// @Param query query string false "Category name query"
+// @Success 200 {object} response.ResponseStruct{data=[]model.Category} "Return array of categories"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Not Found"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Router /categories [get]
 func (c *CategoryController) GetCategoriesHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -57,6 +67,16 @@ func (c *CategoryController) GetCategoriesHandler(w http.ResponseWriter, r *http
 	response.RenderJSONSuccess(w, http.StatusOK, categories, message)
 }
 
+// GetCategoryByID godoc
+// @Summary Get category by ID
+// @Description Get category by ID
+// @Tags category
+// @Produce json
+// @Param id path int true "Category ID"
+// @Success 200 {object} response.ResponseStruct{data=model.Category} "Return category"
+// @Failure 404 {object} response.ResponseStruct{data=string} "Not Found"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Router /categories/id/{id} [get]
 func (c *CategoryController) GetCategoryByIdHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -74,6 +94,18 @@ func (c *CategoryController) GetCategoryByIdHandler(w http.ResponseWriter, r *ht
 	response.RenderJSONSuccess(w, http.StatusOK, category, message)
 }
 
+// NewCategory godoc
+// @Summary Create a new category
+// @Description Create a new category
+// @Tags category
+// @Accept json
+// @Produce json
+// @Param category body model.Category true "Category data"
+// @Success 201 {object} response.ResponseStruct{data=model.Category} "Category created"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /categories [post]
 func (c *CategoryController) NewCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Content-Type", "application/json")
@@ -90,11 +122,11 @@ func (c *CategoryController) NewCategoryHandler(w http.ResponseWriter, r *http.R
 
 	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
+		response.RenderJSONError(w, http.StatusForbidden, errors.New(message))
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
@@ -116,6 +148,19 @@ func (c *CategoryController) NewCategoryHandler(w http.ResponseWriter, r *http.R
 	response.RenderJSONSuccess(w, http.StatusCreated, category, "Category created")
 }
 
+// UpdateCategory godoc
+// @Summary Update a category
+// @Description Update a category
+// @Tags category
+// @Accept json
+// @Produce json
+// @Param id path int true "Category ID"
+// @Param category body model.Category true "Category data"
+// @Success 200 {object} response.ResponseStruct{data=model.Category} "Category updated"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /categories/{id} [put]
 func (c *CategoryController) UpdateCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Content-Type", "application/json")
@@ -134,11 +179,11 @@ func (c *CategoryController) UpdateCategoryHandler(w http.ResponseWriter, r *htt
 
 	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
+		response.RenderJSONError(w, http.StatusForbidden, errors.New(message))
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		response.RenderJSONError(w, http.StatusInternalServerError, err)
@@ -161,6 +206,17 @@ func (c *CategoryController) UpdateCategoryHandler(w http.ResponseWriter, r *htt
 	response.RenderJSONSuccess(w, http.StatusCreated, category, "Category updated")
 }
 
+// DeleteCategory godoc
+// @Summary Delete a category
+// @Description Delete a category by ID
+// @Tags category
+// @Produce json
+// @Param id path int true "Category ID"
+// @Success 200 {object} response.ResponseStruct{data=model.Category} "Category deleted"
+// @Failure 403 {object} response.ResponseStruct{data=string} "Forbidden"
+// @Failure 500 {object} response.ResponseStruct{data=string} "Internal Server Error"
+// @Security ApiKeyAuth
+// @Router /categories/{id} [delete]
 func (c *CategoryController) DeleteCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	w.Header().Set("Content-Type", "application/json")
@@ -179,7 +235,7 @@ func (c *CategoryController) DeleteCategoryHandler(w http.ResponseWriter, r *htt
 
 	if ok := user.HasRole(userentity.RoleManager, userentity.RoleAdmin); !ok {
 		message := "User must be Admin or Manager"
-		response.RenderJSONError(w, http.StatusForbidden, fmt.Errorf(message))
+		response.RenderJSONError(w, http.StatusForbidden, errors.New(message))
 		return
 	}
 

@@ -126,7 +126,7 @@ func TestCategoryService_GetCategoriesByName(t *testing.T) {
 						},
 						Name: "perkantoran",
 					},
-				})
+				}, nil)
 			},
 			args: args{
 				name: "kantor",
@@ -144,7 +144,7 @@ func TestCategoryService_GetCategoriesByName(t *testing.T) {
 		{
 			name: "Error",
 			mock: func(name string) {
-				catRepo.EXPECT().FindByName(name).Return([]model.Category{})
+				catRepo.EXPECT().FindByName(name).Return([]model.Category{}, nil)
 			},
 			args: args{
 				name: "kantor",

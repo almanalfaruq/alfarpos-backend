@@ -46,7 +46,23 @@ func (s *StatsService) GetShopStats(ctx context.Context, date string) (statsenti
 		logger.Log.Errorf("[GetShopStats] GetByDate error: %v", err)
 	}
 
-	// get from each table order and transaction if shop_stats return no data
+	result, err := s.calculateStatsForDate(ctx, date)
+	if err != nil {
+		return statsentity.ShopStats{}, err
+	}
+
+	// insert if not today
+	if !isToday {
+		_, err = s.statsRepo.InsertShopStats(ctx, result)
+		if err != nil {
+			logger.Log.Errorf("[GetShopStats] InsertShopStats error: %v", err)
+		}
+	}
+
+	return result, nil
+}
+
+func (s *StatsService) calculateStatsForDate(ctx context.Context, date string) (statsentity.ShopStats, error) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
@@ -125,15 +141,97 @@ func (s *StatsService) GetShopStats(ctx context.Context, date string) (statsenti
 
 	wg.Wait()
 
+	timeParam, _ := time.Parse("2006-01-02", date)
 	result.Date = timeParam
 
-	// insert if not today
-	if !isToday {
-		_, err = s.statsRepo.InsertShopStats(ctx, result)
-		if err != nil {
-			logger.Log.Errorf("[GetShopStats] InsertShopStats error: %v", err)
+	return result, nil
+}
+
+func (s *StatsService) GetTrendingProducts(ctx context.Context, period string) ([]statsentity.ProductStats, error) {
+	now := time.Now()
+	var startDate, endDate time.Time
+	endDate = now
+
+	switch period {
+	case "week":
+		startDate = now.AddDate(0, 0, -7)
+	case "month":
+		startDate = now.AddDate(0, -1, 0)
+	case "year":
+		startDate = now.AddDate(-1, 0, 0)
+	default:
+		// Default to 1 month
+		startDate = now.AddDate(0, -1, 0)
+	}
+
+	return s.statsRepo.GetTrendingProducts(ctx, startDate, endDate, 10)
+}
+
+func (s *StatsService) GetProductSales(ctx context.Context, productID int64, period string) (statsentity.ProductStats, error) {
+	now := time.Now()
+	var startDate, endDate time.Time
+	endDate = now
+
+	switch period {
+	case "week":
+		startDate = now.AddDate(0, 0, -7)
+	case "month":
+		startDate = now.AddDate(0, -1, 0)
+	case "year":
+		startDate = now.AddDate(-1, 0, 0)
+	default:
+		// Default to 1 month
+		startDate = now.AddDate(0, -1, 0)
+	}
+
+	return s.statsRepo.GetProductSales(ctx, productID, startDate, endDate)
+}
+
+func (s *StatsService) GetShopStatsByDateRange(ctx context.Context, startDateStr, endDateStr string) ([]statsentity.ShopStats, error) {
+	startDate, err := time.Parse("2006-01-02", startDateStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid start date format: %v", err)
+	}
+	endDate, err := time.Parse("2006-01-02", endDateStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid end date format: %v", err)
+	}
+
+	// Set endDate to end of the day
+	endDate = endDate.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
+
+	results, err := s.statsRepo.GetShopStatsByDateRange(ctx, startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if today is in range
+	now := time.Now()
+	todayStr := now.Format("2006-01-02")
+	todayDate, _ := time.Parse("2006-01-02", todayStr)
+
+	// Check if range covers today: startDate <= today <= endDate (ignoring time for comparison)
+	// We compare dates by truncating time or using the parsed todayDate (which is midnight)
+	// startDate is midnight. endDate is 23:59:59.
+	if (startDate.Before(todayDate) || startDate.Equal(todayDate)) && (endDate.After(todayDate) || endDate.Equal(todayDate)) {
+		// Check if results already contain today
+		hasToday := false
+		for _, r := range results {
+			if r.Date.Format("2006-01-02") == todayStr {
+				hasToday = true
+				break
+			}
+		}
+
+		if !hasToday {
+			todayStats, err := s.calculateStatsForDate(ctx, todayStr)
+			if err == nil {
+				results = append(results, todayStats)
+			} else {
+				logger.Log.Errorf("[GetShopStatsByDateRange] calculateStatsForDate error: %v", err)
+			}
 		}
 	}
 
-	return result, nil
+	return results, nil
 }

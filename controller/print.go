@@ -27,8 +27,9 @@ func NewPrintController(printService printServiceIface) *PrintController {
 // @Description Print order bill by its invoice
 // @Tags print
 // @Produce application/pdf
-// @Param invoice path string false "Order invoice"
-// @Router /print/order [post]
+// @Param invoice path string true "Order invoice"
+// @Security ApiKeyAuth
+// @Router /print/order/{invoice} [get]
 func (c *PrintController) OrderByInvoiceToPdfHandler(w http.ResponseWriter, r *http.Request) {
 	buffer := new(bytes.Buffer)
 	vars := mux.Vars(r)

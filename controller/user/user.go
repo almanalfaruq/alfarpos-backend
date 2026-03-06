@@ -1,7 +1,7 @@
 package user
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	_ "github.com/almanalfaruq/alfarpos-backend/model/user"
@@ -34,7 +34,7 @@ func (c *UserController) RegisterHandler(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	logger.Log.Info("POST - User: RegisterHandler (/users/register)")
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		logger.Log.Debug(err)
@@ -67,7 +67,7 @@ func (c *UserController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	logger.Log.Info("POST - User: LoginHandler (/users/login)")
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		logger.Log.Debug(err)
@@ -94,13 +94,14 @@ func (c *UserController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} response.ResponseStruct{data=user.User} "Return the updated user data"
 // @Failure 404 {object} response.ResponseStruct{data=string} "Return error with message"
 // @Failure 500 {object} response.ResponseStruct{data=string} "Return error with message"
+// @Security ApiKeyAuth
 // @Router /users/update [put]
 func (c *UserController) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	logger.Log.Info("PUT - User: UpdateHandler (/users/update)")
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		logger.Log.Debug(err)
